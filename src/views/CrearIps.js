@@ -1,42 +1,41 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { apiCreateIps } from '../utils/api';
 import request from '../utils/request';
 
 function CrearIps() {
+  const [ips, setIps] = useState({
+    ips: '',
+    nit: '',
+    ciudad: '',
+  });
 
-
-    const [ips, setIps] = useState({
-        ips: '',
-        nit:'',
-        ciudad: ''
+  const handleSave = (e) => {
+    setIps(function (prev) {
+      return { ...prev, [e.target.name]: e.target.value };
     });
+  };
 
-    const handleSave = e =>{
-        setIps(function(prev){
-            return ({...prev, [e.target.name]: e.target.value})
-        });
-    };
-
-    const CreateIps= async() =>{
-        
-        if(!ips.ips){
-            alert("Por favor diligencie todos los campos.")
-        }else{
-            const response = await request({link: apiCreateIps, 
-                body:({
-                  ips: ips.ips,
-                  nit: ips.nit,
-                  ciudad: ips.ciudad
-            }), method: 'POST'
-            })
-            if(response.success){
-                alert('IPS creada exitosamente')
-                window.location.href='./inventarioua'
-            }else{
-                alert(`${response.message}`)
-            }
-        }          
-    };
+  const CreateIps = async () => {
+    if (!ips.ips) {
+      alert('Por favor diligencie todos los campos.');
+    } else {
+      const response = await request({
+        link: apiCreateIps,
+        body: {
+          ips: ips.ips,
+          nit: ips.nit,
+          ciudad: ips.ciudad,
+        },
+        method: 'POST',
+      });
+      if (response.success) {
+        alert('IPS creada exitosamente');
+        window.location.href = './inventarioua';
+      } else {
+        alert(`${response.message}`);
+      }
+    }
+  };
   return (
     <div>
       <main className="flex-shrink-0">

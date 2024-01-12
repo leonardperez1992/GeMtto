@@ -1,51 +1,50 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { apiCreateActMtto } from '../utils/api';
 import request from '../utils/request';
 
 function CreateActMtto() {
+  const [actMtto, setActmtto] = useState({
+    equipo: '',
+    actividades: '',
+    parametro1: '',
+    parametro2: '',
+    parametro3: '',
+    parametro4: '',
+    parametro5: '',
+  });
 
-
-    const [actMtto, setActmtto] = useState({
-        equipo: '',
-        actividades:'',
-        parametro1: '',
-        parametro2: '',
-        parametro3: '',
-        parametro4: '',
-        parametro5: '',
+  const handleSave = (e) => {
+    setActmtto(function (prev) {
+      return { ...prev, [e.target.name]: e.target.value };
     });
+  };
 
-    const handleSave = e =>{
-        setActmtto(function(prev){
-            return ({...prev, [e.target.name]: e.target.value})
-        });
-    };
-
-    const CreateAct= async() =>{
-        
-        if(!actMtto.equipo){
-            alert("Por favor diligencie todos los campos.")
-        }else{
-            const response = await request({link: apiCreateActMtto, 
-                body:({
-                  equipo: actMtto.equipo,
-                  actividades: actMtto.actividades,
-                  parametro1 : actMtto.parametro1,
-                  parametro2: actMtto.parametro2,
-                  parametro3: actMtto.parametro3,
-                  parametro4: actMtto.parametro4,
-                  parametro5: actMtto.parametro5,
-            }), method: 'POST'
-            })
-            if(response.success){
-                alert('Actividad de mantenimiento creado exitosamente')
-                window.location.href='./inventarioua'
-            }else{
-                alert(`${response.message}`)
-                console.log(actMtto);
-            }
-        }          
-    };
+  const CreateAct = async () => {
+    if (!actMtto.equipo) {
+      alert('Por favor diligencie todos los campos.');
+    } else {
+      const response = await request({
+        link: apiCreateActMtto,
+        body: {
+          equipo: actMtto.equipo,
+          actividades: actMtto.actividades,
+          parametro1: actMtto.parametro1,
+          parametro2: actMtto.parametro2,
+          parametro3: actMtto.parametro3,
+          parametro4: actMtto.parametro4,
+          parametro5: actMtto.parametro5,
+        },
+        method: 'POST',
+      });
+      if (response.success) {
+        alert('Actividad de mantenimiento creado exitosamente');
+        window.location.href = './inventarioua';
+      } else {
+        alert(`${response.message}`);
+        console.log(actMtto);
+      }
+    }
+  };
   return (
     <div>
       <main className="flex-shrink-0">

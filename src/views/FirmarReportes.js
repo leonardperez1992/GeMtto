@@ -103,6 +103,7 @@ function FirmarReportes() {
     } else {
       let deleteIndex = reporteFirma.indexOf(id);
       reporteFirma.splice(deleteIndex, 1);
+      console.log(reporteFirma);
     }
   };
 
@@ -123,7 +124,7 @@ function FirmarReportes() {
                     style={{
                       backgroundColor: '#003785',
                       color: 'white',
-                      textAlign: 'center',
+                      textAlign: 'right',
                       fontSize: '15px',
                     }}
                   >
@@ -139,7 +140,6 @@ function FirmarReportes() {
                     style={{
                       backgroundColor: '#003785',
                       color: 'white',
-                      textAlign: 'center',
                       fontSize: '15px',
                     }}
                   >

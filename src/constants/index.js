@@ -1,0 +1,5 @@
+export const SAVE_USER = "SAVE_USER";
+export const UPDATE_USER_NAME = "UPDATE_USER_NAME";
+export const SAVE_SERVICES = "SAVE_SERVICES";
+export const UPDATE_SERVICES = "UPDATE_SERVICES";
+

@@ -1,0 +1,220 @@
+body {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 90%;
+  font-family: 'Arial';
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 100px) and (max-width: 600px) {
+  .contenedor {
+    width: 100%;
+    padding: 1px;
+    margin-top: 1%;
+    align-content: center;
+  }
+}
+
+@media screen and (min-width: 601px) {
+  .contenedor {
+    width: 100%;
+    padding: 15px;
+    margin-top: 5%;
+    align-content: center;
+  }
+}
+
+.formulario {
+  background: #fff;
+  margin-top: 150px;
+  padding: 3px;
+}
+
+h1 {
+  text-align: center;
+  color: #1a2537;
+  font-size: 40px;
+}
+
+h2 {
+  text-align: center;
+}
+
+p {
+  text-align: center;
+}
+
+input[type='text'],
+input[type='password'] {
+  font-size: 20px;
+  width: 82%;
+  padding: 10px;
+  border: none;
+  text-align: center;
+}
+.input-contenedor {
+  margin: 15px;
+  border: 1px solid #aaa;
+  height: 90%;
+  width: 90%;
+  text-align: center;
+}
+.icon {
+  min-width: 50px;
+  text-align: center;
+  color: #999;
+}
+.button {
+  border: none;
+  width: 50%;
+  color: white;
+  font-size: 20px;
+  background: #003785;
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.button:hover {
+  background: cadetblue;
+}
+p {
+  text-align: center;
+}
+.button-contenedor {
+  margin: 15px;
+  height: 90%;
+  width: 90%;
+  text-align: center;
+}
+
+.link {
+  color: #1a2537;
+  text-align: center;
+  font-style: italic;
+}
+.link:hover {
+  color: cadetblue;
+}
+
+table {
+  width: 100%;
+  border: 1px solid #000;
+}
+
+th,
+td {
+  width: 10%;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid #000;
+  border-spacing: 0;
+  padding: auto;
+  font-size: 70%;
+}
+
+thead {
+  background-color: #003785;
+  color: white;
+}
+
+.imagen {
+  width: 30%;
+}
+
+.logo {
+  font-size: 1.5em;
+}
+
+.nav-list a {
+  text-decoration: none;
+  color: black;
+}
+
+/* Media query para hacer la barra de navegación responsive */
+/* @media screen and (min-width: 100px) and (max-width: 600px) {
+  .navbar {
+    display: flexbox;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    padding: 10px;
+    color: black;
+  }
+
+  .nav-list {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    color: black;
+  }
+
+  .nav-list li {
+    border: 1px inset #000;
+    border-radius: 10px;
+    background-color: aliceblue;
+  }
+  .nav-list a {
+    text-decoration: none;
+    color: black;
+  }
+} */
+
+.navbar {
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  padding: 10px;
+  color: black;
+}
+
+.nav-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  color: black;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-list li {
+  margin-right: 1px;
+  border: 1px inset #000;
+  border-radius: 10px;
+  background-color: aliceblue;
+}
+.nav-list a {
+  text-decoration: none;
+  color: black;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.select {
+  font-size: '14px';
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+
+.input-report {
+  width: 100%;
+  height: 20px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.th-report {
+  background-color: #4169e1;
+  color: white;
+  text-align: center;
+}

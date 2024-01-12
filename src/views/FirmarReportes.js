@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { apiReportes, apiFirmarReportes } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
+import { Checkbox } from '../components/Checkbox';
 
 function FirmarReportes() {
   const [reportes, setReportes] = useState([]);
@@ -28,18 +29,6 @@ function FirmarReportes() {
       setReportes(response.reporte);
     } else {
       alert(`${response.message}`);
-    }
-  };
-
-  console.log(reportes);
-
-  // console.log(checkedState);
-
-  const getIdReportes = (item) => {
-    if (item) {
-      reporteFirma.push(item);
-    } else {
-      alert('No existen reportes para firmar');
     }
   };
 
@@ -106,6 +95,18 @@ function FirmarReportes() {
       dato.fecha.toLowerCase().includes(buscar.toLowerCase())
     );
   }
+
+  const handleCheckboxChange = (id, checked) => {
+    if (checked) {
+      reporteFirma.push(id);
+      console.log(reporteFirma);
+    } else {
+      let deleteIndex = reporteFirma.indexOf(id);
+      reporteFirma.splice(deleteIndex, 1);
+    }
+  };
+
+  console.log(reporteFirma);
 
   return (
     <div>
@@ -287,12 +288,11 @@ function FirmarReportes() {
                   {inventarios.map(function (item) {
                     return (
                       <tr>
-                        <td key={item}>
-                          <input
-                            type="checkbox"
-                            checked={true}
-                            onChange={getIdReportes(item?._id)}
-                          ></input>
+                        <td>
+                          <Checkbox
+                            id={item?._id}
+                            onChange={handleCheckboxChange}
+                          />
                         </td>
                         <td>{item?.numero_reporte}</td>
                         <td>{item?.fecha}</td>

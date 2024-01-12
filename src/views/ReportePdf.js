@@ -58,7 +58,7 @@ function ReportePdf() {
 
   return (
     <div>
-      <div style={{ width: '300px', textAlign: 'center' }}>
+      <div style={{ width: '400px', height: '50px', textAlign: 'right' }}>
         <button
           className="button"
           onClick={() => generatePDF(targetRef, options)}

@@ -11,7 +11,6 @@ import EditEmp from './views/EditEmp';
 import Inventario from './views/Inventario';
 import CreateInventary from './views/CreateInventary';
 import ReporteService from './views/ReporteService';
-import ReporteForm from './views/ReporteForm';
 import CreateActMtto from './views/CreateActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';

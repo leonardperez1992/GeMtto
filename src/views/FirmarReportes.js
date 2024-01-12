@@ -19,9 +19,6 @@ function FirmarReportes() {
     cargo_recibe: '',
   });
 
-  console.log(firmaIng, firmaRecibe);
-  console.log(reporteFirma);
-
   const getReportes = async () => {
     const response = await request({
       link: apiReportes,
@@ -34,9 +31,19 @@ function FirmarReportes() {
     }
   };
 
+  console.log(reportes);
+
+  // console.log(checkedState);
+
   const getIdReportes = (item) => {
-    reporteFirma.push(item);
+    if (item) {
+      reporteFirma.push(item);
+    } else {
+      alert('No existen reportes para firmar');
+    }
   };
+
+  console.log(reporteFirma);
 
   const firmaIngRef = useRef({});
   const firmaRecref = useRef({});
@@ -91,7 +98,7 @@ function FirmarReportes() {
     setBuscar(e.target.value);
   };
 
-  var inventarios = {};
+  var inventarios = [];
   if (!buscar) {
     inventarios = reportes;
   } else {
@@ -99,6 +106,7 @@ function FirmarReportes() {
       dato.fecha.toLowerCase().includes(buscar.toLowerCase())
     );
   }
+
   return (
     <div>
       <main className="flex-shrink-0">
@@ -279,11 +287,11 @@ function FirmarReportes() {
                   {inventarios.map(function (item) {
                     return (
                       <tr>
-                        <td>
+                        <td key={item}>
                           <input
                             type="checkbox"
                             checked={true}
-                            onClick={getIdReportes(item?._id)}
+                            onChange={getIdReportes(item?._id)}
                           ></input>
                         </td>
                         <td>{item?.numero_reporte}</td>

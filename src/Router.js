@@ -16,6 +16,7 @@ import CreateActMtto from './views/CreateActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
 import FirmarReportes from './views/FirmarReportes';
+import ReportePdf from './views/ReportePdf';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -47,7 +48,7 @@ const RouterContainer = () => {
           <Route path="/inventarioua" element={<Inventario />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
-          <Route path="/reporte" element={<ReporteForm />} />
+          <Route path="/reporte" element={<ReportePdf />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/firmareportes" element={<FirmarReportes />} />
           <Route path="/createactmtto" element={<CreateActMtto />} />

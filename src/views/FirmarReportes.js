@@ -99,15 +99,11 @@ function FirmarReportes() {
   const handleCheckboxChange = (id, checked) => {
     if (checked) {
       reporteFirma.push(id);
-      console.log(reporteFirma);
     } else {
       let deleteIndex = reporteFirma.indexOf(id);
       reporteFirma.splice(deleteIndex, 1);
-      console.log(reporteFirma);
     }
   };
-
-  console.log(reporteFirma);
 
   return (
     <div>

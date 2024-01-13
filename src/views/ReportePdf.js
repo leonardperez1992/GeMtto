@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { apiObtenerReporte } from '../utils/api';
+import { apiObtenerReporte, apiEliminarReportes } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import generatePDF, { Resolution } from 'react-to-pdf';
@@ -9,6 +9,7 @@ function ReportePdf() {
   const imgRec = useRef({});
   const [reporte, setReporte] = useState([]);
   const targetRef = useRef();
+
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
     method: 'save',
@@ -16,7 +17,7 @@ function ReportePdf() {
     page: {
       margin: {
         top: 20,
-        right: 20,
+        right: 16,
         bottom: 10,
         left: 0,
       },
@@ -27,6 +28,28 @@ function ReportePdf() {
       mimeType: 'image/jpeg',
       qualityRatio: 1,
     },
+  };
+
+  const deleteReport = async () => {
+    const body = {
+      _id: reporte._id,
+    };
+    if (!body) {
+      alert('Por favor Seleccione un equipo');
+      window.location.href = './reportes';
+    } else {
+      const response = await request({
+        link: apiEliminarReportes,
+        body,
+        method: 'POST',
+      });
+      if (response.success) {
+        alert('Reporte eliminado exitosamente');
+        window.location.href = './reportes';
+      } else {
+        alert(`${response.message}`);
+      }
+    }
   };
 
   const obtenerEquipos = async (id) => {
@@ -58,12 +81,20 @@ function ReportePdf() {
 
   return (
     <div>
-      <div style={{ width: '400px', height: '50px', textAlign: 'right' }}>
+      <div style={{ textAlign: 'center' }}>
         <button
           className="button"
+          style={{ width: '300px', margin: '10px' }}
           onClick={() => generatePDF(targetRef, options)}
         >
           Download PDF
+        </button>
+        <button
+          className="button"
+          style={{ width: '300px', margin: '10px' }}
+          onClick={deleteReport}
+        >
+          Eliminar Reporte
         </button>
       </div>
       <div className="container" ref={targetRef}>
@@ -73,7 +104,7 @@ function ReportePdf() {
               className="panel-body"
               style={{ margin: '10%', paddingBlockEnd: '5%' }}
             >
-              <div>
+              <div className="panel-body">
                 <table
                   className="table"
                   style={{ margin: '10px', padding: '50PX' }}
@@ -224,29 +255,29 @@ function ReportePdf() {
                       </th>
                     </tr>
                     <tr>
-                      <th style={{ textAlign: 'center' }}>CANTIDAD</th>
-                      <th style={{ textAlign: 'center' }}>DESCRIPCION</th>
-                      <th style={{ textAlign: 'center' }}>VALOR</th>
+                      <th className="th-reporte">CANTIDAD</th>
+                      <th className="th-reporte">DESCRIPCION</th>
+                      <th className="th-reporte">VALOR</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.cantidad1}</th>
-                      <th>{reporte?.descripcion1}</th>
-                      <th>{reporte?.valor1}</th>
+                      <th className="th-reporte">{reporte?.cantidad1}</th>
+                      <th className="th-reporte">{reporte?.descripcion1}</th>
+                      <th className="th-reporte">{reporte?.valor1}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.cantidad2}</th>
-                      <th>{reporte?.descripcion2}</th>
-                      <th>{reporte?.valor2}</th>
+                      <th className="th-reporte">{reporte?.cantidad2}</th>
+                      <th className="th-reporte">{reporte?.descripcion2}</th>
+                      <th className="th-reporte">{reporte?.valor2}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.cantidad3}</th>
-                      <th>{reporte?.descripcion3}</th>
-                      <th>{reporte?.valor3}</th>
+                      <th className="th-reporte">{reporte?.cantidad3}</th>
+                      <th className="th-reporte">{reporte?.descripcion3}</th>
+                      <th className="th-reporte">{reporte?.valor3}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.cantidad4}</th>
-                      <th>{reporte?.descripcion4}</th>
-                      <th>{reporte?.valor4}</th>
+                      <th className="th-reporte">{reporte?.cantidad4}</th>
+                      <th className="th-reporte">{reporte?.descripcion4}</th>
+                      <th className="th-reporte">{reporte?.valor4}</th>
                     </tr>
                     <tr>
                       <th
@@ -261,29 +292,37 @@ function ReportePdf() {
                       </th>
                     </tr>
                     <tr>
-                      <th style={{ textAlign: 'center' }}>PARÁMETRO</th>
-                      <th style={{ textAlign: 'center' }}>VALOR PROGRAMADO</th>
-                      <th style={{ textAlign: 'center' }}>VALOR MEDIDO</th>
+                      <th className="th-reporte">PARÁMETRO</th>
+                      <th className="th-reporte">VALOR PROGRAMADO</th>
+                      <th className="th-reporte">VALOR MEDIDO</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.verificacion}</th>
-                      <th></th>
-                      <th></th>
+                      <th className="th-reporte">{reporte?.parametro1}</th>
+                      <th className="th-reporte">
+                        {reporte?.valor_programado1}
+                      </th>
+                      <th className="th-reporte">{reporte?.valor_medido1}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.verificacion}</th>
-                      <th></th>
-                      <th></th>
+                      <th className="th-reporte">{reporte?.parametro2}</th>
+                      <th className="th-reporte">
+                        {reporte?.valor_programado2}
+                      </th>
+                      <th className="th-reporte">{reporte?.valor_medido2}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.verificacion}</th>
-                      <th></th>
-                      <th></th>
+                      <th className="th-reporte">{reporte?.parametro3}</th>
+                      <th className="th-reporte">
+                        {reporte?.valor_programado3}
+                      </th>
+                      <th className="th-reporte">{reporte?.valor_medido3}</th>
                     </tr>
                     <tr>
-                      <th>{reporte?.verificacion}</th>
-                      <th></th>
-                      <th></th>
+                      <th className="th-reporte">{reporte?.parametro4}</th>
+                      <th className="th-reporte">
+                        {reporte?.valor_programado4}
+                      </th>
+                      <th className="th-reporte">{reporte?.valor_medido4}</th>
                     </tr>
                     <tr>
                       <th

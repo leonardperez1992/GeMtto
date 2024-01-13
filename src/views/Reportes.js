@@ -14,7 +14,7 @@ function Reportes() {
     if (response.success) {
       setReportes(response.reporte);
     } else {
-      alert(`${response.message}`);
+      alert(`Sin conexión con el Servidor ${response.message}`);
     }
   };
 

@@ -38,7 +38,7 @@ const RouterContainer = () => {
       <Router>
         <Navbar />
         <Routes>
-          <Route exact path="/" element={<Inventario />} />
+          <Route exact path="/" element={<Login />} />
           <Route path="/editempleados" element={<EditEmp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />

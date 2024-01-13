@@ -14,7 +14,7 @@ function Inventario() {
     if (response.success) {
       setInventario(response.inventario);
     } else {
-      alert(`${response.message}`);
+      alert(`Sin conexión con el Servidor ${response.message}`);
     }
   };
 

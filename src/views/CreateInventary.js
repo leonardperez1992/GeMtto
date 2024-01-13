@@ -11,7 +11,7 @@ function CreateInventary() {
     if (response.success) {
       setIpss(response.ips);
     } else {
-      alert(`${response.message}`);
+      alert(`Sin conexión con el Servidor ${response.message}`);
     }
   };
 

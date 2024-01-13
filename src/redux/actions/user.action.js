@@ -37,7 +37,7 @@ export const loginUser = ({ email, password }) => {
         alert('Autenticación incorrecta');
       }
     } else {
-      alert(`${response.message}`);
+      alert(`Sin conexión con el Servidor  ${response.message}`);
     }
   };
 };

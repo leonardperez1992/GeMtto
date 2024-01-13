@@ -15,10 +15,10 @@ function ReportePdf() {
     resolution: Resolution.MEDIUM,
     page: {
       margin: {
-        top: 30,
-        right: 8,
+        top: 20,
+        right: 20,
         bottom: 10,
-        left: 4,
+        left: 0,
       },
       format: 'government-letter',
       orientation: 'portrait',
@@ -224,7 +224,29 @@ function ReportePdf() {
                       </th>
                     </tr>
                     <tr>
-                      <td colSpan={3}>{reporte?.repuestos}</td>
+                      <th style={{ textAlign: 'center' }}>CANTIDAD</th>
+                      <th style={{ textAlign: 'center' }}>DESCRIPCION</th>
+                      <th style={{ textAlign: 'center' }}>VALOR</th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.cantidad1}</th>
+                      <th>{reporte?.descripcion1}</th>
+                      <th>{reporte?.valor1}</th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.cantidad2}</th>
+                      <th>{reporte?.descripcion2}</th>
+                      <th>{reporte?.valor2}</th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.cantidad3}</th>
+                      <th>{reporte?.descripcion3}</th>
+                      <th>{reporte?.valor3}</th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.cantidad4}</th>
+                      <th>{reporte?.descripcion4}</th>
+                      <th>{reporte?.valor4}</th>
                     </tr>
                     <tr>
                       <th
@@ -242,6 +264,21 @@ function ReportePdf() {
                       <th style={{ textAlign: 'center' }}>PARÁMETRO</th>
                       <th style={{ textAlign: 'center' }}>VALOR PROGRAMADO</th>
                       <th style={{ textAlign: 'center' }}>VALOR MEDIDO</th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.verificacion}</th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.verificacion}</th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                    <tr>
+                      <th>{reporte?.verificacion}</th>
+                      <th></th>
+                      <th></th>
                     </tr>
                     <tr>
                       <th>{reporte?.verificacion}</th>

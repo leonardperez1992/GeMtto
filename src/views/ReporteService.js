@@ -33,7 +33,7 @@ function ReporteService() {
     if (response.success) {
       setActMtos(response.actmtto);
     } else {
-      alert(`${response.message}`);
+      alert(`Sn conexión con el Servidor${response.message}`);
     }
   };
 
@@ -45,7 +45,7 @@ function ReporteService() {
     if (response.success) {
       setIps(response.ips);
     } else {
-      alert(`${response.message}`);
+      alert(`Sn conexión con el Servidor${response.message}`);
     }
   };
 
@@ -86,11 +86,33 @@ function ReporteService() {
     marca: '',
     modelo: '',
     serie: '',
-    inventario: '',
+    inventario: 'NA',
     problema_reportado: '',
     desc_servicio: '',
-    repuestos: '',
-    verificacion: '',
+    cantidad1: 'NA',
+    descripcion1: 'NA',
+    valor1: 'NA',
+    cantidad2: 'NA',
+    descripcion2: 'NA',
+    valor2: 'NA',
+    cantidad3: 'NA',
+    descripcion3: 'NA',
+    valor3: 'NA',
+    cantidad4: 'NA',
+    descripcion4: 'NA',
+    valor4: 'NA',
+    parametro1: 'NA',
+    valor_programado1: 'NA',
+    valor_medido1: 'NA',
+    parametro2: 'NA',
+    valor_programado2: 'NA',
+    valor_medido2: 'NA',
+    parametro3: 'NA',
+    valor_programado3: 'NA',
+    valor_medido3: 'NA',
+    parametro4: 'NA',
+    valor_programado4: 'NA',
+    valor_medido4: 'NA',
     observaciones: '',
     estado_final: '',
     firma_ingeniero: '',
@@ -122,8 +144,30 @@ function ReporteService() {
       inventario: equipo.inventario,
       problema_reportado: reporte.problema_reportado,
       desc_servicio: actMto,
-      repuestos: reporte.repuestos,
-      verificacion: reporte.verificacion,
+      cantidad1: reporte.cantidad1,
+      descripcion1: reporte.descripcion1,
+      valor1: reporte.valor1,
+      cantidad2: reporte.cantidad2,
+      descripcion2: reporte.descripcion1,
+      valor2: reporte.valor2,
+      cantidad3: reporte.cantidad3,
+      descripcion3: reporte.descripcion1,
+      valor3: reporte.valor3,
+      cantidad4: reporte.cantidad4,
+      descripcion4: reporte.descripcion1,
+      valor4: reporte.valor4,
+      parametro1: reporte.parametro1,
+      valor_programado1: reporte.valor_programado1,
+      valor_medido1: reporte.valor_medido1,
+      parametro2: reporte.parametro2,
+      valor_programado2: reporte.valor_programado2,
+      valor_medido2: reporte.valor_medido2,
+      parametro3: reporte.parametro3,
+      valor_programado3: reporte.valor_programado3,
+      valor_medido3: reporte.valor_medido3,
+      parametro4: reporte.parametro4,
+      valor_programado4: reporte.valor_programado4,
+      valor_medido4: reporte.valor_medido4,
       observaciones: reporte.observaciones,
       estado_final: reporte.estado_final,
       firma_ingeniero: firmaIng,
@@ -398,24 +442,113 @@ function ReporteService() {
                     </th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
+                    <th style={{ textAlign: 'center' }}>CANTIDAD</th>
+                    <th style={{ textAlign: 'center' }}>DESCRIPCION</th>
+                    <th style={{ textAlign: 'center' }}>VALOR</th>
+                  </tr>
+                  <tr>
+                    <th>
                       <input
-                        style={{ width: '100%' }}
-                        name="repuestos"
+                        className="input-reportparam"
+                        name="cantidad1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </td>
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="descripcion1"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor1"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <input style={{ width: '100%' }}></input>
-                    </td>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="cantidad2"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="descripcion2"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor2"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <input style={{ width: '100%' }}></input>
-                    </td>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="cantidad3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="descripcion3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                  </tr>
+                  <tr>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="cantidad4"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="descripcion4"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor4"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
                   </tr>
                   <tr>
                     <th
@@ -437,57 +570,104 @@ function ReporteService() {
                   <tr>
                     <th>
                       <input
-                        style={{
-                          width: '100%',
-                          height: '20px',
-                          fontSize: '15px',
-                          textAlign: 'center',
-                        }}
-                        name="verificacion"
+                        className="input-reportparam"
+                        name="parametro1"
                         type="text"
                         onChange={handleSave}
                       />
                     </th>
                     <th>
                       <input
-                        style={{
-                          width: '100%',
-                          height: '20px',
-                          fontSize: '15px',
-                          textAlign: 'center',
-                        }}
-                        name="valor_programado"
+                        className="input-reportparam"
+                        name="valor_programado1"
                         type="text"
+                        onChange={handleSave}
                       />
                     </th>
                     <th>
                       <input
-                        className="input-report"
-                        name="valor_medido"
+                        className="input-reportparam"
+                        name="valor_medido1"
                         type="text"
+                        onChange={handleSave}
                       />
                     </th>
                   </tr>
                   <tr>
                     <th>
                       <input
-                        className="input-report"
+                        className="input-reportparam"
                         name="parametro2"
                         type="text"
+                        onChange={handleSave}
                       />
                     </th>
                     <th>
                       <input
-                        className="input-report"
+                        className="input-reportparam"
                         name="valor_programado2"
                         type="text"
+                        onChange={handleSave}
                       />
                     </th>
                     <th>
                       <input
-                        className="input-report"
+                        className="input-reportparam"
                         name="valor_medido2"
                         type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                  </tr>
+                  <tr>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="parametro3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor_programado3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor_medido3"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                  </tr>
+                  <tr>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="parametro4"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor_programado4"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </th>
+                    <th>
+                      <input
+                        className="input-reportparam"
+                        name="valor_medido4"
+                        type="text"
+                        onChange={handleSave}
                       />
                     </th>
                   </tr>
@@ -627,7 +807,7 @@ function ReporteService() {
                       <td>
                         <label style={{ fontSize: '12px' }}>NOMBRE: </label>
                         <input
-                          className="input-report"
+                          className="input-reportparam"
                           name="nombre_ingeniero"
                           type="text"
                           onChange={handleSave}
@@ -636,7 +816,7 @@ function ReporteService() {
                       <td>
                         <label style={{ fontSize: '12px' }}>NOMBRE: </label>
                         <input
-                          className="input-report"
+                          className="input-reportparam"
                           name="nombre_recibe"
                           type="text"
                           onChange={handleSave}
@@ -649,7 +829,7 @@ function ReporteService() {
                       <td>
                         <label style={{ fontSize: '12px' }}>CARGO: </label>
                         <input
-                          className="input-report"
+                          className="input-reportparam"
                           name="cargo_ingeniero"
                           type="text"
                           onChange={handleSave}
@@ -658,7 +838,7 @@ function ReporteService() {
                       <td>
                         <label style={{ fontSize: '12px' }}>CARGO: </label>
                         <input
-                          className="input-report"
+                          className="input-reportparam"
                           name="cargo_recibe"
                           type="text"
                           onChange={handleSave}

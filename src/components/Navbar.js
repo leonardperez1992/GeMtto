@@ -47,7 +47,11 @@ function Navbar() {
                         Firmar Reportes
                       </Link>
                     </li>
-
+                    <li>
+                      <Link to="/correctivo" className="nav-link">
+                        Correctivo
+                      </Link>
+                    </li>
                     <li>
                       <Link to="/crearips" className="nav-link">
                         Crear Ips

@@ -133,24 +133,29 @@ input[type='password'] {
   caption-side: bottom;
 }
 
-.tabla-reportes td {
-  width: 2rem;
+.tabla-reportes th {
+  width: 25%;
   margin: 2rem;
   border-collapse: collapse;
   caption-side: bottom;
+  padding: 0.5em;
 }
 
-.tabla-reportes th {
-  width: 2rem;
+.tabla-reportes td {
+  width: 25%;
   margin: 2rem;
   border-collapse: collapse;
   caption-side: bottom;
+  padding: 0.5em;
 }
 
 .tabla-reporte {
   width: 100%;
   margin: 1rem;
   border-collapse: collapse;
+}
+caption {
+  padding: 0.3em;
 }
 
 .tabla-reporte td {

@@ -107,48 +107,25 @@ function FirmarReportes() {
 
   return (
     <div>
-      <main className="flex-shrink-0">
+      <main>
         <section>
-          <div className="panel-body" style={{ margin: '1%' }}>
-            <div className="d-flex justify-content-center fw-bolder">
+          <div>
+            <div>
               <h3>Panel de Firma</h3>
             </div>
             <div style={{ border: '2px solid black' }}>
               <div>
-                <tr>
-                  <th
-                    style={{
-                      backgroundColor: '#003785',
-                      color: 'white',
-                      textAlign: 'right',
-                      fontSize: '15px',
-                    }}
-                  >
-                    INGENIERO/TECNICO
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#003785',
-                      color: 'white',
-                    }}
-                  ></th>
-                  <th
-                    style={{
-                      backgroundColor: '#003785',
-                      color: 'white',
-                      fontSize: '15px',
-                    }}
-                  >
-                    RECIBÍ A SATISFACCION
-                  </th>
-                </tr>
-                <tr>
-                  <td colSpan={3}>
-                    <td style={{ border: '2px solid gray' }}>
+                <table className="tabla-reportes">
+                  <tr>
+                    <th>INGENIERO/TECNICO</th>
+                    <th>RECIBÍ A SATISFACCION</th>
+                  </tr>
+                  <tr>
+                    <td>
                       <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       <SignatureCanvas
                         canvasProps={{
-                          width: 450,
+                          width: 350,
                           height: 150,
                         }}
                         ref={firmaIngRef}
@@ -166,10 +143,10 @@ function FirmarReportes() {
                         Clear{' '}
                       </button>
                     </td>
-                    <td style={{ border: '2px solid gray' }}>
+                    <td>
                       <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       <SignatureCanvas
-                        canvasProps={{ width: 450, height: 150 }}
+                        canvasProps={{ width: 350, height: 150 }}
                         ref={firmaRecref}
                         onEnd={() => {
                           saveFirmaRecibe(firmaRecref.current.toData());
@@ -185,11 +162,9 @@ function FirmarReportes() {
                         Clear{' '}
                       </button>
                     </td>
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={3}>
-                    <td style={{ border: '2px solid gray' }}>
+                  </tr>
+                  <tr>
+                    <td>
                       <label style={{ fontSize: '12px' }}>NOMBRE: </label>
                       <input
                         className="input-report"
@@ -198,7 +173,7 @@ function FirmarReportes() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td style={{ border: '2px solid gray' }}>
+                    <td>
                       <label style={{ fontSize: '12px' }}>NOMBRE: </label>
                       <input
                         className="input-report"
@@ -207,11 +182,9 @@ function FirmarReportes() {
                         onChange={handleSave}
                       />
                     </td>
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={3}>
-                    <td style={{ border: '2px solid gray' }}>
+                  </tr>
+                  <tr>
+                    <td>
                       <label style={{ fontSize: '12px' }}>CARGO: </label>
                       <input
                         className="input-report"
@@ -220,7 +193,7 @@ function FirmarReportes() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td style={{ border: '2px solid gray' }}>
+                    <td>
                       <label style={{ fontSize: '12px' }}>CARGO: </label>
                       <input
                         className="input-report"
@@ -229,8 +202,8 @@ function FirmarReportes() {
                         onChange={handleSave}
                       />
                     </td>
-                  </td>
-                </tr>
+                  </tr>
+                </table>
               </div>
               <div className="button-contenedor">
                 <input
@@ -268,7 +241,7 @@ function FirmarReportes() {
                   onChange={handleSave2}
                 />
               </div>
-              <table className="table">
+              <table className="tabla-reportes">
                 <thead>
                   <tr>
                     <th>FIRMAR</th>
@@ -289,6 +262,7 @@ function FirmarReportes() {
                             id={item?._id}
                             onChange={handleCheckboxChange}
                           />
+                          <label>Seleccione</label>
                         </td>
                         <td>{item?.numero_reporte}</td>
                         <td>{item?.fecha}</td>

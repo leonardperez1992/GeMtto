@@ -37,7 +37,7 @@ function Inventario() {
     );
   }
   return (
-    <div>
+    <div className="contenedor">
       <main className="flex-shrink-0">
         <section>
           <div className="panel-body" style={{ margin: '1%' }}>

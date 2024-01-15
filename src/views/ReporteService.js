@@ -205,7 +205,7 @@ function ReporteService() {
           >
             <div>
               <table className="table" id="tablaDestino">
-                <thead style={{ backgroundColor: '#343a40', color: 'white' }}>
+                <thead>
                   <tr>
                     <td style={{ backgroundColor: 'white', width: '30%' }}>
                       <img
@@ -243,16 +243,7 @@ function ReporteService() {
                 </thead>
                 <tbody style={{ backgroundColor: 'white' }}>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      INFORMACION DE LA INSTITUCIÓN
-                    </th>
+                    <th colSpan={3}>INFORMACION DE LA INSTITUCIÓN</th>
                   </tr>
                   <tr>
                     <td colSpan={2}>
@@ -293,20 +284,11 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      TIPO DE SERVICIO
-                    </th>
+                    <th colSpan={3}>TIPO DE SERVICIO</th>
                   </tr>
                   <tr>
-                    <th colSpan={3}>
-                      <th>
+                    <td colSpan={3}>
+                      <td style={{ width: '200px' }}>
                         <input
                           name="tipo_servicio"
                           type="radio"
@@ -314,8 +296,8 @@ function ReporteService() {
                           onChange={handleSave}
                         ></input>
                         <label> MTTO PREVENTIVO</label>
-                      </th>
-                      <th>
+                      </td>
+                      <td style={{ width: '200px' }}>
                         <input
                           name="tipo_servicio"
                           type="radio"
@@ -323,8 +305,8 @@ function ReporteService() {
                           onChange={handleSave}
                         ></input>
                         <label> MTTO CORRECTIVO</label>
-                      </th>
-                      <th>
+                      </td>
+                      <td style={{ width: '200px' }}>
                         <input
                           name="tipo_servicio"
                           type="radio"
@@ -332,32 +314,23 @@ function ReporteService() {
                           onChange={handleSave}
                         ></input>
                         <label> INSTALACIÓN</label>
-                      </th>
-                      <th>
+                      </td>
+                      <td style={{ width: '200px' }}>
                         <input
                           name="tipo_servicio"
                           type="radio"
                           value="OTRO"
                           onChange={handleSave}
                         ></input>
-                        <label> OTRO: </label>
-                      </th>
-                    </th>
+                        <label> OTRO </label>
+                      </td>
+                    </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      INFORMACION DEL EQUIPO
-                    </th>
+                    <th colSpan={3}>INFORMACION DEL EQUIPO</th>
                   </tr>
                   <tr>
-                    <td style={{ backgroundColor: 'white' }}>
+                    <td>
                       <label>EQUIPO: {equipo?.equipo} </label>
                     </td>
                     <td>
@@ -376,16 +349,7 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      PROBLEMA REPORTADO POR EL CLIENTE
-                    </th>
+                    <th colSpan={3}>PROBLEMA REPORTADO POR EL CLIENTE</th>
                   </tr>
                   <tr>
                     <td colSpan={3}>
@@ -398,16 +362,7 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      DESCRIPCION DEL SERVICIO
-                    </th>
+                    <th colSpan={3}>DESCRIPCION DEL SERVICIO</th>
                   </tr>
                   <tr>
                     <td colSpan={3}>
@@ -430,137 +385,121 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
+                    <th colSpan={3}>
                       REPUESTOS, INSUMOS, MATERIALES EMPLEADOS
                     </th>
                   </tr>
                   <tr>
-                    <th style={{ textAlign: 'center' }}>CANTIDAD</th>
-                    <th style={{ textAlign: 'center' }}>DESCRIPCION</th>
-                    <th style={{ textAlign: 'center' }}>VALOR</th>
+                    <td style={{ textAlign: 'center' }}>CANTIDAD</td>
+                    <td style={{ textAlign: 'center' }}>DESCRIPCION</td>
+                    <td style={{ textAlign: 'center' }}>VALOR</td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="cantidad1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="descripcion1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="cantidad2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="descripcion2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="cantidad3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="descripcion3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="cantidad4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="descripcion4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      VERIFICACION DE PARAMETROS
-                    </th>
+                    <th colSpan={3}>VERIFICACION DE PARAMETROS</th>
                   </tr>
                   <tr>
                     <th style={{ textAlign: 'center' }}>PARÁMETRO</th>
@@ -568,120 +507,111 @@ function ReporteService() {
                     <th style={{ textAlign: 'center' }}>VALOR MEDIDO</th>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="parametro1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_programado1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_medido1"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="parametro2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_programado2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_medido2"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="parametro3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_programado3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_medido3"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="parametro4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_programado4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         className="input-reportparam"
                         name="valor_medido4"
                         type="text"
                         onChange={handleSave}
                       />
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      OBSERVACIONES
-                    </th>
+                    <th colSpan={3}>OBSERVACIONES</th>
                   </tr>
                   <tr>
                     <td colSpan={3}>
@@ -694,19 +624,10 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      colSpan={3}
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      ESTADO FINAL DEL EQUIPO
-                    </th>
+                    <th colSpan={3}>ESTADO FINAL DEL EQUIPO</th>
                   </tr>
                   <tr>
-                    <th>
+                    <td>
                       <input
                         name="estado_final"
                         type="radio"
@@ -714,8 +635,8 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                       EQUIPO FUNCIONANDO CORRECTAMENTE
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         name="estado_final"
                         type="radio"
@@ -723,8 +644,8 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                       EQUIPO EN ESPERA DE REPUESTOS
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                       <input
                         name="estado_final"
                         type="radio"
@@ -732,18 +653,10 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                       EQUIPO FUERA DE SERVICIO
-                    </th>
+                    </td>
                   </tr>
                   <tr>
-                    <th
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      INGENIERO/TECNICO
-                    </th>
+                    <th>INGENIERO/TECNICO</th>
                     <th
                       style={{
                         backgroundColor: 'rgb(0, 74, 116)',
@@ -761,89 +674,79 @@ function ReporteService() {
                     </th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                        <SignatureCanvas
-                          canvasProps={{ width: 450, height: 150 }}
-                          ref={firmaIngRef}
-                          onEnd={() => {
-                            saveFirmaIng(firmaIngRef.current.toData());
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            firmaIngRef.current.clear();
-                            saveFirmaIng(null);
-                          }}
-                        >
-                          {' '}
-                          Clear{' '}
-                        </button>
-                      </td>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                        <SignatureCanvas
-                          canvasProps={{ width: 450, height: 150 }}
-                          ref={firmaRecref}
-                          onEnd={() => {
-                            saveFirmaRecibe(firmaRecref.current.toData());
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            firmaRecref.current.clear();
-                            saveFirmaRecibe(null);
-                          }}
-                        >
-                          {' '}
-                          Clear{' '}
-                        </button>
-                      </td>
+                    <td colSpan={2}>
+                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                      <SignatureCanvas
+                        canvasProps={{ width: 450, height: 150 }}
+                        ref={firmaIngRef}
+                        onEnd={() => {
+                          saveFirmaIng(firmaIngRef.current.toData());
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          firmaIngRef.current.clear();
+                          saveFirmaIng(null);
+                        }}
+                      >
+                        {' '}
+                        Clear{' '}
+                      </button>
+                    </td>
+                    <td>
+                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                      <SignatureCanvas
+                        canvasProps={{ width: 450, height: 150 }}
+                        ref={firmaRecref}
+                        onEnd={() => {
+                          saveFirmaRecibe(firmaRecref.current.toData());
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          firmaRecref.current.clear();
+                          saveFirmaRecibe(null);
+                        }}
+                      >
+                        {' '}
+                        Clear{' '}
+                      </button>
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>NOMBRE: </label>
-                        <input
-                          className="input-reportparam"
-                          name="nombre_ingeniero"
-                          type="text"
-                          onChange={handleSave}
-                        />
-                      </td>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>NOMBRE: </label>
-                        <input
-                          className="input-reportparam"
-                          name="nombre_recibe"
-                          type="text"
-                          onChange={handleSave}
-                        />
-                      </td>
+                    <td colSpan={2} style={{ width: '450px' }}>
+                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
+                      <input
+                        name="nombre_ingeniero"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td style={{ width: '400px' }}>
+                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
+                      <input
+                        name="nombre_recibe"
+                        type="text"
+                        onChange={handleSave}
+                      />
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>CARGO: </label>
-                        <input
-                          className="input-reportparam"
-                          name="cargo_ingeniero"
-                          type="text"
-                          onChange={handleSave}
-                        />
-                      </td>
-                      <td>
-                        <label style={{ fontSize: '12px' }}>CARGO: </label>
-                        <input
-                          className="input-reportparam"
-                          name="cargo_recibe"
-                          type="text"
-                          onChange={handleSave}
-                        />
-                      </td>
+                    <td colSpan={2} style={{ width: '450px' }}>
+                      <label style={{ fontSize: '12px' }}>CARGO: </label>
+                      <input
+                        name="cargo_ingeniero"
+                        type="text"
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td style={{ width: '400px' }}>
+                      <label style={{ fontSize: '12px' }}>CARGO: </label>
+                      <input
+                        name="cargo_recibe"
+                        type="text"
+                        onChange={handleSave}
+                      />
                     </td>
                   </tr>
                 </tbody>

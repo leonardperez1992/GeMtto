@@ -11,28 +11,30 @@ body {
   box-sizing: border-box;
 }
 
-@media screen and (max-width: 100px) and (max-width: 600px) {
+@media screen and (min-width: 100px) and (max-width: 600px) {
   .contenedor {
     width: 100%;
-    padding: 1px;
-    margin-top: 1%;
     align-content: center;
+    text-align: center;
   }
 }
 
 @media screen and (min-width: 601px) {
   .contenedor {
-    width: 100%;
-    padding: 15px;
-    margin-top: 5%;
+    width: 90%;
     align-content: center;
+    text-align: center;
   }
 }
 
 .formulario {
-  background: #fff;
-  margin-top: 150px;
-  padding: 3px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 h1 {
@@ -49,6 +51,27 @@ p {
   text-align: center;
 }
 
+section {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+div {
+  align-items: center;
+  align-content: center;
+  text-align: center;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
 input[type='text'],
 input[type='password'] {
   font-size: 20px;
@@ -62,6 +85,13 @@ input[type='password'] {
   border: 1px solid #aaa;
   height: 90%;
   width: 90%;
+  text-align: center;
+}
+.input-contenedor-form {
+  margin: 15px;
+  border: 1px solid #aaa;
+  width: 300%;
+  height: 5%;
   text-align: center;
 }
 .icon {
@@ -82,9 +112,7 @@ input[type='password'] {
 .button:hover {
   background: cadetblue;
 }
-p {
-  text-align: center;
-}
+
 .button-contenedor {
   margin: 15px;
   height: 90%;
@@ -101,21 +129,78 @@ p {
   color: cadetblue;
 }
 
-table {
+.table {
   width: 100%;
-  border: 1px solid #000;
+  margin: 1rem;
+  border-collapse: collapse;
+  caption-side: bottom;
 }
 
-th,
+.tabla-reportes {
+  width: 100%;
+  margin: 1rem;
+  border-collapse: collapse;
+  caption-side: bottom;
+}
+
+.tabla-reportes td {
+  width: 2rem;
+  margin: 2rem;
+  border-collapse: collapse;
+  caption-side: bottom;
+}
+
+.tabla-reportes th {
+  width: 2rem;
+  margin: 2rem;
+  border-collapse: collapse;
+  caption-side: bottom;
+}
+
+.tabla-reporte {
+  width: 100%;
+  margin: 1rem;
+  border-collapse: collapse;
+}
+
+.tabla-reporte td {
+  width: 2em;
+  margin: 2rem;
+}
+
+.tabla-reporte th {
+  width: 2em;
+  margin: 2rem;
+}
+
+thead {
+  background-color: rgb(0, 74, 116);
+  color: white;
+}
+
+th {
+  background-color: rgb(0, 74, 116);
+  color: white;
+  width: 100%;
+  height: 100%;
+  font-size: 70%;
+  padding: 5px;
+}
+
 td {
   width: 100%;
   height: 100%;
   text-align: left;
-  vertical-align: top;
-  border: 1px solid #000;
-  border-spacing: 0;
-  padding: auto;
+  border: 1px solid #626060;
   font-size: 70%;
+  padding: 5px;
+  table-layout: auto;
+  background-color: white;
+  color: black;
+}
+
+tr {
+  text-align: center;
 }
 
 .th-reporte {
@@ -124,13 +209,7 @@ td {
   text-align: center;
   vertical-align: top;
   border: 1px solid #000;
-  padding: 10px;
   font-size: 11px;
-}
-
-thead {
-  background-color: #003785;
-  color: white;
 }
 
 .imagen {
@@ -182,15 +261,17 @@ thead {
   background-color: white;
   padding: 10px;
   color: black;
+  width: 90%;
 }
 
 .nav-list {
   display: flex;
   margin: 0;
-  padding: 0;
+  padding: 10px;
   color: black;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
 .nav-list li {
@@ -198,9 +279,14 @@ thead {
   border: 1px inset #000;
   border-radius: 10px;
   background-color: aliceblue;
+  padding: 10px;
 }
-.nav-list a {
-  text-decoration: none;
+
+li,
+a {
+  width: 100%;
+  text-align: center;
+  text-wrap: nowrap;
   color: black;
 }
 
@@ -230,8 +316,40 @@ thead {
   text-align: center;
 }
 
-.th-report {
-  background-color: #4169e1;
-  color: white;
+.input-form {
+  width: 200px;
+  height: 50px;
+}
+
+.div-form {
+  display: flex;
+  align-items: center;
+}
+
+.form-select {
+  width: 90%;
+  font-size: larger;
+  border: #ced4da;
   text-align: center;
+  color: #777676;
+}
+
+.div-buscar {
+  width: 100%;
+  margin: 10;
+  display: flexbox;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  vertical-align: top;
+}
+
+.input-buscar {
+  width: 20%;
+  border: 1px solid gray;
+  margin: 5px;
+  border-radius: 5px;
+  height: 10%;
+  font-size: larger;
+  padding: 1%;
 }

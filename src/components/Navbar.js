@@ -17,7 +17,7 @@ function Navbar() {
             alt=""
             className="imagen"
           />
-          <div>
+          <div className="contenedor">
             <ul className="nav-list">
               {user?.rol === 'admin' && (
                 <div>
@@ -33,6 +33,11 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
+                      <Link to="/inventarioua" className="nav-link">
+                        Inventario
+                      </Link>
+                    </li>
+                    <li>
                       <Link to="/reportes" className="nav-link">
                         Reportes
                       </Link>
@@ -42,11 +47,7 @@ function Navbar() {
                         Firmar Reportes
                       </Link>
                     </li>
-                    <li>
-                      <Link to="/inventarioua" className="nav-link">
-                        Inventario
-                      </Link>
-                    </li>
+
                     <li>
                       <Link to="/crearips" className="nav-link">
                         Crear Ips

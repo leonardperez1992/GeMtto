@@ -37,54 +37,46 @@ function CrearIps() {
     }
   };
   return (
-    <div>
-      <main className="flex-shrink-0">
+    <div className="contenedor">
+      <main>
         {/*<!-- Features section-->*/}
-        <section className="py-2" id="features">
-          <div className="container px-5 my-10">
-            <div className="py-2 text-center">
-              <div className="container px-5 my-5">
-                <div className="row gx-5 justify-content-center">
-                  <div className="col-lg-10 col-xl-7">
-                    <div className="text-center">
-                      {/* < className="formulario" onSubmit={register}> */}
-                      <h1>Crear Institución Prestadora de Salud</h1>
-                      <div className="contenedor">
-                        <div className="input-contenedor">
-                          <input
-                            name="ips"
-                            type="text"
-                            placeholder="IPS"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="nit"
-                            type="text"
-                            placeholder="Nit"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="ciudad"
-                            type="text"
-                            placeholder="ciudad"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <input
-                          type="button"
-                          value="Crear"
-                          className="button"
-                          onClick={CreateIps}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <section>
+          <div className="formulario">
+            <h1>Crear Institución Prestadora de Salud</h1>
+            <div className="div-form">
+              <div className="input-contenedor">
+                <input
+                  className="input-form"
+                  name="ips"
+                  type="text"
+                  placeholder="IPS"
+                  onChange={handleSave}
+                />
               </div>
+              <div className="input-contenedor">
+                <input
+                  className="input-form"
+                  name="nit"
+                  type="text"
+                  placeholder="Nit"
+                  onChange={handleSave}
+                />
+              </div>
+              <div className="input-contenedor">
+                <input
+                  className="input-form"
+                  name="ciudad"
+                  type="text"
+                  placeholder="ciudad"
+                  onChange={handleSave}
+                />
+              </div>
+              <input
+                type="button"
+                value="Crear"
+                className="button"
+                onClick={CreateIps}
+              />
             </div>
           </div>
         </section>

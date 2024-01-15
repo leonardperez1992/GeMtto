@@ -69,120 +69,108 @@ function CreateInventary() {
   };
   return (
     <div>
-      <main className="flex-shrink-0">
-        {/*<!-- Features section-->*/}
-        <section className="py-2" id="features">
-          <div className="container px-5 my-10">
-            <div className="py-2 text-center">
-              <div className="container px-5 my-5">
-                <div className="row gx-5 justify-content-center">
-                  <div className="col-lg-10 col-xl-7">
-                    <div className="text-center">
-                      {/* < className="formulario" onSubmit={register}> */}
-                      <h1>Agregar Equipo</h1>
-                      <div className="contenedor">
-                        <div className="input-contenedor">
-                          <input
-                            name="equipo"
-                            type="text"
-                            placeholder="Equipo"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="marca"
-                            type="text"
-                            placeholder="Marca"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="modelo"
-                            type="text"
-                            placeholder="Modelo"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="serie"
-                            type="text"
-                            placeholder="Serie"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <select
-                            className="form-select"
-                            aria-label="select example"
-                            onChange={function (e) {
-                              setIps(e.target.value);
-                            }}
-                          >
-                            <option value={''}>
-                              Seleccione la Institución
-                            </option>
-                            {ipss.map(function (value, index) {
-                              return (
-                                <option key={index} value={value._id}>
-                                  {value.ips}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="servicio"
-                            type="text"
-                            placeholder="Servicio"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="ubicacion"
-                            type="text"
-                            placeholder="Ubicación"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="registro_invima"
-                            type="text"
-                            placeholder="Registro Invima"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="riesgo"
-                            type="text"
-                            placeholder="Riesgo"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <div className="input-contenedor">
-                          <input
-                            name="responsable"
-                            type="text"
-                            placeholder="Responsable"
-                            onChange={handleSave}
-                          />
-                        </div>
-                        <input
-                          type="button"
-                          value="Crear"
-                          className="button"
-                          onClick={CreateServ}
-                        />
-                      </div>
-                    </div>
-                  </div>
+      <main>
+        <section>
+          <div>
+            <div className="contenedor">
+              <h1>Agregar Equipo</h1>
+              <div className="contenedor">
+                <div className="input-contenedor-form">
+                  <input
+                    name="equipo"
+                    type="text"
+                    placeholder="Equipo"
+                    onChange={handleSave}
+                  />
                 </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="marca"
+                    type="text"
+                    placeholder="Marca"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="modelo"
+                    type="text"
+                    placeholder="Modelo"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="serie"
+                    type="text"
+                    placeholder="Serie"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <select
+                    className="form-select"
+                    aria-label="select example"
+                    onChange={function (e) {
+                      setIps(e.target.value);
+                    }}
+                  >
+                    <option value={''}>Seleccione la Institución</option>
+                    {ipss.map(function (value, index) {
+                      return (
+                        <option key={index} value={value._id}>
+                          {value.ips}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="servicio"
+                    type="text"
+                    placeholder="Servicio"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="ubicacion"
+                    type="text"
+                    placeholder="Ubicación"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="registro_invima"
+                    type="text"
+                    placeholder="Registro Invima"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="riesgo"
+                    type="text"
+                    placeholder="Riesgo"
+                    onChange={handleSave}
+                  />
+                </div>
+                <div className="input-contenedor-form">
+                  <input
+                    name="responsable"
+                    type="text"
+                    placeholder="Responsable"
+                    onChange={handleSave}
+                  />
+                </div>
+                <input
+                  type="button"
+                  value="Crear"
+                  className="button"
+                  onClick={CreateServ}
+                />
               </div>
             </div>
           </div>

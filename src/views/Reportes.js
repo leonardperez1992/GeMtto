@@ -36,37 +36,21 @@ function Reportes() {
     );
   }
   return (
-    <div>
-      <main className="flex-shrink-0">
+    <div className="contenedor">
+      <main>
         <section>
-          <div className="panel-body" style={{ margin: '1%' }}>
-            <div className="d-flex justify-content-center fw-bolder">
-              <h3>Listado de Reportes</h3>
-            </div>
+          <div>
             <div>
-              <div
-                style={{
-                  width: '20%',
-                  margin: 10,
-                }}
-              >
-                <h4>Buscar:</h4>
+              <div className="div-buscar">
+                <label>Buscar:</label>
                 <input
-                  style={{
-                    width: '100%',
-                    borderWidth: 1,
-                    margin: 5,
-                    borderRadius: 10,
-                    borderStyle: 'solid',
-                    height: 43,
-                  }}
+                  className="input-buscar"
                   value={buscar}
-                  type="text"
                   placeholder="Digite la serie"
                   onChange={handleSave}
                 />
               </div>
-              <table className="table">
+              <table className="tabla-reportes">
                 <thead>
                   <tr>
                     <th>Nº REPORTE</th>

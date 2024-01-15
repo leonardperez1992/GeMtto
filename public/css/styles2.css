@@ -11,20 +11,10 @@ body {
   box-sizing: border-box;
 }
 
-@media screen and (min-width: 100px) and (max-width: 600px) {
-  .contenedor {
-    width: 100%;
-    align-content: center;
-    text-align: center;
-  }
-}
-
-@media screen and (min-width: 601px) {
-  .contenedor {
-    width: 90%;
-    align-content: center;
-    text-align: center;
-  }
+.contenedor {
+  width: 100%;
+  align-content: center;
+  text-align: center;
 }
 
 .formulario {
@@ -67,7 +57,7 @@ div {
   align-items: center;
   align-content: center;
   text-align: center;
-  padding: 10px;
+  padding: 1em;
   display: flex;
   flex-direction: column;
 }

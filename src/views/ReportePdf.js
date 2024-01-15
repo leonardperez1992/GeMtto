@@ -216,7 +216,9 @@ function ReportePdf() {
                     </tr>
                     <tr>
                       <td>PARÁMETRO</td>
-                      <td colSpan={2}>VALOR PROGRAMADO</td>
+                      <td colSpan={2} style={{ width: '200%' }}>
+                        VALOR PROGRAMADO
+                      </td>
                       <td>VALOR MEDIDO</td>
                     </tr>
                     <tr>

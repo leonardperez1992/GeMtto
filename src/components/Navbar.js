@@ -28,11 +28,6 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link to="/createinventary" className="nav-link">
-                        Añadir equipo
-                      </Link>
-                    </li>
-                    <li>
                       <Link to="/inventarioua" className="nav-link">
                         Inventario
                       </Link>
@@ -57,6 +52,11 @@ function Navbar() {
                         Crear Ips
                       </Link>
                     </li>
+                    <li className="nav-item">
+                      <Link to="/" className="nav-link" onClick={logout}>
+                        Cerrar Sesión
+                      </Link>
+                    </li>
                   </ul>
                 </div>
               )}
@@ -68,17 +68,13 @@ function Navbar() {
                         Servicios
                       </Link>
                     </li>
+                    <li className="nav-item">
+                      <Link to="/" className="nav-link" onClick={logout}>
+                        Cerrar Sesión
+                      </Link>
+                    </li>
                   </ul>
                 </div>
-              )}
-              {user ? (
-                <li className="nav-item">
-                  <Link to="/" className="nav-link" onClick={logout}>
-                    Cerrar Sesión
-                  </Link>
-                </li>
-              ) : (
-                <div className="container"></div>
               )}
             </ul>
           </div>

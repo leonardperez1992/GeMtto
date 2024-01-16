@@ -74,7 +74,7 @@ function CreateInventary() {
           <div>
             <div className="contenedor">
               <h1>Agregar Equipo</h1>
-              <div className="contenedor">
+              <div className="div-form">
                 <div className="input-contenedor-form">
                   <input
                     name="equipo"

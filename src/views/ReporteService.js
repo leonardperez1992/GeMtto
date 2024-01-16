@@ -143,7 +143,7 @@ function ReporteService() {
       serie: equipo.serie,
       inventario: equipo.inventario,
       problema_reportado: reporte.problema_reportado,
-      desc_servicio: actMto,
+      desc_servicio: actMto || reporte.desc_servicio,
       cantidad1: reporte.cantidad1,
       descripcion1: reporte.descripcion1,
       valor1: reporte.valor1,
@@ -177,6 +177,7 @@ function ReporteService() {
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
+    console.log(body);
     if (!body.equipo) {
       alert('Por favor diligencie todos los campos.');
     } else {
@@ -197,17 +198,14 @@ function ReporteService() {
 
   return (
     <div className="contenedor">
-      <main className="flex-shrink-0">
+      <main>
         <section>
-          <div
-            className="panel-body"
-            style={{ margin: '10%', paddingBlockEnd: '5%' }}
-          >
+          <div>
             <div>
-              <table className="table" id="tablaDestino">
+              <table className="tabla-reporte">
                 <thead>
                   <tr>
-                    <td style={{ backgroundColor: 'white', width: '30%' }}>
+                    <td colSpan={2} style={{ backgroundColor: 'white' }}>
                       <img
                         src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                         alt=""
@@ -241,15 +239,15 @@ function ReporteService() {
                     </td>
                   </tr>
                 </thead>
-                <tbody style={{ backgroundColor: 'white' }}>
+                <tbody>
                   <tr>
-                    <th colSpan={3}>INFORMACION DE LA INSTITUCIÓN</th>
+                    <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
                   </tr>
                   <tr>
                     <td colSpan={2}>
                       <label>IPS/CLIENTE: {equipo?.institucion} </label>
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <label>FECHA: </label>
                       <input
                         style={{ fontSize: '14px' }}
@@ -263,7 +261,7 @@ function ReporteService() {
                     <td colSpan={2}>
                       <label>SERVICIO: {equipo?.servicio} </label>
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <label>CIUDAD: </label>
                       <select
                         className="select"
@@ -284,63 +282,61 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>TIPO DE SERVICIO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={3}>
-                      <td style={{ width: '200px' }}>
-                        <input
-                          name="tipo_servicio"
-                          type="radio"
-                          value="MTTO PREVENTIVO"
-                          onChange={handleSave}
-                        ></input>
-                        <label> MTTO PREVENTIVO</label>
-                      </td>
-                      <td style={{ width: '200px' }}>
-                        <input
-                          name="tipo_servicio"
-                          type="radio"
-                          value="MTTO CORRECTIVO"
-                          onChange={handleSave}
-                        ></input>
-                        <label> MTTO CORRECTIVO</label>
-                      </td>
-                      <td style={{ width: '200px' }}>
-                        <input
-                          name="tipo_servicio"
-                          type="radio"
-                          value="INSTALACION"
-                          onChange={handleSave}
-                        ></input>
-                        <label> INSTALACIÓN</label>
-                      </td>
-                      <td style={{ width: '200px' }}>
-                        <input
-                          name="tipo_servicio"
-                          type="radio"
-                          value="OTRO"
-                          onChange={handleSave}
-                        ></input>
-                        <label> OTRO </label>
-                      </td>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={3}>INFORMACION DEL EQUIPO</th>
+                    <th colSpan={4}>TIPO DE SERVICIO</th>
                   </tr>
                   <tr>
                     <td>
+                      <input
+                        name="tipo_servicio"
+                        type="radio"
+                        value="MTTO PREVENTIVO"
+                        onChange={handleSave}
+                      ></input>
+                      <label> MTTO PREVENTIVO</label>
+                    </td>
+                    <td>
+                      <input
+                        name="tipo_servicio"
+                        type="radio"
+                        value="MTTO CORRECTIVO"
+                        onChange={handleSave}
+                      ></input>
+                      <label> MTTO CORRECTIVO</label>
+                    </td>
+                    <td>
+                      <input
+                        name="tipo_servicio"
+                        type="radio"
+                        value="INSTALACION"
+                        onChange={handleSave}
+                      ></input>
+                      <label> INSTALACIÓN</label>
+                    </td>
+                    <td>
+                      <input
+                        name="tipo_servicio"
+                        type="radio"
+                        value="OTRO"
+                        onChange={handleSave}
+                      ></input>
+                      <label> OTRO </label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th colSpan={4}>INFORMACION DEL EQUIPO</th>
+                  </tr>
+                  <tr>
+                    <td colSpan={2}>
                       <label>EQUIPO: {equipo?.equipo} </label>
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <label>MARCA: {equipo?.marca} </label>
                     </td>
+                  </tr>
+                  <tr>
                     <td>
                       <label>MODELO: {equipo?.modelo} </label>
                     </td>
-                  </tr>
-                  <tr>
                     <td colSpan={2} style={{ backgroundColor: 'white' }}>
                       <label>SERIE: {equipo?.serie} </label>
                     </td>
@@ -349,23 +345,21 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>PROBLEMA REPORTADO POR EL CLIENTE</th>
+                    <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <input
-                        style={{ width: '100%' }}
+                    <td colSpan={4}>
+                      <textarea
                         name="problema_reportado"
-                        type="text"
                         onChange={handleSave}
-                      />
+                      ></textarea>
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>DESCRIPCION DEL SERVICIO</th>
+                    <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
+                    <td colSpan={4}>
                       <select
                         className="select"
                         aria-label="select example"
@@ -373,7 +367,9 @@ function ReporteService() {
                           setActmto(e.target.value);
                         }}
                       >
-                        <option value={''}>Seleccione</option>
+                        <option value={''}>
+                          Seleccione si es un Mantenimiento Preventivo
+                        </option>
                         {actMtos.map(function (value, index) {
                           return (
                             <option key={index} value={value.actividades}>
@@ -382,17 +378,21 @@ function ReporteService() {
                           );
                         })}
                       </select>
+                      <textarea
+                        name="desc_servicio"
+                        onChange={handleSave}
+                      ></textarea>
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>
+                    <th colSpan={4}>
                       REPUESTOS, INSUMOS, MATERIALES EMPLEADOS
                     </th>
                   </tr>
                   <tr>
-                    <td style={{ textAlign: 'center' }}>CANTIDAD</td>
-                    <td style={{ textAlign: 'center' }}>DESCRIPCION</td>
-                    <td style={{ textAlign: 'center' }}>VALOR</td>
+                    <td>CANTIDAD</td>
+                    <td colSpan={2}>DESCRIPCION</td>
+                    <td>VALOR</td>
                   </tr>
                   <tr>
                     <td>
@@ -403,7 +403,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="descripcion1"
@@ -429,7 +429,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="descripcion2"
@@ -455,7 +455,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="descripcion3"
@@ -481,7 +481,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="descripcion4"
@@ -499,12 +499,12 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>VERIFICACION DE PARAMETROS</th>
+                    <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
                   </tr>
                   <tr>
-                    <th style={{ textAlign: 'center' }}>PARÁMETRO</th>
-                    <th style={{ textAlign: 'center' }}>VALOR PROGRAMADO</th>
-                    <th style={{ textAlign: 'center' }}>VALOR MEDIDO</th>
+                    <td>PARÁMETRO</td>
+                    <td colSpan={2}>VALOR PROGRAMADO</td>
+                    <td>VALOR MEDIDO</td>
                   </tr>
                   <tr>
                     <td>
@@ -515,7 +515,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="valor_programado1"
@@ -541,7 +541,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="valor_programado2"
@@ -567,7 +567,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="valor_programado3"
@@ -593,7 +593,7 @@ function ReporteService() {
                         onChange={handleSave}
                       />
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <input
                         className="input-reportparam"
                         name="valor_programado4"
@@ -611,20 +611,18 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>OBSERVACIONES</th>
+                    <th colSpan={4}>OBSERVACIONES</th>
                   </tr>
                   <tr>
-                    <td colSpan={3}>
-                      <input
-                        style={{ width: '100%' }}
+                    <td colSpan={4}>
+                      <textarea
                         name="observaciones"
-                        type="text"
                         onChange={handleSave}
-                      />
+                      ></textarea>
                     </td>
                   </tr>
                   <tr>
-                    <th colSpan={3}>ESTADO FINAL DEL EQUIPO</th>
+                    <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
                   </tr>
                   <tr>
                     <td>
@@ -634,7 +632,7 @@ function ReporteService() {
                         value="EQUIPO FUNCIONANDO CORRECTAMENTE"
                         onChange={handleSave}
                       />
-                      EQUIPO FUNCIONANDO CORRECTAMENTE
+                      FUNCIONANDO CORRECTAMENTE
                     </td>
                     <td>
                       <input
@@ -643,7 +641,7 @@ function ReporteService() {
                         value="EQUIPO EN ESPERA DE REPUESTOS "
                         onChange={handleSave}
                       />
-                      EQUIPO EN ESPERA DE REPUESTOS
+                      EN ESPERA DE REPUESTO
                     </td>
                     <td>
                       <input
@@ -652,26 +650,21 @@ function ReporteService() {
                         value="EQUIPO FUERA DE SERVICIO"
                         onChange={handleSave}
                       />
-                      EQUIPO FUERA DE SERVICIO
+                      FUERA DE SERVICIO
+                    </td>
+                    <td>
+                      <input
+                        name="estado_final"
+                        type="radio"
+                        value="EQUIPO PARA BAJA"
+                        onChange={handleSave}
+                      />
+                      EQUIPO PARA BAJA
                     </td>
                   </tr>
                   <tr>
-                    <th>INGENIERO/TECNICO</th>
-                    <th
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                      }}
-                    ></th>
-                    <th
-                      style={{
-                        backgroundColor: 'rgb(0, 74, 116)',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      RECIBÍ A SATISFACCION
-                    </th>
+                    <th colSpan={2}>INGENIERO/TECNICO</th>
+                    <th colSpan={2}>RECIBÍ A SATISFACCION</th>
                   </tr>
                   <tr>
                     <td colSpan={2}>
@@ -690,10 +683,10 @@ function ReporteService() {
                         }}
                       >
                         {' '}
-                        Clear{' '}
+                        Limpiar{' '}
                       </button>
                     </td>
-                    <td>
+                    <td colSpan={2}>
                       <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       <SignatureCanvas
                         canvasProps={{ width: 450, height: 150 }}
@@ -709,22 +702,24 @@ function ReporteService() {
                         }}
                       >
                         {' '}
-                        Clear{' '}
+                        Limpiar{' '}
                       </button>
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={2} style={{ width: '450px' }}>
-                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
+                    <td colSpan={2}>
+                      <label>NOMBRE: </label>
                       <input
+                        className="input-reportparam"
                         name="nombre_ingeniero"
                         type="text"
                         onChange={handleSave}
                       />
                     </td>
-                    <td style={{ width: '400px' }}>
-                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
+                    <td colSpan={2}>
+                      <label>NOMBRE: </label>
                       <input
+                        className="input-reportparam"
                         name="nombre_recibe"
                         type="text"
                         onChange={handleSave}
@@ -732,17 +727,19 @@ function ReporteService() {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={2} style={{ width: '450px' }}>
-                      <label style={{ fontSize: '12px' }}>CARGO: </label>
+                    <td colSpan={2}>
+                      <label>CARGO: </label>
                       <input
+                        className="input-reportparam"
                         name="cargo_ingeniero"
                         type="text"
                         onChange={handleSave}
                       />
                     </td>
-                    <td style={{ width: '400px' }}>
-                      <label style={{ fontSize: '12px' }}>CARGO: </label>
+                    <td colSpan={2}>
+                      <label>CARGO: </label>
                       <input
+                        className="input-reportparam"
                         name="cargo_recibe"
                         type="text"
                         onChange={handleSave}

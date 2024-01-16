@@ -140,7 +140,7 @@ function FirmarReportes() {
                         }}
                       >
                         {' '}
-                        Clear{' '}
+                        Limpiar{' '}
                       </button>
                     </td>
                     <td>
@@ -159,7 +159,7 @@ function FirmarReportes() {
                         }}
                       >
                         {' '}
-                        Clear{' '}
+                        Limpiar{' '}
                       </button>
                     </td>
                   </tr>

@@ -22,11 +22,10 @@ function Login() {
   };
 
   return (
-    <div>
-      <div className="contenedor">
+    <div className="contenedor">
+      <div className="div-form">
         <h2>Iniciar Sesión</h2>
         <div className="input-contenedor">
-          <i className="fas fa-envelope icon"></i>
           <input
             name="email"
             type="text"
@@ -35,7 +34,6 @@ function Login() {
           />
         </div>
         <div className="input-contenedor">
-          <i className="fas fa-key icon"></i>
           <input
             name="password"
             type="password"

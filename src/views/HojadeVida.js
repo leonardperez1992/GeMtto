@@ -12,6 +12,7 @@ function HojaDeVida() {
   const [ficha, setFicha] = useState([]);
   const [reportes, setReportes] = useState([]);
   const [imagen, setImagen] = useState([]);
+  console.log(imagen);
 
   const obtenerEquipos = async (id) => {
     const response = await request({
@@ -58,7 +59,6 @@ function HojaDeVida() {
     let idEquipo = queryParameters.get('id');
     let modelo = queryParameters.get('modelo');
     let serie = queryParameters.get('serie');
-    console.log(serie);
     if (!idEquipo || !modelo) {
       alert('Por favor Seleccione un equipo en la pestaña de Inventario');
     }
@@ -66,8 +66,6 @@ function HojaDeVida() {
     obtenerFicha(modelo);
     obtenerReportes(serie);
   }, []);
-  console.log(ficha);
-  console.log(reportes);
 
   return (
     <div className="contenedor">

@@ -110,6 +110,13 @@ function Inventario() {
                           >
                             Reporte
                           </Link>
+                          <br></br>
+                          <Link
+                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}`}
+                            className="nav-link"
+                          >
+                            Hoja de Vida
+                          </Link>
                         </td>
                       </tr>
                     );

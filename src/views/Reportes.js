@@ -41,6 +41,22 @@ function Reportes() {
         <section>
           <div>
             <div>
+              <p>
+                <Link
+                  style={{
+                    fontSize: '25px',
+                    border: '2px solid gray',
+                    width: '100px',
+                    color: 'red',
+                    padding: '10px',
+                    borderRadius: '10px',
+                  }}
+                  to="/firmareportes"
+                  className="link"
+                >
+                  ¡Firmar Reportes!
+                </Link>
+              </p>
               <div className="div-buscar">
                 <label>Buscar:</label>
                 <input

@@ -22,7 +22,7 @@ function Login() {
   };
 
   return (
-    <div className="contenedor">
+    <div>
       <div className="div-form">
         <h2>Iniciar Sesión</h2>
         <div className="input-contenedor">

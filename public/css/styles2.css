@@ -383,3 +383,13 @@ textarea {
   padding: 0;
   margin: 0;
 }
+
+.td-hv1 {
+  background-color: '#A5C9EA';
+  font-weight: 'bold';
+}
+
+.td-hv2 {
+  font-style: 'italic';
+  text-align: 'center';
+}

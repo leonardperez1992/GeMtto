@@ -13,6 +13,8 @@ import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
 import FirmarReportes from './views/FirmarReportes';
 import ReportePdf from './views/ReportePdf';
+import HojaDeVida from './views/HojadeVida';
+import FichaTecnica from './views/FichaTecnica';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -39,6 +41,8 @@ const RouterContainer = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/inventarioua" element={<Inventario />} />
+          <Route path="/hojadevida" element={<HojaDeVida />} />
+          <Route path="/fichatecnica" element={<FichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
           <Route path="/reporte" element={<ReportePdf />} />

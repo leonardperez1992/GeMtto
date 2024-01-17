@@ -52,7 +52,7 @@ function ReportePdf() {
     }
   };
 
-  const obtenerEquipos = async (id) => {
+  const obtenerReporte = async (id) => {
     const response = await request({
       link: apiObtenerReporte,
       method: 'GET',
@@ -76,7 +76,7 @@ function ReportePdf() {
       alert('Por favor Seleccione un equipo en la pestaña de Reportes');
       window.location.href = './inventarioua';
     }
-    obtenerEquipos(idEquipo);
+    obtenerReporte(idEquipo);
   }, []);
 
   return (

@@ -11,6 +11,7 @@ function HojaDeVida() {
   const [equipo, setEquipo] = useState([]);
   const [ficha, setFicha] = useState([]);
   const [reportes, setReportes] = useState([]);
+  const [imagen, setImagen] = useState([]);
 
   const obtenerEquipos = async (id) => {
     const response = await request({
@@ -33,6 +34,7 @@ function HojaDeVida() {
     });
     if (response.success) {
       setFicha(response.ficha);
+      setImagen(response.ficha.imagen[0].data_url);
     } else {
       alert(`${response.message}`);
     }
@@ -142,7 +144,9 @@ function HojaDeVida() {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={2} rowSpan={7}></td>
+                    <td colSpan={2} rowSpan={7}>
+                      <img src={imagen} alt="" width="250" />
+                    </td>
                     <th>EQUIPO</th>
                     <td>{equipo?.equipo}</td>
                   </tr>

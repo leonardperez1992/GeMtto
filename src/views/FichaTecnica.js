@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { apiCrearFicha } from '../utils/api';
 import request from '../utils/request';
+import ImageUploading from 'react-images-uploading';
 
 function FichaTecnica() {
+  const [imagen, setImagen] = useState();
+  const maxNumber = 2;
+  console.log(imagen);
   const [ficha, setFicha] = useState({
+    imagen: '',
     marca: '',
     modelo: '',
     clas_biomedica: '',
@@ -35,6 +40,10 @@ function FichaTecnica() {
     });
   };
 
+  const onChange = (imageList, addUpdateIndex) => {
+    // data for submit
+    setImagen(imageList);
+  };
   const Create = async () => {
     if (!ficha) {
       alert('Por favor diligencie todos los campos.');
@@ -43,6 +52,7 @@ function FichaTecnica() {
       const response = await request({
         link: apiCrearFicha,
         body: {
+          imagen: imagen,
           marca: ficha.marca,
           modelo: ficha.modelo,
           clas_biomedica: ficha.clas_biomedica,
@@ -95,6 +105,58 @@ function FichaTecnica() {
                   1,2 INFORMACIÓN TÉCNICA
                 </td>
               </tr>
+              <tr>
+                <td>IMAGEN</td>
+                <td colSpan={3} rowSpan={3}>
+                  <ImageUploading
+                    multiple
+                    value={imagen}
+                    onChange={onChange}
+                    maxNumber={maxNumber}
+                    dataURLKey="data_url"
+                  >
+                    {({
+                      imageList,
+                      onImageUpload,
+                      onImageRemoveAll,
+                      onImageUpdate,
+                      onImageRemove,
+                      isDragging,
+                      dragProps,
+                    }) => (
+                      // write your building UI
+                      <div className="upload__image-wrapper">
+                        <button
+                          style={isDragging ? { color: 'red' } : undefined}
+                          onClick={onImageUpload}
+                          {...dragProps}
+                        >
+                          Click or Drop here
+                        </button>
+                        &nbsp;
+                        <button onClick={onImageRemoveAll}>
+                          Remove all images
+                        </button>
+                        {imageList.map((image, index) => (
+                          <div key={index} className="image-item">
+                            <img src={image['data_url']} alt="" width="100" />
+                            <div className="image-item__btn-wrapper">
+                              <button onClick={() => onImageUpdate(index)}>
+                                Update
+                              </button>
+                              <button onClick={() => onImageRemove(index)}>
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ImageUploading>
+                </td>
+              </tr>
+              <tr></tr>
+              <tr></tr>
               <tr>
                 <th>MARCA</th>
                 <td>

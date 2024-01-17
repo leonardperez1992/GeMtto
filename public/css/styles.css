@@ -383,6 +383,10 @@ tr {
   padding: 10px;
 }
 
+ul {
+  list-style: none;
+}
+
 li,
 a {
   width: 100%;

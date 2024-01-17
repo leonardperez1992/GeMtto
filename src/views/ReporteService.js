@@ -196,6 +196,8 @@ function ReporteService() {
     }
   };
 
+  console.log(reporte.fecha);
+
   return (
     <div className="contenedor">
       <main>

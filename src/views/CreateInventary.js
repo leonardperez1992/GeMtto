@@ -77,6 +77,7 @@ function CreateInventary() {
       }
     }
   };
+  console.log(inventary.fecha_fabricacion);
   return (
     <div>
       <main>
@@ -198,11 +199,19 @@ function CreateInventary() {
                   <tr>
                     <th>FECHA DE INSTALACIÓN</th>
                     <td>
-                      <input name="fecha_instalacion" onChange={handleSave} />
+                      <input
+                        name="fecha_instalacion"
+                        type="date"
+                        onChange={handleSave}
+                      />
                     </td>
                     <th>FECHA DE FABRICACIÓN</th>
                     <td>
-                      <input name="fecha_fabricacion" onChange={handleSave} />
+                      <input
+                        name="fecha_fabricacion"
+                        type="date"
+                        onChange={handleSave}
+                      />
                     </td>
                   </tr>
                   <tr>
@@ -217,7 +226,6 @@ function CreateInventary() {
                   </tr>
                 </tbody>
               </table>
-              <div className="input-contenedor-form"></div>
               <input
                 type="button"
                 value="Crear"

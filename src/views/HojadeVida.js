@@ -174,15 +174,15 @@ function HojaDeVida() {
                   </tr>
                   <tr>
                     <th>FORMA DE ADQUISICIÓN</th>
-                    <td></td>
+                    <td>{equipo?.forma_adquisicion}</td>
                     <th>FECHA DE INSTALACIÓN</th>
-                    <td></td>
+                    <td>{equipo?.fecha_instalacion}</td>
                   </tr>
                   <tr>
                     <th>FECHA DE FABRICACIÓN</th>
-                    <td></td>
+                    <td>{equipo?.fecha_fabricacion}</td>
                     <th>PERIODICIDAD DE MTTO</th>
-                    <td></td>
+                    <td>{equipo?.periodicidad}</td>
                   </tr>
                   <tr>
                     <td

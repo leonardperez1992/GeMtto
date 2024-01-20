@@ -1,18 +1,21 @@
-import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { apiInventario } from '../utils/api';
+import { apiObtenerEquiposIps } from '../utils/api';
 import request from '../utils/request';
+import { useSelector } from 'react-redux';
 
-function Inventario() {
+function InventarioUser() {
+  const user = useSelector((state) => state.user);
+  const ips = user.institucion;
   const [inventario, setInventario] = useState([]);
 
   const getInventario = async () => {
     const response = await request({
-      link: apiInventario,
+      link: apiObtenerEquiposIps,
       method: 'GET',
+      body: { ips },
     });
     if (response.success) {
-      setInventario(response.inventario);
+      setInventario(response.equipos);
     } else {
       alert(`Sin conexión con el Servidor ${response.message}`);
     }
@@ -80,7 +83,6 @@ function Inventario() {
                     <th>REG. INVIMA</th>
                     <th>RIESGO</th>
                     <th>RESPONSABLE</th>
-                    <th>ACCION</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -97,21 +99,6 @@ function Inventario() {
                         <td>{item?.registro_invima}</td>
                         <td>{item?.riesgo}</td>
                         <td>{item?.responsable}</td>
-                        <td>
-                          <Link
-                            to={`/reporteService?id=${item._id}`}
-                            className="nav-link"
-                          >
-                            Reporte
-                          </Link>
-                          <br></br>
-                          <Link
-                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}`}
-                            className="nav-link"
-                          >
-                            Hoja de Vida
-                          </Link>
-                        </td>
                       </tr>
                     );
                   })}
@@ -124,4 +111,4 @@ function Inventario() {
     </div>
   );
 }
-export default Inventario;
+export default InventarioUser;

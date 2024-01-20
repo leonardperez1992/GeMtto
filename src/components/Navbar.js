@@ -33,6 +33,11 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
+                      <Link to="/createinventary" className="nav-link">
+                        Agregar equipo
+                      </Link>
+                    </li>
+                    <li>
                       <Link to="/inventarioua" className="nav-link">
                         Inventario
                       </Link>
@@ -59,8 +64,8 @@ function Navbar() {
                 <div>
                   <ul className="nav-list">
                     <li className="nav-item">
-                      <Link to="/servicios" className="nav-link">
-                        Servicios
+                      <Link to="/inventariouser" className="nav-link">
+                        Inventario
                       </Link>
                     </li>
                     <li className="nav-item">

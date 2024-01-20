@@ -6,6 +6,7 @@ import Login from './views/Login';
 import Registro from './views/Registro';
 import Navbar from './components/Navbar';
 import Inventario from './views/Inventario';
+import InventarioUser from './views/InventarioUser';
 import CreateInventary from './views/CreateInventary';
 import ReporteService from './views/ReporteService';
 import CreateActMtto from './views/CreateActMtto';
@@ -41,6 +42,7 @@ const RouterContainer = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/inventarioua" element={<Inventario />} />
+          <Route path="/inventariouser" element={<InventarioUser />} />
           <Route path="/hojadevida" element={<HojaDeVida />} />
           <Route path="/fichatecnica" element={<FichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />

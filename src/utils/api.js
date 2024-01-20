@@ -6,6 +6,7 @@ export const apiAuth = baseUrl + '/auth';
 export const apiInventario = baseUrl + '/inventario';
 export const apiCreateInventario = apiInventario + '/createinventario';
 export const apiObtenerEquipo = apiInventario + '/obtenerequipo';
+export const apiObtenerEquiposIps = apiInventario + '/obtenerequiposips';
 export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';

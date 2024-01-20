@@ -99,7 +99,7 @@ function Registro() {
               <option value={''}>Seleccione la Institución</option>
               {ipss.map(function (value, index) {
                 return (
-                  <option key={index} value={value._id}>
+                  <option key={index} value={value.ips}>
                     {value.ips}
                   </option>
                 );

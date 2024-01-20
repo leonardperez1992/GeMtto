@@ -5,14 +5,14 @@ import { useSelector } from 'react-redux';
 
 function InventarioUser() {
   const user = useSelector((state) => state.user);
-  const ips = user.institucion;
+  const institucion = user.institucion;
   const [inventario, setInventario] = useState([]);
 
-  const getInventario = async () => {
+  const getInventario = async (institucion) => {
     const response = await request({
       link: apiObtenerEquiposIps,
       method: 'GET',
-      body: { ips },
+      body: { institucion },
     });
     if (response.success) {
       setInventario(response.equipos);
@@ -21,9 +21,12 @@ function InventarioUser() {
     }
   };
 
-  useEffect(function () {
-    getInventario();
-  }, []);
+  useEffect(
+    function () {
+      getInventario(institucion);
+    },
+    [institucion]
+  );
 
   const [buscar, setBuscar] = useState('');
 
@@ -32,6 +35,7 @@ function InventarioUser() {
   };
 
   var inventarios = {};
+
   if (!buscar) {
     inventarios = inventario;
   } else {

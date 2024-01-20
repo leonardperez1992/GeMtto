@@ -222,10 +222,11 @@ input[type='password'] {
 }
 
 .table {
-  width: 100%;
+  width: 90%;
   margin: 1rem;
   border-collapse: collapse;
   caption-side: bottom;
+  table-layout: auto;
 }
 
 .tabla-reportes {

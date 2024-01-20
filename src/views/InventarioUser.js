@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { apiObtenerEquiposIps } from '../utils/api';
 import request from '../utils/request';
 import { useSelector } from 'react-redux';
@@ -40,7 +41,7 @@ function InventarioUser() {
     inventarios = inventario;
   } else {
     inventarios = inventario.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase())
+      dato.servicio.toLowerCase().includes(buscar.toLowerCase())
     );
   }
   return (
@@ -70,7 +71,7 @@ function InventarioUser() {
                   }}
                   value={buscar}
                   type="text"
-                  placeholder="Digite la serie"
+                  placeholder="Digite el servicio"
                   onChange={handleSave}
                 />
               </div>
@@ -87,6 +88,7 @@ function InventarioUser() {
                     <th>REG. INVIMA</th>
                     <th>RIESGO</th>
                     <th>RESPONSABLE</th>
+                    <th>ACCION</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -103,6 +105,14 @@ function InventarioUser() {
                         <td>{item?.registro_invima}</td>
                         <td>{item?.riesgo}</td>
                         <td>{item?.responsable}</td>
+                        <td>
+                          <Link
+                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}`}
+                            className="nav-link"
+                          >
+                            Hoja de Vida
+                          </Link>
+                        </td>
                       </tr>
                     );
                   })}

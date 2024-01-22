@@ -281,6 +281,14 @@ function HojaDeVida() {
                   </tr>
                 </tbody>
               </table>
+              <li style={{ border: '1px solid black', borderRadius: '10px' }}>
+                <Link
+                  to={`/reportexterno?id=${equipo._id}`}
+                  className="nav-link"
+                >
+                  Agregar Reporte Externo
+                </Link>
+              </li>
               <table className="tabla-reporte-2">
                 <thead>
                   <tr>

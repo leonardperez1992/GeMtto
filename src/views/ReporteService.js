@@ -181,7 +181,6 @@ function ReporteService() {
     if (!body.equipo) {
       alert('Por favor diligencie todos los campos.');
     } else {
-      console.log(body);
       const response = await request({
         link: apiCreateReporte,
         body,
@@ -195,8 +194,6 @@ function ReporteService() {
       }
     }
   };
-
-  console.log(reporte.fecha);
 
   return (
     <div className="contenedor">

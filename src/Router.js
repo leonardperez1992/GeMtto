@@ -9,7 +9,6 @@ import Inventario from './views/Inventario';
 import InventarioUser from './views/InventarioUser';
 import CreateInventary from './views/CreateInventary';
 import ReporteService from './views/ReporteService';
-import ReporteExterno from './views/ReporteExterno';
 import CreateActMtto from './views/CreateActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
@@ -48,7 +47,6 @@ const RouterContainer = () => {
           <Route path="/fichatecnica" element={<FichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
-          <Route path="/reportexterno" element={<ReporteExterno />} />
           <Route path="/reporte" element={<ReportePdf />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/firmareportes" element={<FirmarReportes />} />

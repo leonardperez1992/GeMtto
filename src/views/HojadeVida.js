@@ -12,7 +12,6 @@ function HojaDeVida() {
   const [ficha, setFicha] = useState([]);
   const [reportes, setReportes] = useState([]);
   const [imagen, setImagen] = useState([]);
-  console.log(imagen);
 
   const obtenerEquipos = async (id) => {
     const response = await request({

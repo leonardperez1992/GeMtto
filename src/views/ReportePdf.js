@@ -242,6 +242,12 @@ function ReportePdf() {
                       <td>{reporte?.valor_medido3}</td>
                     </tr>
                     <tr>
+                      <th colSpan={4}>OBSERVACIONES</th>
+                    </tr>
+                    <tr>
+                      <td colSpan={4}>{reporte?.observaciones}</td>
+                    </tr>
+                    <tr>
                       <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
                     </tr>
                     <tr>

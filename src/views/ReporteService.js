@@ -7,6 +7,7 @@ import {
   apiIps,
 } from '../utils/api';
 import request from '../utils/request';
+import FormData from 'form-data';
 
 function ReporteService() {
   const [actMtos, setActMtos] = useState([]);
@@ -16,6 +17,13 @@ function ReporteService() {
   const [ciudad, setCiudad] = useState('');
   const [firmaIng, setFirmaIng] = useState('');
   const [firmaRecibe, setFirmaRecibe] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  console.log(selectedFile);
+
+  const handleFileUpload = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
 
   const firmaIngRef = useRef({});
   const firmaRecref = useRef({});
@@ -169,6 +177,7 @@ function ReporteService() {
       valor_programado4: reporte.valor_programado4,
       valor_medido4: reporte.valor_medido4,
       observaciones: reporte.observaciones,
+      file: selectedFile,
       estado_final: reporte.estado_final,
       firma_ingeniero: firmaIng,
       nombre_ingeniero: reporte.nombre_ingeniero,
@@ -188,7 +197,7 @@ function ReporteService() {
       });
       if (response.success) {
         alert('Reporte creado exitosamente');
-        window.location.href = './reportes';
+        // window.location.href = './reportes';
       } else {
         alert(`${response.message}`);
       }
@@ -613,11 +622,22 @@ function ReporteService() {
                     <th colSpan={4}>OBSERVACIONES</th>
                   </tr>
                   <tr>
-                    <td colSpan={4}>
+                    <td colSpan={2}>
                       <textarea
                         name="observaciones"
                         onChange={handleSave}
                       ></textarea>
+                    </td>
+                    <td colSpan={2}>
+                      <h3>Adjuntar archivo</h3>
+                      <form>
+                        <input
+                          name="archivo"
+                          type="file"
+                          onChange={handleFileUpload}
+                          enctype="multipart/form-data"
+                        />
+                      </form>
                     </td>
                   </tr>
                   <tr>

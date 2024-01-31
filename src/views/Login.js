@@ -7,7 +7,7 @@ function Login() {
   const dispatch = useDispatch();
 
   const [user, setUser] = useState({
-    email: '',
+    usuario: '',
     password: '',
   });
 
@@ -27,9 +27,9 @@ function Login() {
         <h2>Iniciar Sesión</h2>
         <div className="input-contenedor">
           <input
-            name="email"
+            name="usuario"
             type="text"
-            placeholder="Correo Electronico"
+            placeholder="Usuario"
             onChange={handleChange}
           />
         </div>

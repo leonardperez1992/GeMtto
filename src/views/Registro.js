@@ -18,7 +18,7 @@ function Registro() {
 
   const [user, setUser] = useState({
     username: '',
-    email: '',
+    usuario: '',
     password: '',
     institucion: '',
   });
@@ -35,14 +35,14 @@ function Registro() {
   };
 
   const register = async () => {
-    if (!user.email || !user.password || !user.username) {
+    if (!user.usuario || !user.password || !user.username) {
       alert('Por favor diligencie todos los campos.');
     } else {
       const response = await request({
         link: apiCreateUsers,
         body: {
           name: user.username,
-          email: user.email,
+          usuario: user.usuario,
           password: user.password,
           institucion: ips,
         },
@@ -73,9 +73,9 @@ function Registro() {
           <div className="input-contenedor">
             <i className="fas fa-envelope icon"></i>
             <input
-              name="email"
+              name="usuario"
               type="text"
-              placeholder="Correo Electronico"
+              placeholder="Usuario"
               onChange={handleSave}
             />
           </div>

@@ -12,12 +12,12 @@ export const updateUserName = (payload) => ({
   payload,
 });
 
-export const loginUser = ({ email, password }) => {
+export const loginUser = ({ usuario, password }) => {
   return async (dispatch) => {
     const response = await request({
       link: apiAuth,
       body: {
-        email,
+        usuario,
         password,
       },
       method: 'POST',

@@ -106,7 +106,7 @@ function Inventario() {
                           </Link>
                           <br></br>
                           <Link
-                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}`}
+                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}&institucion=${item.institucion}`}
                             className="nav-link"
                           >
                             Hoja de Vida

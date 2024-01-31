@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.1.67:3002/api'; //192.168.1.67 o 12
+const baseUrl = 'http://192.168.1.12:3002/api'; //192.168.1.67 o 12
 export const apiServicios = baseUrl + '/services';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
@@ -22,3 +22,4 @@ export const apiFirmarReportes = apiReportes + '/firmareporte';
 export const apiEliminarReportes = apiReportes + '/deletereporte';
 export const apiIps = baseUrl + '/ips';
 export const apiCreateIps = apiIps + '/createips';
+export const apiGetIps = apiIps + '/getips';

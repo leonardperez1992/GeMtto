@@ -4,6 +4,7 @@ import {
   apiObtenerEquipo,
   apiObtenerFicha,
   apiObtenerReportes,
+  apiGetIps,
 } from '../utils/api';
 import request from '../utils/request';
 
@@ -12,6 +13,7 @@ function HojaDeVida() {
   const [ficha, setFicha] = useState([]);
   const [reportes, setReportes] = useState([]);
   const [imagen, setImagen] = useState([]);
+  const [ips, setIps] = useState([]);
 
   const obtenerEquipos = async (id) => {
     const response = await request({
@@ -53,18 +55,35 @@ function HojaDeVida() {
     }
   };
 
+  const obtenerIps = async (ips) => {
+    const response = await request({
+      link: apiGetIps,
+      method: 'GET',
+      body: { ips },
+    });
+    if (response.success) {
+      setIps(response.institucion.logo[0].data_url);
+    } else {
+      alert(`${response.message}`);
+    }
+  };
+
   useEffect(function () {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');
     let modelo = queryParameters.get('modelo');
     let serie = queryParameters.get('serie');
+    let ips = queryParameters.get('institucion');
     if (!idEquipo || !modelo) {
       alert('Por favor Seleccione un equipo en la pestaña de Inventario');
     }
     obtenerEquipos(idEquipo);
     obtenerFicha(modelo);
     obtenerReportes(serie);
+    obtenerIps(ips);
   }, []);
+
+  console.log(ips);
 
   return (
     <div className="contenedor">
@@ -93,20 +112,8 @@ function HojaDeVida() {
                     >
                       HOJA DE VIDA DE EQUIPOS BIOMÉDICOS
                     </td>
-                    <td
-                      style={{
-                        backgroundColor: 'white',
-                        width: '30%',
-                        color: 'black',
-                        textAlign: 'left',
-                        fontSize: '15px',
-                      }}
-                    >
-                      <label>CÓDIGO:</label>
-                      <br></br>
-                      <label>VERSIÓN:</label>
-                      <br></br>
-                      <label>FECHA:</label>
+                    <td>
+                      <img src={ips} alt="" width="250" />
                     </td>
                   </tr>
                 </thead>

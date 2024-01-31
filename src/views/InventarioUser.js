@@ -107,7 +107,7 @@ function InventarioUser() {
                         <td>{item?.responsable}</td>
                         <td>
                           <Link
-                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}`}
+                            to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}&institucion=${item.institucion}`}
                             className="nav-link"
                           >
                             Hoja de Vida

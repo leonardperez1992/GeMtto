@@ -20,5 +20,5 @@ export const apiEliminarReportes = apiReportes + '/deletereporte';
 export const apiIps = baseUrl + '/ips';
 export const apiCreateIps = apiIps + '/createips';
 export const apiGetIps = apiIps + '/getips';
-export const apiFiles = baseUrl + '/files';
+export const apiFiles = baseUrl + '/files/get';
 export const apiSetFiles = apiFiles + '/in-local';

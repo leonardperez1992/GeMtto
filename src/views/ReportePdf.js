@@ -3,6 +3,7 @@ import { apiObtenerReporte, apiEliminarReportes } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import generatePDF, { Resolution } from 'react-to-pdf';
+import { Link } from 'react-router-dom';
 
 function ReportePdf() {
   const imgIng = useRef({});
@@ -245,7 +246,15 @@ function ReportePdf() {
                       <th colSpan={4}>OBSERVACIONES</th>
                     </tr>
                     <tr>
-                      <td colSpan={4}>{reporte?.observaciones}</td>
+                      <td colSpan={2}>{reporte?.observaciones}</td>
+                      <td colSpan={2}>
+                        <Link
+                          to={`/verpdf?id=${reporte?.numero_reporte}`}
+                          className="nav-link"
+                        >
+                          Ver
+                        </Link>
+                      </td>
                     </tr>
                     <tr>
                       <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>

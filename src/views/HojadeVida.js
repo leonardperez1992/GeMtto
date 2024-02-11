@@ -83,8 +83,6 @@ function HojaDeVida() {
     obtenerIps(ips);
   }, []);
 
-  console.log(ips);
-
   return (
     <div className="contenedor">
       <main>

@@ -1,13 +1,12 @@
 // eslint-disable-next-line import/no-anonymous-default-export
-export default async ({ link, body, method, file }) => {
+export default async ({ link, body, method }) => {
   try {
     let requestOptions = {
       body: null,
       headers: {
-        'Content-Type': 'application/json' || 'multipart/form-data',
+        'Content-Type': 'application/json',
       },
       method: method || (body ? 'POST' : 'GET'),
-      files: file,
     };
 
     if (body) {

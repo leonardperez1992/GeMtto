@@ -16,6 +16,7 @@ import FirmarReportes from './views/FirmarReportes';
 import ReportePdf from './views/ReportePdf';
 import HojaDeVida from './views/HojadeVida';
 import FichaTecnica from './views/FichaTecnica';
+import VerPdf from './views/VerPdf';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -52,6 +53,7 @@ const RouterContainer = () => {
           <Route path="/firmareportes" element={<FirmarReportes />} />
           <Route path="/createactmtto" element={<CreateActMtto />} />
           <Route path="/crearips" element={<CrearIps />} />
+          <Route path="/verpdf" element={<VerPdf />} />
         </Routes>
       </Router>
     </React.StrictMode>

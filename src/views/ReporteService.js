@@ -19,6 +19,7 @@ function ReporteService() {
   const [firmaIng, setFirmaIng] = useState('');
   const [firmaRecibe, setFirmaRecibe] = useState('');
   const [file, setFile] = useState();
+  const numReporte = new Date().valueOf();
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -29,13 +30,11 @@ function ReporteService() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('serie', equipo.serie);
-    // formData.append('fileName', file.name);
+    formData.append('numReporte', numReporte);
     const config = {
       headers: {
         'content-type': 'multipart/form-data',
       },
-      body: equipo.serie,
     };
     axios.post(apiSetFiles, formData, config).then((response) => {
       alert(response.data.message);
@@ -98,8 +97,6 @@ function ReporteService() {
     obtenerIps();
   }, []);
 
-  const numReporte = useState(new Date().valueOf());
-
   const [reporte, setReporte] = useState({
     numero_reporte: '',
     institucion: '',
@@ -156,7 +153,7 @@ function ReporteService() {
 
   const CreateReport = async () => {
     const body = {
-      numero_reporte: numReporte[0],
+      numero_reporte: numReporte,
       institucion: equipo.institucion,
       fecha: reporte.fecha,
       servicio: equipo.servicio,
@@ -638,18 +635,11 @@ function ReporteService() {
                     <th colSpan={4}>OBSERVACIONES</th>
                   </tr>
                   <tr>
-                    <td colSpan={2}>
+                    <td colSpan={4}>
                       <textarea
                         name="observaciones"
                         onChange={handleSave}
                       ></textarea>
-                    </td>
-                    <td colSpan={2}>
-                      <h3>Adjuntar archivo</h3>
-                      <form onSubmit={handleSubmit}>
-                        <input type="file" onChange={handleChange} />
-                        <button type="submit">Cargar Archivo</button>
-                      </form>
                     </td>
                   </tr>
                   <tr>
@@ -778,6 +768,15 @@ function ReporteService() {
                     </td>
                   </tr>
                 </tbody>
+                <tr>
+                  <td colSpan={1}>
+                    <h3>Adjuntar archivo</h3>
+                    <form onSubmit={handleSubmit}>
+                      <input type="file" onChange={handleChange} />
+                      <button type="submit">Cargar Archivo</button>
+                    </form>
+                  </td>
+                </tr>
               </table>
               <div className="button-contenedor">
                 <input

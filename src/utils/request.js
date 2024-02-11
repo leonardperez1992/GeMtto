@@ -7,7 +7,7 @@ export default async ({ link, body, method, file }) => {
         'Content-Type': 'application/json' || 'multipart/form-data',
       },
       method: method || (body ? 'POST' : 'GET'),
-      file: file,
+      files: file,
     };
 
     if (body) {

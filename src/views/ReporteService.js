@@ -5,9 +5,10 @@ import {
   apiActMtto,
   apiObtenerEquipo,
   apiIps,
+  apiSetFiles,
 } from '../utils/api';
 import request from '../utils/request';
-import FormData from 'form-data';
+import axios from 'axios';
 
 function ReporteService() {
   const [actMtos, setActMtos] = useState([]);
@@ -17,13 +18,29 @@ function ReporteService() {
   const [ciudad, setCiudad] = useState('');
   const [firmaIng, setFirmaIng] = useState('');
   const [firmaRecibe, setFirmaRecibe] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [file, setFile] = useState();
 
-  console.log(selectedFile);
+  function handleChange(event) {
+    setFile(event.target.files[0]);
+  }
 
-  const handleFileUpload = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('serie', equipo.serie);
+    // formData.append('fileName', file.name);
+    const config = {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+      body: equipo.serie,
+    };
+    axios.post(apiSetFiles, formData, config).then((response) => {
+      alert(response.data.message);
+    });
+  }
 
   const firmaIngRef = useRef({});
   const firmaRecref = useRef({});
@@ -177,7 +194,6 @@ function ReporteService() {
       valor_programado4: reporte.valor_programado4,
       valor_medido4: reporte.valor_medido4,
       observaciones: reporte.observaciones,
-      file: selectedFile,
       estado_final: reporte.estado_final,
       firma_ingeniero: firmaIng,
       nombre_ingeniero: reporte.nombre_ingeniero,
@@ -630,13 +646,9 @@ function ReporteService() {
                     </td>
                     <td colSpan={2}>
                       <h3>Adjuntar archivo</h3>
-                      <form>
-                        <input
-                          name="archivo"
-                          type="file"
-                          onChange={handleFileUpload}
-                          enctype="multipart/form-data"
-                        />
+                      <form onSubmit={handleSubmit}>
+                        <input type="file" onChange={handleChange} />
+                        <button type="submit">Cargar Archivo</button>
                       </form>
                     </td>
                   </tr>

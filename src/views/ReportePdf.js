@@ -263,16 +263,14 @@ function ReportePdf() {
                         <label style={{ fontSize: '12px' }}>FIRMA: </label>
                         <SignatureCanvas
                           ref={imgIng}
-                          canvasProps={{
-                            width: 450,
-                            height: 150,
-                          }}
+                          canvasProps={{ width: 450, height: 150 }}
                         />
                       </td>
                       <td colSpan={2}>
                         <SignatureCanvas
                           ref={imgRec}
                           canvasProps={{ width: 450, height: 150 }}
+                          onBegin={false}
                         />
                         <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       </td>

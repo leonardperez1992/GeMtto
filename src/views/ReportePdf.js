@@ -17,9 +17,9 @@ function ReportePdf() {
     resolution: Resolution.MEDIUM,
     page: {
       margin: {
-        top: 20,
+        top: 0,
         right: 5,
-        bottom: 10,
+        bottom: 0,
         left: 5,
       },
       format: 'government-letter',
@@ -156,7 +156,7 @@ function ReportePdf() {
                     </tr>
                     <tr>
                       <td colSpan={2}>
-                        <label>EQUIPO: {reporte?.marca} </label>
+                        <label>EQUIPO: {reporte?.equipo} </label>
                       </td>
                       <td colSpan={2}>
                         <label>MARCA: {reporte?.marca} </label>

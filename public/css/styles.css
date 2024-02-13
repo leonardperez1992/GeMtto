@@ -12,11 +12,18 @@ body {
   box-sizing: content-box;
 }
 
-@media screen and (min-width: 793px) {
+@media screen and (min-width: 1141px) {
   .contenedor {
     width: 100%;
     align-content: center;
     text-align: center;
+  }
+
+  .tabla-reporte {
+    width: 100%;
+    margin: 1rem;
+    border-collapse: collapse;
+    table-layout: fixed;
   }
 }
 
@@ -38,8 +45,8 @@ body {
     border-collapse: collapse;
     letter-spacing: 1px;
     white-space: nowrap;
-    table-layout: auto;
     text-wrap: nowrap;
+    table-layout: fixed;
   }
 
   th {
@@ -70,6 +77,7 @@ body {
     border-collapse: collapse;
     overflow: scroll;
     letter-spacing: 1px;
+    table-layout: fixed;
   }
 
   .tabla-reportes {
@@ -226,7 +234,7 @@ input[type='password'] {
   margin: 1rem;
   border-collapse: collapse;
   caption-side: bottom;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .tabla-reportes {
@@ -234,6 +242,7 @@ input[type='password'] {
   margin: 1rem;
   border-collapse: collapse;
   caption-side: bottom;
+  table-layout: fixed;
 }
 
 .tabla-reportes th {
@@ -256,6 +265,7 @@ input[type='password'] {
   width: 100%;
   margin: 1rem;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .tabla-reporte td {

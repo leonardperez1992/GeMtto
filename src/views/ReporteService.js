@@ -697,6 +697,20 @@ function ReporteService() {
                           saveFirmaIng(firmaIngRef.current.toData());
                         }}
                       />
+                    </td>
+                    <td colSpan={2}>
+                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                      <SignatureCanvas
+                        canvasProps={{ width: 450, height: 150 }}
+                        ref={firmaRecref}
+                        onEnd={() => {
+                          saveFirmaRecibe(firmaRecref.current.toData());
+                        }}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={2}>
                       <button
                         onClick={() => {
                           firmaIngRef.current.clear();
@@ -708,14 +722,7 @@ function ReporteService() {
                       </button>
                     </td>
                     <td colSpan={2}>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{ width: 450, height: 150 }}
-                        ref={firmaRecref}
-                        onEnd={() => {
-                          saveFirmaRecibe(firmaRecref.current.toData());
-                        }}
-                      />
+                      {' '}
                       <button
                         onClick={() => {
                           firmaRecref.current.clear();

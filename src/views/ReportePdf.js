@@ -110,16 +110,18 @@ function ReportePdf() {
                         <img
                           src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                           alt=""
-                          width="250"
+                          width="250px"
                         />
+                      </td>
+                      <td style={{ textAlign: 'center', fontWeight: 'bold' }}>
+                        REPORTE DE SERVICIO
                       </td>
                       <td
                         style={{
-                          fontSize: '120%',
+                          fontSize: '90%',
                           color: 'red',
-                          textAlign: 'center',
+                          textAlign: 'right',
                         }}
-                        colSpan={2}
                       >
                         Nº DE REPORTE: {reporte?.numero_reporte}{' '}
                       </td>
@@ -131,18 +133,22 @@ function ReportePdf() {
                     </tr>
                     <tr>
                       <td colSpan={2}>
-                        <label>IPS/CLINICA: {reporte?.institucion} </label>
+                        <label>IPS/CLINICA: </label>
+                        {reporte?.institucion}
                       </td>
                       <td colSpan={2}>
-                        <label>FECHA: {reporte?.fecha} </label>
+                        <label>FECHA: </label>
+                        {reporte?.fecha}
                       </td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
-                        <label>SERVICIO: {reporte?.servicio} </label>
+                        <label>SERVICIO: </label>
+                        {reporte?.servicio}
                       </td>
                       <td colSpan={2}>
-                        <label>CIUDAD: {reporte?.ciudad} </label>
+                        <label>CIUDAD: </label>
+                        {reporte?.ciudad}
                       </td>
                     </tr>
                     <tr>
@@ -156,18 +162,22 @@ function ReportePdf() {
                     </tr>
                     <tr>
                       <td colSpan={2}>
-                        <label>EQUIPO: {reporte?.equipo} </label>
+                        <label>EQUIPO: </label>
+                        {reporte?.equipo}
                       </td>
                       <td colSpan={2}>
-                        <label>MARCA: {reporte?.marca} </label>
+                        <label>MARCA: </label>
+                        {reporte?.marca}
                       </td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
-                        <label>MODELO: {reporte?.modelo} </label>
+                        <label>MODELO: </label>
+                        {reporte?.modelo}
                       </td>
                       <td colSpan={2}>
-                        <label>SERIE: {reporte?.serie} </label>
+                        <label>SERIE: </label>
+                        {reporte?.serie}
                       </td>
                     </tr>
                     <tr>
@@ -188,9 +198,15 @@ function ReportePdf() {
                       </th>
                     </tr>
                     <tr>
-                      <td>CANTIDAD</td>
-                      <td colSpan={2}>DESCRIPCION</td>
-                      <td>VALOR</td>
+                      <td>
+                        <label>CANTIDAD</label>
+                      </td>
+                      <td colSpan={2}>
+                        <label>DESCRIPCION</label>
+                      </td>
+                      <td>
+                        <label>VALOR</label>
+                      </td>
                     </tr>
                     <tr>
                       <td>{reporte?.cantidad1}</td>
@@ -216,11 +232,15 @@ function ReportePdf() {
                       <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
                     </tr>
                     <tr>
-                      <td>PARÁMETRO</td>
-                      <td colSpan={2} style={{ width: '200%' }}>
-                        VALOR PROGRAMADO
+                      <td>
+                        <label>PARÁMETRO</label>
                       </td>
-                      <td>VALOR MEDIDO</td>
+                      <td colSpan={2} style={{ width: '200%' }}>
+                        <label>VALOR PROGRAMADO</label>
+                      </td>
+                      <td>
+                        <label>VALOR MEDIDO</label>
+                      </td>
                     </tr>
                     <tr>
                       <td>{reporte?.parametro1}</td>
@@ -276,36 +296,40 @@ function ReportePdf() {
                         />
                       </td>
                       <td colSpan={2}>
+                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
                         <SignatureCanvas
                           ref={imgRec}
                           canvasProps={{ width: 450, height: 150 }}
                           onBegin={false}
                         />
-                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       </td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
                         <label style={{ fontSize: '12px', width: '100%' }}>
-                          NOMBRE: {reporte?.nombre_ingeniero}
+                          NOMBRE:
                         </label>
+                        {reporte?.nombre_ingeniero}
                       </td>
                       <td colSpan={2}>
                         <label style={{ fontSize: '12px', width: '100%' }}>
-                          NOMBRE: {reporte?.nombre_recibe}
+                          NOMBRE:
                         </label>
+                        {reporte?.nombre_recibe}
                       </td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
                         <label style={{ fontSize: '12px', width: '100%' }}>
-                          CARGO: {reporte?.cargo_ingeniero}
+                          CARGO:
                         </label>
+                        {reporte?.cargo_ingeniero}
                       </td>
                       <td colSpan={2}>
                         <label style={{ fontSize: '12px', width: '100%' }}>
-                          CARGO: {reporte?.cargo_recibe}
+                          CARGO:
                         </label>
+                        {reporte?.cargo_recibe}
                       </td>
                     </tr>
                   </tbody>

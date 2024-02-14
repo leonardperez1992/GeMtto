@@ -24,17 +24,17 @@ function Navbar() {
                   <ul className="nav-list">
                     <li>
                       <Link to="/createactmtto" className="nav-link">
-                        Actividades de Mantenimiento
+                        Act Mtto
                       </Link>
                     </li>
                     <li>
                       <Link to="/fichatecnica" className="nav-link">
-                        Ficha Técnica
+                        Ficha tec.
                       </Link>
                     </li>
                     <li>
                       <Link to="/createinventary" className="nav-link">
-                        Agregar equipo
+                        Ag. equipo
                       </Link>
                     </li>
                     <li>
@@ -54,7 +54,7 @@ function Navbar() {
                     </li>
                     <li className="nav-item">
                       <Link to="/" className="nav-link" onClick={logout}>
-                        Cerrar Sesión
+                        Logout
                       </Link>
                     </li>
                   </ul>

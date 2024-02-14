@@ -12,7 +12,7 @@ body {
   box-sizing: content-box;
 }
 
-@media screen and (min-width: 1141px) {
+@media screen and (min-width: 801px) and (max-width: 2800px) {
   .contenedor {
     width: 100%;
     align-content: center;
@@ -20,14 +20,35 @@ body {
   }
 
   .tabla-reporte {
+    width: 70%;
+    margin: 1rem;
+    border-collapse: collapse;
+  }
+
+  .tabla-reporte td {
+    width: auto;
+    margin: 2rem;
+    text-align: left;
+    margin-bottom: auto;
+  }
+
+  .tabla-reporte th {
+    width: auto;
+    margin: 2rem;
+    background-color: rgb(0, 74, 116);
+    text-align: center;
+  }
+
+  .table {
     width: 100%;
     margin: 1rem;
     border-collapse: collapse;
+    caption-side: bottom;
     table-layout: fixed;
   }
 }
 
-@media screen and (min-width: 390px) and (max-width: 1140px) {
+@media screen and (min-width: 390px) and (max-width: 800px) {
   .contenedor {
     display: block;
     width: 100%;
@@ -65,18 +86,24 @@ body {
     text-align: left;
     border: 1px solid #626060;
     font-size: 5px;
-    background-color: white;
+    background-color: rgb(213, 19, 19);
     color: black;
     overflow: hidden;
     text-wrap: nowrap;
   }
 
   .tabla-reporte {
-    width: 100%;
+    width: 95%;
     margin: 1rem;
     border-collapse: collapse;
     overflow: scroll;
     letter-spacing: 1px;
+    table-layout: fixed;
+  }
+  .tabla-reporte-2 {
+    width: 100%;
+    margin: auto;
+    border-collapse: collapse;
     table-layout: fixed;
   }
 
@@ -229,14 +256,6 @@ input[type='password'] {
   color: cadetblue;
 }
 
-.table {
-  width: 90%;
-  margin: 1rem;
-  border-collapse: collapse;
-  caption-side: bottom;
-  table-layout: fixed;
-}
-
 .tabla-reportes {
   width: 100%;
   margin: 1rem;
@@ -251,6 +270,7 @@ input[type='password'] {
   border-collapse: collapse;
   caption-side: bottom;
   padding: 0.5em;
+  table-layout: fixed;
 }
 
 .tabla-reportes td {
@@ -259,26 +279,6 @@ input[type='password'] {
   border-collapse: collapse;
   caption-side: bottom;
   padding: 0.5em;
-}
-
-.tabla-reporte {
-  width: 100%;
-  margin: 1rem;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.tabla-reporte td {
-  width: 2em;
-  margin: 2rem;
-  text-align: left;
-}
-
-.tabla-reporte th {
-  width: 2em;
-  margin: 2rem;
-  background-color: rgb(0, 74, 116);
-  text-align: center;
 }
 
 .td-reporte-centrado {
@@ -300,7 +300,7 @@ th {
 }
 
 td {
-  width: 100%;
+  width: auto;
   height: 100%;
   text-align: left;
   border: 1px solid #626060;
@@ -480,20 +480,20 @@ textarea {
 
 .tabla-reporte-2 {
   width: 100%;
-  margin: 1rem;
+  margin: auto;
   border-collapse: collapse;
 }
 
 .tabla-reporte-2 td {
-  width: 2rem;
-  margin: 2rem;
+  width: 100%;
+  margin: auto;
   text-align: center;
   font-style: italic;
 }
 
 .tabla-reporte-2 th {
-  width: 2rem;
-  margin: 2rem;
+  width: 100%;
+  margin: auto;
   background-color: rgb(142, 173, 191);
   text-align: center;
   color: #000;
@@ -502,8 +502,8 @@ textarea {
 }
 
 .tabla-reporte-2 tr {
-  width: 2rem;
-  margin: 2rem;
+  width: 100%;
+  margin: auto;
   background-color: rgb(0, 74, 116);
   text-align: center;
 }
@@ -512,4 +512,8 @@ textarea {
   width: 98%;
   height: 100%;
   border-style: none;
+}
+
+label {
+  font-weight: bold;
 }

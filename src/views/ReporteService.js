@@ -226,20 +226,23 @@ function ReporteService() {
               <table className="tabla-reporte">
                 <thead>
                   <tr>
-                    <td colSpan={2} style={{ backgroundColor: 'white' }}>
+                    <td
+                      colSpan={1}
+                      style={{ backgroundColor: 'white', textAlign: 'center' }}
+                    >
                       <img
                         src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                         alt=""
-                        width="250"
+                        width="90%"
                       />
                     </td>
                     <td
+                      colSpan={2}
                       style={{
                         backgroundColor: 'white',
-                        width: '30%',
                         color: 'black',
                         textAlign: 'center',
-                        fontSize: '20px',
+                        fontSize: '90%',
                       }}
                     >
                       REPORTE DE SERVICIO
@@ -247,14 +250,14 @@ function ReporteService() {
                     <td
                       style={{
                         backgroundColor: 'white',
-                        width: '30%',
+
                         color: 'black',
                         textAlign: 'center',
-                        fontSize: '15px',
+                        fontSize: '70%',
                       }}
                     >
                       Nº DE REPORTE:{' '}
-                      <label style={{ color: 'red', fontSize: 20 }}>
+                      <label style={{ color: 'red', fontSize: '120%' }}>
                         {numReporte}
                       </label>
                     </td>
@@ -266,7 +269,8 @@ function ReporteService() {
                   </tr>
                   <tr>
                     <td colSpan={2}>
-                      <label>IPS/CLIENTE: {equipo?.institucion} </label>
+                      <label>IPS/CLIENTE: </label>
+                      {equipo?.institucion}
                     </td>
                     <td colSpan={2}>
                       <label>FECHA: </label>
@@ -280,7 +284,8 @@ function ReporteService() {
                   </tr>
                   <tr>
                     <td colSpan={2}>
-                      <label>SERVICIO: {equipo?.servicio} </label>
+                      <label>SERVICIO: </label>
+                      {equipo?.servicio}
                     </td>
                     <td colSpan={2}>
                       <label>CIUDAD: </label>
@@ -348,21 +353,26 @@ function ReporteService() {
                   </tr>
                   <tr>
                     <td colSpan={2}>
-                      <label>EQUIPO: {equipo?.equipo} </label>
+                      <label>EQUIPO: </label>
+                      {equipo?.equipo}
                     </td>
                     <td colSpan={2}>
-                      <label>MARCA: {equipo?.marca} </label>
+                      <label>MARCA: </label>
+                      {equipo?.marca}
                     </td>
                   </tr>
                   <tr>
                     <td>
-                      <label>MODELO: {equipo?.modelo} </label>
+                      <label>MODELO: </label>
+                      {equipo?.modelo}
                     </td>
                     <td colSpan={2} style={{ backgroundColor: 'white' }}>
-                      <label>SERIE: {equipo?.serie} </label>
+                      <label>SERIE: </label>
+                      {equipo?.serie}
                     </td>
                     <td>
-                      <label>INVENTARIO: {equipo?.inventario} </label>
+                      <label>INVENTARIO: </label>
+                      {equipo?.inventario}
                     </td>
                   </tr>
                   <tr>

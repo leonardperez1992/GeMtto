@@ -119,8 +119,9 @@ body {
     align-items: center;
     align-content: center;
     text-align: center;
-    padding: 1em;
+    padding: 1px;
     width: 100%;
+    margin: auto;
   }
 
   .div-form {

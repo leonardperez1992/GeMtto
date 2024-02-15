@@ -34,7 +34,7 @@ function Navbar() {
                     </li>
                     <li>
                       <Link to="/createinventary" className="nav-link">
-                        Ag. equipo
+                        Equipo
                       </Link>
                     </li>
                     <li>
@@ -49,7 +49,7 @@ function Navbar() {
                     </li>
                     <li>
                       <Link to="/crearips" className="nav-link">
-                        Crear Ips
+                        Ips
                       </Link>
                     </li>
                     <li className="nav-item">

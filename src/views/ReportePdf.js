@@ -18,9 +18,9 @@ function ReportePdf() {
     page: {
       margin: {
         top: 0,
-        right: 5,
+        right: 0,
         bottom: 0,
-        left: 5,
+        left: 0,
       },
       format: 'government-letter',
       orientation: 'portrait',
@@ -199,33 +199,33 @@ function ReportePdf() {
                     </tr>
                     <tr>
                       <td>
-                        <label>CANTIDAD</label>
+                        <label>DESCRIPCION</label>
                       </td>
                       <td colSpan={2}>
-                        <label>DESCRIPCION</label>
+                        <label>CANTIDAD</label>
                       </td>
                       <td>
                         <label>VALOR</label>
                       </td>
                     </tr>
                     <tr>
-                      <td>{reporte?.cantidad1}</td>
-                      <td colSpan={2}>{reporte?.descripcion1}</td>
+                      <td>{reporte?.descripcion1}</td>
+                      <td colSpan={2}>{reporte?.cantidad1}</td>
                       <td>{reporte?.valor1}</td>
                     </tr>
                     <tr>
-                      <td>{reporte?.cantidad2}</td>
-                      <td colSpan={2}>{reporte?.descripcion2}</td>
+                      <td>{reporte?.descripcion2}</td>
+                      <td colSpan={2}>{reporte?.cantidad2}</td>
                       <td>{reporte?.valor2}</td>
                     </tr>
                     <tr>
-                      <td>{reporte?.cantidad3}</td>
-                      <td colSpan={2}>{reporte?.descripcion3}</td>
+                      <td>{reporte?.descripcion3}</td>
+                      <td colSpan={2}>{reporte?.cantidad3}</td>
                       <td>{reporte?.valor3}</td>
                     </tr>
                     <tr>
-                      <td>{reporte?.cantidad4}</td>
-                      <td colSpan={2}>{reporte?.descripcion4}</td>
+                      <td>{reporte?.descripcion4}</td>
+                      <td colSpan={2}>{reporte?.cantidad4}</td>
                       <td>{reporte?.valor4}</td>
                     </tr>
                     <tr>

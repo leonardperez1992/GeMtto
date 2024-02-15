@@ -250,7 +250,6 @@ function ReporteService() {
                     <td
                       style={{
                         backgroundColor: 'white',
-
                         color: 'black',
                         textAlign: 'center',
                         fontSize: '70%',

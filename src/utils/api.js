@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.1.12:3002/api';
+const baseUrl = 'http://192.168.3.181:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';
@@ -20,5 +20,5 @@ export const apiEliminarReportes = apiReportes + '/deletereporte';
 export const apiIps = baseUrl + '/ips';
 export const apiCreateIps = apiIps + '/createips';
 export const apiGetIps = apiIps + '/getips';
-export const apiFiles = baseUrl + '/files/get';
+export const apiFiles = baseUrl + '/files';
 export const apiSetFiles = apiFiles + '/in-local';

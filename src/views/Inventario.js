@@ -31,7 +31,7 @@ function Inventario() {
   var inventarios = {};
   if (!buscar) {
     inventarios = inventario;
-  } else {
+  } else if (buscar) {
     inventarios = inventario.filter((dato) =>
       dato.serie.toLowerCase().includes(buscar.toLowerCase())
     );
@@ -39,80 +39,73 @@ function Inventario() {
   return (
     <div className="contenedor">
       <div>
-        <div>
-          <div
-            style={{
-              width: '20%',
-              margin: 10,
-            }}
-          >
-            <h4>Buscar:</h4>
-            <input
-              style={{
-                width: '100%',
-                borderWidth: 1,
-                margin: 5,
-                borderRadius: 10,
-                borderStyle: 'solid',
-                height: 43,
-              }}
-              value={buscar}
-              type="text"
-              placeholder="Digite la serie"
-              onChange={handleSave}
-            />
-          </div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>EQUIPO</th>
-                <th>MARCA</th>
-                <th>MODELO</th>
-                <th>SERIE</th>
-                <th>INSTITUCION</th>
-                <th>SERVICIO</th>
-                <th>UBICACIÓN</th>
-                <th>REG. INVIMA</th>
-                <th>RIESGO</th>
-                <th>RESPONSABLE</th>
-                <th>ACCION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventarios.map(function (item) {
-                return (
-                  <tr>
-                    <td>{item?.equipo}</td>
-                    <td>{item?.marca}</td>
-                    <td>{item?.modelo}</td>
-                    <td>{item?.serie}</td>
-                    <td>{item?.institucion}</td>
-                    <td>{item?.servicio}</td>
-                    <td>{item?.ubicacion}</td>
-                    <td>{item?.registro_invima}</td>
-                    <td>{item?.riesgo}</td>
-                    <td>{item?.responsable}</td>
-                    <td>
-                      <Link
-                        to={`/reporteService?id=${item._id}`}
-                        className="nav-link"
-                      >
-                        Reporte
-                      </Link>
-                      <br></br>
-                      <Link
-                        to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}&institucion=${item.institucion}`}
-                        className="nav-link"
-                      >
-                        Hoja de Vida
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <table className="table">
+          <thead>
+            <tr>
+              <td colSpan={3}>
+                <input
+                  style={{
+                    width: '80%',
+                    borderWidth: 1,
+                    margin: 5,
+                    borderRadius: 10,
+                    borderStyle: 'solid',
+                  }}
+                  value={buscar}
+                  type="text"
+                  placeholder="Buscar: Digite la serie"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th>EQUIPO</th>
+              <th>MARCA</th>
+              <th>MODELO</th>
+              <th>SERIE</th>
+              <th>INSTITUCION</th>
+              <th>SERVICIO</th>
+              <th>UBICACIÓN</th>
+              <th>REG. INVIMA</th>
+              <th>RIESGO</th>
+              <th>RESPONSABLE</th>
+              <th>ACCION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventarios.map(function (item) {
+              return (
+                <tr>
+                  <td>{item?.equipo}</td>
+                  <td>{item?.marca}</td>
+                  <td>{item?.modelo}</td>
+                  <td>{item?.serie}</td>
+                  <td>{item?.institucion}</td>
+                  <td>{item?.servicio}</td>
+                  <td>{item?.ubicacion}</td>
+                  <td>{item?.registro_invima}</td>
+                  <td>{item?.riesgo}</td>
+                  <td>{item?.responsable}</td>
+                  <td>
+                    <Link
+                      to={`/reporteService?id=${item._id}`}
+                      className="nav-link"
+                    >
+                      Reporte
+                    </Link>
+                    <br></br>
+                    <Link
+                      to={`/hojadevida?id=${item._id}&modelo=${item.modelo}&serie=${item.serie}&institucion=${item.institucion}`}
+                      className="nav-link"
+                    >
+                      Hoja de Vida
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ function ReporteService() {
   const [firmaIng, setFirmaIng] = useState('');
   const [firmaRecibe, setFirmaRecibe] = useState('');
   const [file, setFile] = useState();
-  const numReporte = new Date().valueOf();
+  const [numReporte] = useState(new Date().valueOf());
 
   function handleChange(event) {
     setFile(event.target.files[0]);

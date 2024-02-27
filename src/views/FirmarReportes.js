@@ -9,6 +9,17 @@ function FirmarReportes() {
   let reporteFirma = [];
   const [firmaIng, setFirmaIng] = useState('');
   const [firmaRecibe, setFirmaRecibe] = useState('');
+  const firmaIngRef = useRef({});
+  const firmaRecref = useRef({});
+
+  const handleCheckboxChange = (id, checked) => {
+    if (checked) {
+      reporteFirma.push(id);
+    } else {
+      let deleteIndex = reporteFirma.indexOf(id);
+      reporteFirma.splice(deleteIndex, 1);
+    }
+  };
 
   const [reporte, setReporte] = useState({
     _id: [],
@@ -32,11 +43,6 @@ function FirmarReportes() {
     }
   };
 
-  console.log(reporteFirma);
-
-  const firmaIngRef = useRef({});
-  const firmaRecref = useRef({});
-
   const saveFirmaIng = (signature) => {
     setFirmaIng(signature);
   };
@@ -55,7 +61,7 @@ function FirmarReportes() {
     getReportes();
   }, []);
 
-  const CreateReport = async () => {
+  const Firmar = async () => {
     const body = {
       _id: reporteFirma,
       firma_ingeniero: firmaIng,
@@ -65,8 +71,9 @@ function FirmarReportes() {
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
-    if (!body) {
-      alert('Por favor diligencie todos los campos.');
+    console.log(body._id.length);
+    if (body._id.length === 0) {
+      alert('Por favor seleccione un reporte');
     } else {
       console.log(body);
       const response = await request({
@@ -87,198 +94,177 @@ function FirmarReportes() {
     setBuscar(e.target.value);
   };
 
-  var inventarios = [];
+  var reportesList = [];
   if (!buscar) {
-    inventarios = reportes;
+    reportesList = reportes;
   } else {
-    inventarios = reportes.filter((dato) =>
+    reportesList = reportes.filter((dato) =>
       dato.fecha.toLowerCase().includes(buscar.toLowerCase())
     );
   }
 
-  const handleCheckboxChange = (id, checked) => {
-    if (checked) {
-      reporteFirma.push(id);
-    } else {
-      let deleteIndex = reporteFirma.indexOf(id);
-      reporteFirma.splice(deleteIndex, 1);
-    }
-  };
-
   return (
     <div>
-      <main>
-        <section>
+      <div>
+        <div>
+          <h3>Panel de Firma</h3>
           <div>
-            <div>
-              <h3>Panel de Firma</h3>
-            </div>
-            <div style={{ border: '2px solid black' }}>
-              <div>
-                <table className="tabla-reportes">
-                  <tr>
-                    <th>INGENIERO/TECNICO</th>
-                    <th>RECIBÍ A SATISFACCION</th>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{
-                          width: 350,
-                          height: 150,
-                        }}
-                        ref={firmaIngRef}
-                        onEnd={() => {
-                          saveFirmaIng(firmaIngRef.current.toData());
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          firmaIngRef.current.clear();
-                          saveFirmaIng(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{ width: 350, height: 150 }}
-                        ref={firmaRecref}
-                        onEnd={() => {
-                          saveFirmaRecibe(firmaRecref.current.toData());
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          firmaRecref.current.clear();
-                          saveFirmaRecibe(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
-                      <input
-                        className="input-report"
-                        name="nombre_ingeniero"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>NOMBRE: </label>
-                      <input
-                        className="input-report"
-                        name="nombre_recibe"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>CARGO: </label>
-                      <input
-                        className="input-report"
-                        name="cargo_ingeniero"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <label style={{ fontSize: '12px' }}>CARGO: </label>
-                      <input
-                        className="input-report"
-                        name="cargo_recibe"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              <div className="button-contenedor">
-                <input
-                  type="button"
-                  value="Firmar"
-                  className="button"
-                  onClick={CreateReport}
-                  style={{ background: '#003785' }}
-                />
-              </div>
-            </div>
-            <div className="d-flex justify-content-center fw-bolder">
-              <h3>Listado de Reportes</h3>
-            </div>
-            <div>
-              <div
-                style={{
-                  width: '20%',
-                  margin: 10,
-                }}
-              >
-                <h4>Buscar:</h4>
-                <input
-                  style={{
-                    width: '100%',
-                    borderWidth: 1,
-                    margin: 5,
-                    borderRadius: 10,
-                    borderStyle: 'solid',
-                    height: 43,
-                  }}
-                  value={buscar}
-                  type="text"
-                  placeholder="Digite la fecha"
-                  onChange={handleSave2}
-                />
-              </div>
-              <table className="tabla-reportes">
-                <thead>
-                  <tr>
-                    <th>FIRMAR</th>
-                    <th>Nº REPORTE</th>
-                    <th>FECHA</th>
-                    <th>EQUIPO</th>
-                    <th>SERIE</th>
-                    <th>INSTITUCION</th>
-                    <th>RESPONSABLE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inventarios.map(function (item) {
-                    return (
-                      <tr>
-                        <td>
-                          <Checkbox
-                            id={item?._id}
-                            onChange={handleCheckboxChange}
-                          />
-                          <label>Seleccione</label>
-                        </td>
-                        <td>{item?.numero_reporte}</td>
-                        <td>{item?.fecha}</td>
-                        <td>{item?.equipo}</td>
-                        <td>{item?.serie}</td>
-                        <td>{item?.institucion}</td>
-                        <td>{item?.nombre_ingeniero}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <table className="tabla-reportes">
+              <tr>
+                <th>INGENIERO/TECNICO</th>
+                <th>RECIBÍ A SATISFACCION</th>
+              </tr>
+              <tr>
+                <td>
+                  FIRMA:
+                  <SignatureCanvas
+                    canvasProps={{
+                      width: 350,
+                      height: 150,
+                    }}
+                    ref={firmaIngRef}
+                    onEnd={() => {
+                      saveFirmaIng(firmaIngRef.current.toData());
+                    }}
+                  />
+                </td>
+                <td>
+                  FIRMA:
+                  <SignatureCanvas
+                    canvasProps={{ width: 350, height: 150 }}
+                    ref={firmaRecref}
+                    onEnd={() => {
+                      saveFirmaRecibe(firmaRecref.current.toData());
+                    }}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  {' '}
+                  <button
+                    onClick={() => {
+                      firmaIngRef.current.clear();
+                      saveFirmaIng(null);
+                    }}
+                  >
+                    {' '}
+                    Limpiar{' '}
+                  </button>
+                </td>
+                <td>
+                  {' '}
+                  <button
+                    onClick={() => {
+                      firmaRecref.current.clear();
+                      saveFirmaRecibe(null);
+                    }}
+                  >
+                    {' '}
+                    Limpiar{' '}
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label>NOMBRE: </label>
+                  <input
+                    className="input-report"
+                    name="nombre_ingeniero"
+                    type="text"
+                    onChange={handleSave}
+                  />
+                </td>
+                <td>
+                  <label>NOMBRE: </label>
+                  <input
+                    className="input-report"
+                    name="nombre_recibe"
+                    type="text"
+                    onChange={handleSave}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label>CARGO: </label>
+                  <input
+                    className="input-report"
+                    name="cargo_ingeniero"
+                    type="text"
+                    onChange={handleSave}
+                  />
+                </td>
+                <td>
+                  <label>CARGO: </label>
+                  <input
+                    className="input-report"
+                    name="cargo_recibe"
+                    type="text"
+                    onChange={handleSave}
+                  />
+                </td>
+              </tr>
+            </table>
           </div>
-        </section>
-      </main>
+          <div className="button-contenedor">
+            <input
+              type="button"
+              value="Firmar"
+              className="button"
+              onClick={Firmar}
+              style={{ background: '#003785' }}
+            />
+          </div>
+        </div>
+        <div>
+          <table className="tabla-reportes">
+            <thead>
+              <tr>
+                <td colSpan={2}>
+                  <input
+                    className="input-report"
+                    value={buscar}
+                    type="text"
+                    placeholder="Digite la fecha"
+                    onChange={handleSave2}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>FIRMAR</th>
+                <th>Nº REPORTE</th>
+                <th>FECHA</th>
+                <th>EQUIPO</th>
+                <th>SERIE</th>
+                <th>INSTITUCION</th>
+                <th>RESPONSABLE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportesList.map(function (item) {
+                return (
+                  <tr>
+                    <td>
+                      <Checkbox
+                        id={item?._id}
+                        onChange={handleCheckboxChange}
+                      />
+                      Seleccione
+                    </td>
+                    <td>{item?.numero_reporte}</td>
+                    <td>{item?.fecha}</td>
+                    <td>{item?.equipo}</td>
+                    <td>{item?.serie}</td>
+                    <td>{item?.institucion}</td>
+                    <td>{item?.nombre_ingeniero}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

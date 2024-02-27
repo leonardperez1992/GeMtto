@@ -13,11 +13,11 @@ function ReportePdf() {
 
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
-    method: 'save',
+    method: 'open',
     resolution: Resolution.MEDIUM,
     page: {
       margin: {
-        top: 0,
+        top: 2,
         right: 0,
         bottom: 0,
         left: 0,
@@ -26,8 +26,8 @@ function ReportePdf() {
       orientation: 'portrait',
     },
     canvas: {
-      mimeType: 'image/jpeg',
-      qualityRatio: 1,
+      mimeType: 'image/png',
+      qualityRatio: 10,
     },
   };
 
@@ -83,261 +83,255 @@ function ReportePdf() {
   return (
     <div>
       <div>
+        <div className="contenedor" ref={targetRef}>
+          <table className="tabla-reporte">
+            <thead>
+              <tr>
+                <td colSpan={2}>
+                  <img
+                    src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
+                    alt=""
+                    width="250px"
+                  />
+                </td>
+                <td
+                  colSpan={2}
+                  style={{
+                    fontSize: '90%',
+                    color: 'red',
+                    textAlign: 'right',
+                  }}
+                >
+                  Nº DE REPORTE: {reporte?.numero_reporte}{' '}
+                </td>
+              </tr>
+              <tr>
+                <td
+                  colSpan={4}
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '90%',
+                  }}
+                >
+                  REPORTE DE SERVICIO
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>IPS/CLINICA: </label>
+                  {reporte?.institucion}
+                </td>
+                <td colSpan={2}>
+                  <label>FECHA: </label>
+                  {reporte?.fecha}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>SERVICIO: </label>
+                  {reporte?.servicio}
+                </td>
+                <td colSpan={2}>
+                  <label>CIUDAD: </label>
+                  {reporte?.ciudad}
+                </td>
+              </tr>
+              <tr>
+                <th colSpan={4}>TIPO DE SERVICIO</th>
+              </tr>
+              <tr>
+                <td colSpan={4}>{reporte?.tipo_servicio}</td>
+              </tr>
+              <tr>
+                <th colSpan={4}>INFORMACION DEL EQUIPO</th>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>EQUIPO: </label>
+                  {reporte?.equipo}
+                </td>
+                <td colSpan={2}>
+                  <label>MARCA: </label>
+                  {reporte?.marca}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>MODELO: </label>
+                  {reporte?.modelo}
+                </td>
+                <td colSpan={2}>
+                  <label>SERIE: </label>
+                  {reporte?.serie}
+                </td>
+              </tr>
+              <tr>
+                <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
+              </tr>
+              <tr>
+                <td colSpan={4}>{reporte?.problema_reportado}</td>
+              </tr>
+              <tr>
+                <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
+              </tr>
+              <tr>
+                <td colSpan={4}>{reporte?.desc_servicio}</td>
+              </tr>
+              <tr>
+                <th colSpan={4}>REPUESTOS, INSUMOS, MATERIALES EMPLEADOS</th>
+              </tr>
+              <tr>
+                <td>
+                  <label>DESCRIPCION</label>
+                </td>
+                <td colSpan={2}>
+                  <label>CANTIDAD</label>
+                </td>
+                <td>
+                  <label>VALOR</label>
+                </td>
+              </tr>
+              <tr>
+                <td>{reporte?.descripcion1}</td>
+                <td colSpan={2}>{reporte?.cantidad1}</td>
+                <td>{reporte?.valor1}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.descripcion2}</td>
+                <td colSpan={2}>{reporte?.cantidad2}</td>
+                <td>{reporte?.valor2}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.descripcion3}</td>
+                <td colSpan={2}>{reporte?.cantidad3}</td>
+                <td>{reporte?.valor3}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.descripcion4}</td>
+                <td colSpan={2}>{reporte?.cantidad4}</td>
+                <td>{reporte?.valor4}</td>
+              </tr>
+              <tr>
+                <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
+              </tr>
+              <tr>
+                <td>
+                  <label>PARÁMETRO</label>
+                </td>
+                <td colSpan={2}>
+                  <label>VALOR PROGRAMADO</label>
+                </td>
+                <td>
+                  <label>VALOR MEDIDO</label>
+                </td>
+              </tr>
+              <tr>
+                <td>{reporte?.parametro1}</td>
+                <td colSpan={2}>{reporte?.valor_programado1}</td>
+                <td>{reporte?.valor_medido1}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.parametro2}</td>
+                <td colSpan={2}>{reporte?.valor_programado2}</td>
+                <td>{reporte?.valor_medido2}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.parametro3}</td>
+                <td colSpan={2}>{reporte?.valor_programado3}</td>
+                <td>{reporte?.valor_medido3}</td>
+              </tr>
+              <tr>
+                <td>{reporte?.parametro3}</td>
+                <td colSpan={2}>{reporte?.valor_programado3}</td>
+                <td>{reporte?.valor_medido3}</td>
+              </tr>
+              <tr>
+                <th colSpan={4}>OBSERVACIONES</th>
+              </tr>
+              <tr>
+                <td colSpan={2}>{reporte?.observaciones}</td>
+                <td colSpan={2}>
+                  <Link
+                    to={`/verpdf?id=${reporte?.numero_reporte}`}
+                    className="nav-link"
+                  >
+                    Ver
+                  </Link>
+                </td>
+              </tr>
+              <tr>
+                <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
+              </tr>
+              <tr>
+                <td colSpan={4}>{reporte?.estado_final}</td>
+              </tr>
+              <tr>
+                <th colSpan={2}>INGENIERO/TECNICO</th>
+
+                <th colSpan={2}>RECIBÍ A SATISFACCION</th>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                  <SignatureCanvas
+                    ref={imgIng}
+                    canvasProps={{ width: '400px', height: 150 }}
+                  />
+                </td>
+                <td colSpan={2}>
+                  <label>FIRMA: </label>
+                  <SignatureCanvas
+                    ref={imgRec}
+                    canvasProps={{ width: '400px', height: 150 }}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>NOMBRE:</label>
+                  {reporte?.nombre_ingeniero}
+                </td>
+                <td colSpan={2}>
+                  <label>NOMBRE:</label>
+                  {reporte?.nombre_recibe}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <label>CARGO:</label>
+                  {reporte?.cargo_ingeniero}
+                </td>
+                <td colSpan={2}>
+                  <label>CARGO:</label>
+                  {reporte?.cargo_recibe}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style={{ display: 'inline-block' }}>
         <button
           className="button"
-          style={{ width: '300px', margin: '10px' }}
+          style={{ width: '20%', margin: '10px' }}
           onClick={() => generatePDF(targetRef, options)}
         >
           Download PDF
         </button>
         <button
           className="button"
-          style={{ width: '300px', margin: '10px' }}
+          style={{ width: '20%', margin: '10px' }}
           onClick={deleteReport}
         >
           Eliminar Reporte
         </button>
-      </div>
-      <div className="contenedor" ref={targetRef}>
-        <main>
-          <section>
-            <div>
-              <div>
-                <table className="tabla-reporte">
-                  <thead>
-                    <tr>
-                      <td colSpan={2}>
-                        <img
-                          src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
-                          alt=""
-                          width="250px"
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center', fontWeight: 'bold' }}>
-                        REPORTE DE SERVICIO
-                      </td>
-                      <td
-                        style={{
-                          fontSize: '90%',
-                          color: 'red',
-                          textAlign: 'right',
-                        }}
-                      >
-                        Nº DE REPORTE: {reporte?.numero_reporte}{' '}
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label>IPS/CLINICA: </label>
-                        {reporte?.institucion}
-                      </td>
-                      <td colSpan={2}>
-                        <label>FECHA: </label>
-                        {reporte?.fecha}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label>SERVICIO: </label>
-                        {reporte?.servicio}
-                      </td>
-                      <td colSpan={2}>
-                        <label>CIUDAD: </label>
-                        {reporte?.ciudad}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>TIPO DE SERVICIO</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={4}>{reporte?.tipo_servicio}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>INFORMACION DEL EQUIPO</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label>EQUIPO: </label>
-                        {reporte?.equipo}
-                      </td>
-                      <td colSpan={2}>
-                        <label>MARCA: </label>
-                        {reporte?.marca}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label>MODELO: </label>
-                        {reporte?.modelo}
-                      </td>
-                      <td colSpan={2}>
-                        <label>SERIE: </label>
-                        {reporte?.serie}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={4}>{reporte?.problema_reportado}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={4}>{reporte?.desc_servicio}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>
-                        REPUESTOS, INSUMOS, MATERIALES EMPLEADOS
-                      </th>
-                    </tr>
-                    <tr>
-                      <td>
-                        <label>DESCRIPCION</label>
-                      </td>
-                      <td colSpan={2}>
-                        <label>CANTIDAD</label>
-                      </td>
-                      <td>
-                        <label>VALOR</label>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.descripcion1}</td>
-                      <td colSpan={2}>{reporte?.cantidad1}</td>
-                      <td>{reporte?.valor1}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.descripcion2}</td>
-                      <td colSpan={2}>{reporte?.cantidad2}</td>
-                      <td>{reporte?.valor2}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.descripcion3}</td>
-                      <td colSpan={2}>{reporte?.cantidad3}</td>
-                      <td>{reporte?.valor3}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.descripcion4}</td>
-                      <td colSpan={2}>{reporte?.cantidad4}</td>
-                      <td>{reporte?.valor4}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
-                    </tr>
-                    <tr>
-                      <td>
-                        <label>PARÁMETRO</label>
-                      </td>
-                      <td colSpan={2} style={{ width: '200%' }}>
-                        <label>VALOR PROGRAMADO</label>
-                      </td>
-                      <td>
-                        <label>VALOR MEDIDO</label>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.parametro1}</td>
-                      <td colSpan={2}>{reporte?.valor_programado1}</td>
-                      <td>{reporte?.valor_medido1}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.parametro2}</td>
-                      <td colSpan={2}>{reporte?.valor_programado2}</td>
-                      <td>{reporte?.valor_medido2}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.parametro3}</td>
-                      <td colSpan={2}>{reporte?.valor_programado3}</td>
-                      <td>{reporte?.valor_medido3}</td>
-                    </tr>
-                    <tr>
-                      <td>{reporte?.parametro3}</td>
-                      <td colSpan={2}>{reporte?.valor_programado3}</td>
-                      <td>{reporte?.valor_medido3}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>OBSERVACIONES</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>{reporte?.observaciones}</td>
-                      <td colSpan={2}>
-                        <Link
-                          to={`/verpdf?id=${reporte?.numero_reporte}`}
-                          className="nav-link"
-                        >
-                          Ver
-                        </Link>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={4}>{reporte?.estado_final}</td>
-                    </tr>
-                    <tr>
-                      <th colSpan={2}>INGENIERO/TECNICO</th>
-
-                      <th colSpan={2}>RECIBÍ A SATISFACCION</th>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                        <SignatureCanvas
-                          ref={imgIng}
-                          canvasProps={{ width: 450, height: 150 }}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                        <SignatureCanvas
-                          ref={imgRec}
-                          canvasProps={{ width: 450, height: 150 }}
-                          onBegin={false}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px', width: '100%' }}>
-                          NOMBRE:
-                        </label>
-                        {reporte?.nombre_ingeniero}
-                      </td>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px', width: '100%' }}>
-                          NOMBRE:
-                        </label>
-                        {reporte?.nombre_recibe}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px', width: '100%' }}>
-                          CARGO:
-                        </label>
-                        {reporte?.cargo_ingeniero}
-                      </td>
-                      <td colSpan={2}>
-                        <label style={{ fontSize: '12px', width: '100%' }}>
-                          CARGO:
-                        </label>
-                        {reporte?.cargo_recibe}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-        </main>
       </div>
     </div>
   );

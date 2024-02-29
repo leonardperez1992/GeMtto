@@ -38,7 +38,7 @@ function CreateActMtto() {
       });
       if (response.success) {
         alert('Actividad de mantenimiento creado exitosamente');
-        window.location.href = './inventarioua';
+        window.location.href = './createactmtto';
       } else {
         alert(`${response.message}`);
         console.log(actMtto);

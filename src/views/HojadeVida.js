@@ -93,25 +93,24 @@ function HojaDeVida() {
                 <thead>
                   <tr>
                     <td colSpan={2} style={{ backgroundColor: 'white' }}>
-                      <img
-                        src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
-                        alt=""
-                        width="250"
-                      />
+                      <img src={ips} alt="" width="100%" />
                     </td>
                     <td
                       style={{
                         backgroundColor: 'white',
-                        width: '30%',
                         color: 'black',
                         textAlign: 'center',
-                        fontSize: '20px',
+                        fontSize: '80%',
                       }}
                     >
-                      HOJA DE VIDA DE EQUIPOS BIOMÉDICOS
+                      HOJA DE VIDA <br></br> DE EQUIPOS BIOMÉDICOS
                     </td>
                     <td>
-                      <img src={ips} alt="" width="250" />
+                      <img
+                        src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
+                        alt=""
+                        width="60%"
+                      />
                     </td>
                   </tr>
                 </thead>
@@ -234,7 +233,6 @@ function HojaDeVida() {
                       1,3 ACCESORIOS
                     </td>
                     <td
-                      colSpan={3}
                       style={{
                         backgroundColor: 'rgb(0, 74, 116)',
                         color: 'white',
@@ -279,7 +277,14 @@ function HojaDeVida() {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={4} style={{ height: '200px' }}>
+                    <td
+                      colSpan={4}
+                      style={{
+                        height: '200px',
+                        fontSize: '14px',
+                        wordBreak: 'break-all',
+                      }}
+                    >
                       {ficha?.recomendaciones}
                     </td>
                   </tr>

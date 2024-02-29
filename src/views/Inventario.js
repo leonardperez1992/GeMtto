@@ -88,7 +88,7 @@ function Inventario() {
                   <td>{item?.responsable}</td>
                   <td>
                     <Link
-                      to={`/reporteService?id=${item._id}`}
+                      to={`/reporteService?id=${item?._id}&equipo=${item?.equipo}`}
                       className="nav-link"
                     >
                       Reporte

@@ -52,8 +52,12 @@ function ReporteService() {
     setFirmaRecibe(signature);
   };
 
-  const obtenerActMtos = async () => {
-    const response = await request({ link: apiActMtto, method: 'GET' });
+  const obtenerActMtos = async (equipo) => {
+    const response = await request({
+      link: apiActMtto,
+      method: 'GET',
+      body: { equipo },
+    });
     if (response.success) {
       setActMtos(response.actmtto);
     } else {
@@ -89,10 +93,11 @@ function ReporteService() {
   useEffect(function () {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');
+    let equipo = queryParameters.get('equipo');
     if (!idEquipo) {
       alert('Por favor Seleccione un equipo en la pestaña de Inventario');
     }
-    obtenerActMtos();
+    obtenerActMtos(equipo);
     obtenerEquipos(idEquipo);
     obtenerIps();
   }, []);
@@ -411,6 +416,7 @@ function ReporteService() {
                       <textarea
                         name="desc_servicio"
                         onChange={handleSave}
+                        defaultValue={actMto}
                       ></textarea>
                     </td>
                   </tr>

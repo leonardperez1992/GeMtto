@@ -22,7 +22,7 @@ function ReportePdf() {
         bottom: 0,
         left: 0,
       },
-      format: 'government-letter',
+      format: 'letter',
       orientation: 'portrait',
     },
     canvas: {
@@ -91,7 +91,7 @@ function ReportePdf() {
                   <img
                     src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                     alt=""
-                    width="250px"
+                    width="50%"
                   />
                 </td>
                 <td

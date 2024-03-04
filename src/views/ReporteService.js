@@ -215,7 +215,7 @@ function ReporteService() {
       });
       if (response.success) {
         alert('Reporte creado exitosamente');
-        // window.location.href = './reportes';
+        window.location.href = './inventarioua';
       } else {
         alert(`${response.message}`);
       }
@@ -238,7 +238,7 @@ function ReporteService() {
                       <img
                         src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                         alt=""
-                        width="90%"
+                        width="70%"
                       />
                     </td>
                     <td
@@ -322,7 +322,7 @@ function ReporteService() {
                         value="MTTO PREVENTIVO"
                         onChange={handleSave}
                       ></input>
-                      <label> MTTO PREVENTIVO</label>
+                      <label>MTTO PREVENTIVO</label>
                     </td>
                     <td>
                       <input
@@ -331,7 +331,7 @@ function ReporteService() {
                         value="MTTO CORRECTIVO"
                         onChange={handleSave}
                       ></input>
-                      <label> MTTO CORRECTIVO</label>
+                      <label>MTTO CORRECTIVO</label>
                     </td>
                     <td>
                       <input

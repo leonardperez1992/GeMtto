@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { apiInventario } from '../utils/api';
+import { apiInventario, apiEliminarEquipo } from '../utils/api';
 import request from '../utils/request';
 
 function Inventario() {
@@ -15,6 +15,27 @@ function Inventario() {
       setInventario(response.inventario);
     } else {
       alert(`Sin conexión con el Servidor ${response.message}`);
+    }
+  };
+
+  const deleteEquipo = async (id) => {
+    const body = {
+      _id: id,
+    };
+    if (!body) {
+      alert('Por favor Seleccione un equipo');
+    } else {
+      const response = await request({
+        link: apiEliminarEquipo,
+        body,
+        method: 'POST',
+      });
+      if (response.success) {
+        alert('Equipo eliminado exitosamente');
+        window.location.href = './inventarioua';
+      } else {
+        alert(`${response.message}`);
+      }
     }
   };
 
@@ -100,6 +121,7 @@ function Inventario() {
                     >
                       Hoja de Vida
                     </Link>
+                    <button onClick={deleteEquipo}>Eliminar</button>
                   </td>
                 </tr>
               );

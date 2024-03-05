@@ -17,7 +17,7 @@ function ReportePdf() {
     resolution: Resolution.MEDIUM,
     page: {
       margin: {
-        top: 2,
+        top: 5,
         right: 0,
         bottom: 0,
         left: 0,
@@ -278,7 +278,7 @@ function ReportePdf() {
               </tr>
               <tr>
                 <td colSpan={2}>
-                  <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                  <label>FIRMA: </label>
                   <SignatureCanvas
                     ref={imgIng}
                     canvasProps={{ width: '400px', height: 150 }}
@@ -323,14 +323,14 @@ function ReportePdf() {
           style={{ width: '20%', margin: '10px' }}
           onClick={() => generatePDF(targetRef, options)}
         >
-          Download PDF
+          Imprimir
         </button>
         <button
           className="button"
           style={{ width: '20%', margin: '10px' }}
           onClick={deleteReport}
         >
-          Eliminar Reporte
+          Eliminar
         </button>
       </div>
     </div>

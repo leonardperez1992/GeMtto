@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.140.181:3002/api';
+const baseUrl = 'http://192.168.1.159:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';
@@ -6,6 +6,7 @@ export const apiInventario = baseUrl + '/inventario';
 export const apiCreateInventario = apiInventario + '/createinventario';
 export const apiObtenerEquipo = apiInventario + '/obtenerequipo';
 export const apiObtenerEquiposIps = apiInventario + '/obtenerequiposips';
+export const apiEliminarEquipo = apiInventario + 'delete';
 export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';

@@ -14,7 +14,7 @@ function ReportePdf() {
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
     method: 'open',
-    resolution: Resolution.MEDIUM,
+    resolution: Resolution.LOW,
     page: {
       margin: {
         top: 5,
@@ -26,7 +26,7 @@ function ReportePdf() {
       orientation: 'portrait',
     },
     canvas: {
-      mimeType: 'image/png',
+      mimeType: 'image/jpeg',
       qualityRatio: 10,
     },
   };

@@ -17,6 +17,8 @@ import ReportePdf from './views/ReportePdf';
 import HojaDeVida from './views/HojadeVida';
 import FichaTecnica from './views/FichaTecnica';
 import VerPdf from './views/VerPdf';
+import EditInventary from './views/EditInventary';
+import HojaDeVidaUser from './views/HojadeVidaUser';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -44,7 +46,9 @@ const RouterContainer = () => {
           <Route path="/registro" element={<Registro />} />
           <Route path="/inventarioua" element={<Inventario />} />
           <Route path="/inventariouser" element={<InventarioUser />} />
+          <Route path="/editarequipo" element={<EditInventary />} />
           <Route path="/hojadevida" element={<HojaDeVida />} />
+          <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />
           <Route path="/fichatecnica" element={<FichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />

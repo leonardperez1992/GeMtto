@@ -8,7 +8,7 @@ import {
 } from '../utils/api';
 import request from '../utils/request';
 
-function HojaDeVida() {
+function HojaDeVidaUser() {
   const [equipo, setEquipo] = useState([]);
   const [ficha, setFicha] = useState([]);
   const [reportes, setReportes] = useState([]);
@@ -335,14 +335,6 @@ function HojaDeVida() {
                   })}
                 </tbody>
               </table>
-              <div style={{ display: 'inline-block' }}>
-                <button
-                  className="button"
-                  style={{ width: '20%', margin: '10px' }}
-                >
-                  Eliminar
-                </button>
-              </div>
             </div>
           </div>
         </section>
@@ -350,4 +342,4 @@ function HojaDeVida() {
     </div>
   );
 }
-export default HojaDeVida;
+export default HojaDeVidaUser;

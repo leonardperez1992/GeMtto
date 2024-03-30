@@ -8,6 +8,7 @@ function Navbar() {
     localStorage.removeItem('user');
     window.location.href = './login';
   };
+
   return (
     <div>
       <header>

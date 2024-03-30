@@ -573,3 +573,8 @@ textarea {
 label {
   font-weight: bold;
 }
+
+.input-form {
+  width: 98%;
+  height: auto;
+}

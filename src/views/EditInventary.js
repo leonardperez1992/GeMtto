@@ -50,7 +50,6 @@ function EditInventary() {
   };
 
   const EditEquipo = async () => {
-    console.log(inventary);
     if (!inventary.equipo || !inventary.serie) {
       alert('Por favor diligencie todos los campos.');
     } else {
@@ -108,14 +107,7 @@ function EditInventary() {
                 <th colSpan={1}>
                   <label>IPS/CLIENTE: </label>
                 </th>
-                <td colSpan={3}>
-                  <input
-                    name="institucion"
-                    onChange={handleSave}
-                    defaultValue={equipo?.institucion}
-                    style={{ width: '50%' }}
-                  />
-                </td>
+                <td colSpan={3}>{equipo?.institucion}</td>
               </tr>
               <tr>
                 <th colSpan={1}>
@@ -126,7 +118,7 @@ function EditInventary() {
                   <input
                     name="servicio"
                     onChange={handleSave}
-                    defaultValue={equipo.servicio}
+                    defaultValue={equipo?.servicio}
                     style={{ width: '50%' }}
                   />
                 </td>

@@ -5,6 +5,7 @@ import {
   apiObtenerFicha,
   apiObtenerReportes,
   apiGetIps,
+  apiEliminarEquipo,
 } from '../utils/api';
 import request from '../utils/request';
 
@@ -65,6 +66,30 @@ function HojaDeVida() {
       setIps(response.institucion.logo[0].data_url);
     } else {
       alert(`${response.message}`);
+    }
+  };
+
+  const deletEquipo = async () => {
+    let confirmar = window.confirm('Deseas eliminar el equipo?');
+    if (confirmar) {
+      const body = {
+        _id: equipo._id,
+      };
+      if (!body) {
+        alert('Por favor Seleccione un equipo');
+      } else {
+        const response = await request({
+          link: apiEliminarEquipo,
+          body,
+          method: 'POST',
+        });
+        if (response.success) {
+          alert(`${response.message}`);
+          window.location.href = './inventarioua';
+        } else {
+          alert(`${response.message}`);
+        }
+      }
     }
   };
 
@@ -339,6 +364,7 @@ function HojaDeVida() {
                 <button
                   className="button"
                   style={{ width: '20%', margin: '10px' }}
+                  onClick={deletEquipo}
                 >
                   Eliminar
                 </button>

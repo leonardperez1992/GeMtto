@@ -32,23 +32,26 @@ function ReportePdf() {
   };
 
   const deleteReport = async () => {
-    const body = {
-      _id: reporte._id,
-    };
-    if (!body) {
-      alert('Por favor Seleccione un equipo');
-      window.location.href = './reportes';
-    } else {
-      const response = await request({
-        link: apiEliminarReportes,
-        body,
-        method: 'POST',
-      });
-      if (response.success) {
-        alert('Reporte eliminado exitosamente');
+    let confirmar = window.confirm('Deseas eliminar el equipo?');
+    if (confirmar) {
+      const body = {
+        _id: reporte._id,
+      };
+      if (!body) {
+        alert('Por favor Seleccione un equipo');
         window.location.href = './reportes';
       } else {
-        alert(`${response.message}`);
+        const response = await request({
+          link: apiEliminarReportes,
+          body,
+          method: 'POST',
+        });
+        if (response.success) {
+          alert('Reporte eliminado exitosamente');
+          window.location.href = './reportes';
+        } else {
+          alert(`${response.message}`);
+        }
       }
     }
   };

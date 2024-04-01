@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import {
   apiCreateReporte,
-  apiActMtto,
+  apiGetActMtto,
   apiObtenerEquipo,
   apiIps,
   apiSetFiles,
@@ -54,7 +54,7 @@ function ReporteService() {
 
   const obtenerActMtos = async (equipo) => {
     const response = await request({
-      link: apiActMtto,
+      link: apiGetActMtto,
       method: 'GET',
       body: { equipo },
     });

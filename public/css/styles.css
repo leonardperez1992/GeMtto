@@ -578,3 +578,24 @@ label {
   width: 98%;
   height: auto;
 }
+
+.tabla-actividades {
+  width: 80%;
+  min-height: fit-content;
+  margin: 1rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tabla-actividades td {
+  width: auto;
+  margin: 2rem;
+  text-align: left;
+}
+
+.tabla-actividades th {
+  width: auto;
+  margin: 2rem;
+  background-color: rgb(0, 74, 116);
+  text-align: center;
+}

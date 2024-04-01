@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.113.181:3002/api';
+const baseUrl = 'http://192.168.110.181:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';
@@ -12,6 +12,7 @@ export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';
 export const apiActMtto = baseUrl + '/actmtto';
+export const apiGetActMtto = apiActMtto + '/getactmtto';
 export const apiCreateActMtto = apiActMtto + '/createactmtto';
 export const apiReportes = baseUrl + '/reportes';
 export const apiObtenerReporte = apiReportes + '/obtenerreporte';

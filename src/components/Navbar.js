@@ -24,12 +24,12 @@ function Navbar() {
                 <div>
                   <ul className="nav-list">
                     <li>
-                      <Link to="/createactmtto" className="nav-link">
+                      <Link to="/actmtto" className="nav-link">
                         Act Mtto
                       </Link>
                     </li>
                     <li>
-                      <Link to="/fichatecnica" className="nav-link">
+                      <Link to="/fichastecnicas" className="nav-link">
                         Ficha tec.
                       </Link>
                     </li>
@@ -49,7 +49,7 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link to="/crearips" className="nav-link">
+                      <Link to="/ips" className="nav-link">
                         Ips
                       </Link>
                     </li>

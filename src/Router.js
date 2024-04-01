@@ -9,6 +9,7 @@ import Inventario from './views/Inventario';
 import InventarioUser from './views/InventarioUser';
 import CreateInventary from './views/CreateInventary';
 import ReporteService from './views/ReporteService';
+import ActMtto from './views/ActMtto';
 import CreateActMtto from './views/CreateActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
@@ -19,6 +20,8 @@ import FichaTecnica from './views/FichaTecnica';
 import VerPdf from './views/VerPdf';
 import EditInventary from './views/EditInventary';
 import HojaDeVidaUser from './views/HojadeVidaUser';
+import FichasTecnicas from './views/FichasTecnicas';
+import Ips from './views/Ips';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -49,13 +52,16 @@ const RouterContainer = () => {
           <Route path="/editarequipo" element={<EditInventary />} />
           <Route path="/hojadevida" element={<HojaDeVida />} />
           <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />
+          <Route path="/fichastecnicas" element={<FichasTecnicas />} />
           <Route path="/fichatecnica" element={<FichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
           <Route path="/reporte" element={<ReportePdf />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/firmareportes" element={<FirmarReportes />} />
+          <Route path="/actmtto" element={<ActMtto />} />
           <Route path="/createactmtto" element={<CreateActMtto />} />
+          <Route path="/ips" element={<Ips />} />
           <Route path="/crearips" element={<CrearIps />} />
           <Route path="/verpdf" element={<VerPdf />} />
         </Routes>

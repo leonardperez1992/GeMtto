@@ -116,7 +116,6 @@ function FirmarReportes() {
               </tr>
               <tr>
                 <td>
-                  FIRMA:
                   <SignatureCanvas
                     canvasProps={{
                       width: 350,
@@ -129,7 +128,6 @@ function FirmarReportes() {
                   />
                 </td>
                 <td>
-                  FIRMA:
                   <SignatureCanvas
                     canvasProps={{ width: 350, height: 150 }}
                     ref={firmaRecref}

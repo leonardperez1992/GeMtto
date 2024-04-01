@@ -250,9 +250,9 @@ function ReportePdf() {
                 <td>{reporte?.valor_medido3}</td>
               </tr>
               <tr>
-                <td>{reporte?.parametro3}</td>
-                <td colSpan={2}>{reporte?.valor_programado3}</td>
-                <td>{reporte?.valor_medido3}</td>
+                <td>{reporte?.parametro4}</td>
+                <td colSpan={2}>{reporte?.valor_programado4}</td>
+                <td>{reporte?.valor_medido4}</td>
               </tr>
               <tr>
                 <th colSpan={4}>OBSERVACIONES</th>

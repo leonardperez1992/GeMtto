@@ -59,7 +59,6 @@ function ActMtto() {
                     fontSize: '25px',
                     border: '2px solid gray',
                     width: '100px',
-                    color: 'red',
                     padding: '10px',
                     borderRadius: '10px',
                   }}

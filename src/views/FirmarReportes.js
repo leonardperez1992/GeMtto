@@ -71,11 +71,9 @@ function FirmarReportes() {
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
-    console.log(body._id.length);
     if (body._id.length === 0) {
       alert('Por favor seleccione un reporte');
     } else {
-      console.log(body);
       const response = await request({
         link: apiFirmarReportes,
         body,

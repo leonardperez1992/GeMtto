@@ -204,7 +204,6 @@ function ReporteService() {
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
-    console.log(body);
     if (!body.equipo) {
       alert('Por favor diligencie todos los campos.');
     } else {

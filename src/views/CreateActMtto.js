@@ -41,7 +41,6 @@ function CreateActMtto() {
         window.location.href = './createactmtto';
       } else {
         alert(`${response.message}`);
-        console.log(actMtto);
       }
     }
   };

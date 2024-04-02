@@ -43,7 +43,6 @@ function ActMtto() {
     if (a.equipo < b.equipo) {
       return -1;
     }
-    // a must be equal to b
     return 0;
   });
 

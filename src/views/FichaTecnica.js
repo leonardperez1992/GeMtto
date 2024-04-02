@@ -48,7 +48,6 @@ function FichaTecnica() {
     if (!ficha) {
       alert('Por favor diligencie todos los campos.');
     } else {
-      console.log(ficha);
       const response = await request({
         link: apiCrearFicha,
         body: {

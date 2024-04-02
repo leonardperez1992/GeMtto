@@ -12,11 +12,9 @@ function VerPdf() {
       body: { id },
     });
     if (response.success) {
-      console.log(response.file);
       setPdf(response);
     } else {
       alert(`${response.message}`);
-      console.log(response);
     }
   };
 

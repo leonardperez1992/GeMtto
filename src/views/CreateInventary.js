@@ -68,7 +68,6 @@ function CreateInventary() {
         },
         method: 'POST',
       });
-      console.log(inventary);
       if (response.success) {
         alert('Equipo creado exitosamente');
         window.location.href = './inventarioua';
@@ -77,7 +76,6 @@ function CreateInventary() {
       }
     }
   };
-  console.log(inventary.fecha_fabricacion);
   return (
     <div>
       <div>

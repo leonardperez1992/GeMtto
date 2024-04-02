@@ -36,7 +36,6 @@ function EditInventary() {
       alert(`${response.message}`);
     }
   };
-  console.log(inventary);
   useEffect(function () {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');

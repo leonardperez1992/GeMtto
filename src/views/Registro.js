@@ -27,7 +27,6 @@ function Registro() {
     obtenerIps();
   }, []);
 
-  console.log(ips);
   const handleSave = (e) => {
     setUser(function (prev) {
       return { ...prev, [e.target.name]: e.target.value };

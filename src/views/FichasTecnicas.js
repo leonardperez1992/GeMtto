@@ -62,7 +62,7 @@ function FichasTecnicas() {
                     padding: '10px',
                     borderRadius: '10px',
                   }}
-                  to="/fichatecnica"
+                  to="/crearfichatecnica"
                   className="link"
                 >
                   ¡Agregar Ficha Tecnica!
@@ -84,6 +84,7 @@ function FichasTecnicas() {
                     <th>MODELO</th>
                     <th>CLAS. BIOMEDICA</th>
                     <th>TECNOLOGÍA</th>
+                    <th>ACCIÓN</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -94,6 +95,14 @@ function FichasTecnicas() {
                         <td>{item?.modelo}</td>
                         <td>{item?.clas_biomedica}</td>
                         <td>{item?.tecnologia}</td>
+                        <td>
+                          <Link
+                            to={`/editaract?id=${item?._id}`}
+                            className="nav-link"
+                          >
+                            Editar
+                          </Link>
+                        </td>
                       </tr>
                     );
                   })}

@@ -3,7 +3,7 @@ import { apiCrearFicha } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 
-function FichaTecnica() {
+function EditFichaTecnica() {
   const [imagen, setImagen] = useState();
   const maxNumber = 2;
 
@@ -91,7 +91,6 @@ function FichaTecnica() {
       <main>
         <section>
           <table>
-            <thead></thead>
             <tbody>
               <tr>
                 <td
@@ -355,4 +354,4 @@ function FichaTecnica() {
     </div>
   );
 }
-export default FichaTecnica;
+export default EditFichaTecnica;

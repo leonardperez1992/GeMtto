@@ -82,6 +82,8 @@ function EditInventary() {
       }
     }
   };
+
+  console.log(equipo);
   return (
     <div>
       <div>

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { apiCreateActMtto } from '../utils/api';
+import React, { useState, useEffect } from 'react';
+import { apiSetActMtto, apiGetByIDActMtto } from '../utils/api';
 import request from '../utils/request';
 
-function CreateActMtto() {
-  const [actMtto, setActmtto] = useState({
+function EditActMtto() {
+  const [actmtto, setActmtto] = useState([]);
+  const [EditactMtto, setEditActmtto] = useState({
+    _id: '',
     equipo: '',
     actividades: '',
     parametro1: '',
@@ -13,32 +15,53 @@ function CreateActMtto() {
     parametro5: '',
   });
 
+  const getActmtto = async (id) => {
+    const response = await request({
+      link: apiGetByIDActMtto,
+      method: 'GET',
+      body: { id },
+    });
+    if (response.success) {
+      setActmtto(response.actmtto);
+      setEditActmtto(response.actmtto);
+    } else {
+      alert(`Sin conexión con el Servidor ${response.message}`);
+    }
+  };
+
   const handleSave = (e) => {
-    setActmtto(function (prev) {
+    setEditActmtto(function (prev) {
       return { ...prev, [e.target.name]: e.target.value };
     });
   };
 
+  useEffect(function () {
+    let queryParameters = new URLSearchParams(window.location.search);
+    let idEquipo = queryParameters.get('id');
+    getActmtto(idEquipo);
+  }, []);
+
   const CreateAct = async () => {
-    if (!actMtto.equipo) {
+    if (!EditactMtto.equipo) {
       alert('Por favor diligencie todos los campos.');
     } else {
       const response = await request({
-        link: apiCreateActMtto,
+        link: apiSetActMtto,
         body: {
-          equipo: actMtto.equipo,
-          actividades: actMtto.actividades,
-          parametro1: actMtto.parametro1,
-          parametro2: actMtto.parametro2,
-          parametro3: actMtto.parametro3,
-          parametro4: actMtto.parametro4,
-          parametro5: actMtto.parametro5,
+          id: EditactMtto._id,
+          equipo: EditactMtto.equipo,
+          actividades: EditactMtto.actividades,
+          parametro1: EditactMtto.parametro1,
+          parametro2: EditactMtto.parametro2,
+          parametro3: EditactMtto.parametro3,
+          parametro4: EditactMtto.parametro4,
+          parametro5: EditactMtto.parametro5,
         },
         method: 'POST',
       });
       if (response.success) {
-        alert('Actividad de mantenimiento creado exitosamente');
-        window.location.href = './createactmtto';
+        alert('Actividad de mantenimiento editada exitosamente');
+        window.location.href = './actmtto';
       } else {
         alert(`${response.message}`);
       }
@@ -63,7 +86,7 @@ function CreateActMtto() {
                           textAlign: 'center',
                         }}
                       >
-                        Agregar Actividades de Mantenimiento
+                        Editar Actividades de Mantenimiento
                       </td>
                     </tr>
                     <tr></tr>
@@ -75,6 +98,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="equipo"
                           onChange={handleSave}
+                          defaultValue={actmtto?.equipo}
                         />
                       </td>
                     </tr>
@@ -96,6 +120,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="actividades"
                           onChange={handleSave}
+                          defaultValue={actmtto?.actividades}
                         ></textarea>
                       </td>
                     </tr>
@@ -107,6 +132,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="parametro1"
                           onChange={handleSave}
+                          defaultValue={actmtto?.parametro1}
                         />
                       </td>
                     </tr>
@@ -117,6 +143,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="parametro2"
                           onChange={handleSave}
+                          defaultValue={actmtto?.parametro2}
                         />
                       </td>
                     </tr>
@@ -127,6 +154,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="parametro3"
                           onChange={handleSave}
+                          defaultValue={actmtto?.parametro3}
                         />
                       </td>
                     </tr>
@@ -137,6 +165,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="parametro4"
                           onChange={handleSave}
+                          defaultValue={actmtto?.parametro4}
                         />
                       </td>
                     </tr>
@@ -147,6 +176,7 @@ function CreateActMtto() {
                           className="input-tabla-act"
                           name="parametro5"
                           onChange={handleSave}
+                          defaultValue={actmtto?.parametro5}
                         />
                       </td>
                     </tr>
@@ -166,4 +196,4 @@ function CreateActMtto() {
     </div>
   );
 }
-export default CreateActMtto;
+export default EditActMtto;

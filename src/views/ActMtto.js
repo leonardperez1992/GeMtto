@@ -85,6 +85,7 @@ function ActMtto() {
                     <th>PARAMETRO 3</th>
                     <th>PARAMETRO 4</th>
                     <th>PARAMETRO 5</th>
+                    <th>ACCIÓN</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -97,6 +98,14 @@ function ActMtto() {
                         <td>{item?.parametro3}</td>
                         <td>{item?.parametro4}</td>
                         <td>{item?.parametro5}</td>
+                        <td>
+                          <Link
+                            to={`/editaract?id=${item?._id}`}
+                            className="nav-link"
+                          >
+                            Editar
+                          </Link>
+                        </td>
                       </tr>
                     );
                   })}

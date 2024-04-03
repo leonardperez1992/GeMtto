@@ -13,7 +13,7 @@ function ReportePdf() {
 
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
-    method: 'open',
+    method: 'save',
     resolution: Resolution.LOW,
     page: {
       margin: {
@@ -326,7 +326,7 @@ function ReportePdf() {
           style={{ width: '20%', margin: '10px' }}
           onClick={() => generatePDF(targetRef, options)}
         >
-          Imprimir
+          Descargar
         </button>
         <button
           className="button"

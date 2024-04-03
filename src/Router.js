@@ -11,15 +11,16 @@ import CreateInventary from './views/CreateInventary';
 import ReporteService from './views/ReporteService';
 import ActMtto from './views/ActMtto';
 import CreateActMtto from './views/CreateActMtto';
+import EditActMtto from './views/EditActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
 import FirmarReportes from './views/FirmarReportes';
 import ReportePdf from './views/ReportePdf';
 import HojaDeVida from './views/HojadeVida';
-import FichaTecnica from './views/FichaTecnica';
 import VerPdf from './views/VerPdf';
 import EditInventary from './views/EditInventary';
 import HojaDeVidaUser from './views/HojadeVidaUser';
+import CreateFichaTecnica from './views/CreateFichaTecnica';
 import FichasTecnicas from './views/FichasTecnicas';
 import Ips from './views/Ips';
 
@@ -53,7 +54,7 @@ const RouterContainer = () => {
           <Route path="/hojadevida" element={<HojaDeVida />} />
           <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />
           <Route path="/fichastecnicas" element={<FichasTecnicas />} />
-          <Route path="/fichatecnica" element={<FichaTecnica />} />
+          <Route path="/crearfichatecnica" element={<CreateFichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
           <Route path="/reporte" element={<ReportePdf />} />
@@ -61,6 +62,7 @@ const RouterContainer = () => {
           <Route path="/firmareportes" element={<FirmarReportes />} />
           <Route path="/actmtto" element={<ActMtto />} />
           <Route path="/createactmtto" element={<CreateActMtto />} />
+          <Route path="/editaract" element={<EditActMtto />} />
           <Route path="/ips" element={<Ips />} />
           <Route path="/crearips" element={<CrearIps />} />
           <Route path="/verpdf" element={<VerPdf />} />

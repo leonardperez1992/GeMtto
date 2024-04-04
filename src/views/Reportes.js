@@ -35,6 +35,16 @@ function Reportes() {
       dato.serie.toLowerCase().includes(buscar.toLowerCase())
     );
   }
+
+  inventarios.sort(function (a, b) {
+    if (a.fecha > b.fecha) {
+      return 1;
+    }
+    if (a.fecha < b.fecha) {
+      return -1;
+    }
+    return 0;
+  });
   return (
     <div className="contenedor">
       <main>

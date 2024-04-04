@@ -6,11 +6,11 @@ function CreateActMtto() {
   const [actMtto, setActmtto] = useState({
     equipo: '',
     actividades: '',
-    parametro1: '',
-    parametro2: '',
-    parametro3: '',
-    parametro4: '',
-    parametro5: '',
+    parametro1: 'NA',
+    parametro2: 'NA',
+    parametro3: 'NA',
+    parametro4: 'NA',
+    parametro5: 'NA',
   });
 
   const handleSave = (e) => {
@@ -38,7 +38,7 @@ function CreateActMtto() {
       });
       if (response.success) {
         alert('Actividad de mantenimiento creado exitosamente');
-        window.location.href = './createactmtto';
+        window.location.href = './actmtto';
       } else {
         alert(`${response.message}`);
       }

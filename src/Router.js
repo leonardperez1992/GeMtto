@@ -20,8 +20,9 @@ import HojaDeVida from './views/HojadeVida';
 import VerPdf from './views/VerPdf';
 import EditInventary from './views/EditInventary';
 import HojaDeVidaUser from './views/HojadeVidaUser';
-import CreateFichaTecnica from './views/CreateFichaTecnica';
 import FichasTecnicas from './views/FichasTecnicas';
+import CreateFichaTecnica from './views/CreateFichaTecnica';
+import EditFichaTecnica from './views/EditFichaTecnica';
 import Ips from './views/Ips';
 
 const RouterContainer = () => {
@@ -55,6 +56,7 @@ const RouterContainer = () => {
           <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />
           <Route path="/fichastecnicas" element={<FichasTecnicas />} />
           <Route path="/crearfichatecnica" element={<CreateFichaTecnica />} />
+          <Route path="/editarfichatecnica" element={<EditFichaTecnica />} />
           <Route path="/createinventary" element={<CreateInventary />} />
           <Route path="/reporteService" element={<ReporteService />} />
           <Route path="/reporte" element={<ReportePdf />} />

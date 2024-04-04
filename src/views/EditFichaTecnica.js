@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { apiCrearFicha } from '../utils/api';
+import React, { useState, useEffect } from 'react';
+import { apiCrearFicha, apiGetFichaById } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 
 function EditFichaTecnica() {
+  const [getFicha, setGetFicha] = useState([]);
   const [imagen, setImagen] = useState();
-  const maxNumber = 2;
-
   const [ficha, setFicha] = useState({
     imagen: '',
     marca: '',
@@ -33,6 +32,30 @@ function EditFichaTecnica() {
     cantidad6: '',
     recomendaciones: '',
   });
+  const maxNumber = 2;
+
+  const ObtenerFicha = async (id) => {
+    const response = await request({
+      link: apiGetFichaById,
+      method: 'GET',
+      body: { id },
+    });
+    if (response.success) {
+      setGetFicha(response.ficha);
+      setFicha(response.ficha);
+    } else {
+      alert(`Sin conexión con el Servidor ${response.message}`);
+    }
+  };
+
+  useEffect(function () {
+    let queryParameters = new URLSearchParams(window.location.search);
+    let idEquipo = queryParameters.get('id');
+    ObtenerFicha(idEquipo);
+    console.log(idEquipo);
+  }, []);
+
+  console.log(getFicha);
 
   const handleSave = (e) => {
     setFicha(function (prev) {

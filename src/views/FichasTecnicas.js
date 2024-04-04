@@ -97,7 +97,7 @@ function FichasTecnicas() {
                         <td>{item?.tecnologia}</td>
                         <td>
                           <Link
-                            to={`/editaract?id=${item?._id}`}
+                            to={`/editarfichatecnica?id=${item?._id}`}
                             className="nav-link"
                           >
                             Editar

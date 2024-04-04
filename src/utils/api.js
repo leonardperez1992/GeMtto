@@ -11,6 +11,7 @@ export const apiEliminarEquipo = apiInventario + '/deletequipo';
 export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';
+export const apiGetFichaById = apiFicha + '/obtenerfichabyid';
 export const apiActMtto = baseUrl + '/actmtto';
 export const apiGetActMtto = apiActMtto + '/getactmtto';
 export const apiGetByIDActMtto = apiActMtto + '/getByIDactmtto';

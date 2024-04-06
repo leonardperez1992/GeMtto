@@ -131,6 +131,7 @@ function FirmarReportes() {
                       width: 350,
                       height: 150,
                     }}
+                    maxWidth={2}
                     ref={firmaIngRef}
                     onEnd={() => {
                       saveFirmaIng(firmaIngRef.current.toData());
@@ -141,6 +142,7 @@ function FirmarReportes() {
                   <SignatureCanvas
                     canvasProps={{ width: 350, height: 150 }}
                     ref={firmaRecref}
+                    maxWidth={2}
                     onEnd={() => {
                       saveFirmaRecibe(firmaRecref.current.toData());
                     }}
@@ -246,7 +248,9 @@ function FirmarReportes() {
                 <th>EQUIPO</th>
                 <th>SERIE</th>
                 <th>INSTITUCION</th>
-                <th>RESPONSABLE</th>
+                <th>INSTITUCION</th>
+                <th>ING. RESPONSABLE</th>
+                <th>RECIBE</th>
               </tr>
             </thead>
             <tbody>
@@ -265,7 +269,9 @@ function FirmarReportes() {
                     <td>{item?.equipo}</td>
                     <td>{item?.serie}</td>
                     <td>{item?.institucion}</td>
+                    <td>{item?.servicio}</td>
                     <td>{item?.nombre_ingeniero}</td>
+                    <td>{item?.nombre_recibe}</td>
                   </tr>
                 );
               })}

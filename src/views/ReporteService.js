@@ -707,6 +707,7 @@ function ReporteService() {
                       <SignatureCanvas
                         canvasProps={{ width: 450, height: 150 }}
                         ref={firmaIngRef}
+                        maxWidth={2}
                         onEnd={() => {
                           saveFirmaIng(firmaIngRef.current.toData());
                         }}
@@ -715,7 +716,11 @@ function ReporteService() {
                     <td colSpan={2}>
                       <label style={{ fontSize: '12px' }}>FIRMA: </label>
                       <SignatureCanvas
-                        canvasProps={{ width: 450, height: 150 }}
+                        canvasProps={{
+                          width: 450,
+                          height: 150,
+                        }}
+                        maxWidth={2}
                         ref={firmaRecref}
                         onEnd={() => {
                           saveFirmaRecibe(firmaRecref.current.toData());

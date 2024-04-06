@@ -13,11 +13,11 @@ function ReportePdf() {
 
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
-    method: 'save',
+    method: 'open',
     resolution: Resolution.LOW,
     page: {
       margin: {
-        top: 5,
+        top: 10,
         right: 0,
         bottom: 0,
         left: 0,
@@ -191,33 +191,33 @@ function ReportePdf() {
               </tr>
               <tr>
                 <td>
-                  <label>DESCRIPCION</label>
+                  <label>CANTIDAD</label>
                 </td>
                 <td colSpan={2}>
-                  <label>CANTIDAD</label>
+                  <label>DESCRIPCION</label>
                 </td>
                 <td>
                   <label>VALOR</label>
                 </td>
               </tr>
               <tr>
-                <td>{reporte?.descripcion1}</td>
-                <td colSpan={2}>{reporte?.cantidad1}</td>
+                <td>{reporte?.cantidad1}</td>
+                <td colSpan={2}>{reporte?.descripcion1}</td>
                 <td>{reporte?.valor1}</td>
               </tr>
               <tr>
-                <td>{reporte?.descripcion2}</td>
-                <td colSpan={2}>{reporte?.cantidad2}</td>
+                <td>{reporte?.cantidad2}</td>
+                <td colSpan={2}>{reporte?.descripcion2}</td>
                 <td>{reporte?.valor2}</td>
               </tr>
               <tr>
-                <td>{reporte?.descripcion3}</td>
-                <td colSpan={2}>{reporte?.cantidad3}</td>
+                <td>{reporte?.cantidad3}</td>
+                <td colSpan={2}>{reporte?.descripcion3}</td>
                 <td>{reporte?.valor3}</td>
               </tr>
               <tr>
-                <td>{reporte?.descripcion4}</td>
-                <td colSpan={2}>{reporte?.cantidad4}</td>
+                <td>{reporte?.cantidad4}</td>
+                <td colSpan={2}>{reporte?.descripcion4}</td>
                 <td>{reporte?.valor4}</td>
               </tr>
               <tr>
@@ -297,21 +297,21 @@ function ReportePdf() {
               </tr>
               <tr>
                 <td colSpan={2}>
-                  <label>NOMBRE:</label>
+                  <label>NOMBRE: </label>
                   {reporte?.nombre_ingeniero}
                 </td>
                 <td colSpan={2}>
-                  <label>NOMBRE:</label>
+                  <label>NOMBRE: </label>
                   {reporte?.nombre_recibe}
                 </td>
               </tr>
               <tr>
                 <td colSpan={2}>
-                  <label>CARGO:</label>
+                  <label>CARGO: </label>
                   {reporte?.cargo_ingeniero}
                 </td>
                 <td colSpan={2}>
-                  <label>CARGO:</label>
+                  <label>CARGO: </label>
                   {reporte?.cargo_recibe}
                 </td>
               </tr>

@@ -13,7 +13,7 @@ function ReportePdf() {
 
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
-    method: 'open',
+    method: 'save',
     resolution: Resolution.LOW,
     page: {
       margin: {

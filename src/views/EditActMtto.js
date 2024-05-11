@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { apiSetActMtto, apiGetByIDActMtto } from '../utils/api';
+import {
+  apiSetActMtto,
+  apiGetByIDActMtto,
+  apiDeleteActMtto,
+} from '../utils/api';
 import request from '../utils/request';
 
 function EditActMtto() {
@@ -64,6 +68,31 @@ function EditActMtto() {
         window.location.href = './actmtto';
       } else {
         alert(`${response.message}`);
+      }
+    }
+  };
+
+  const deleteact = async () => {
+    let confirmar = window.confirm('Deseas eliminar este archivo?');
+    if (confirmar) {
+      const body = {
+        _id: EditactMtto._id,
+      };
+      if (!body) {
+        alert('Por favor Seleccione un equipo');
+        window.location.href = './reportes';
+      } else {
+        const response = await request({
+          link: apiDeleteActMtto,
+          body,
+          method: 'POST',
+        });
+        if (response.success) {
+          alert(`${response.message}`);
+          window.location.href = './actmtto';
+        } else {
+          alert(`${response.message}`);
+        }
       }
     }
   };
@@ -182,12 +211,20 @@ function EditActMtto() {
                     </tr>
                   </tbody>
                 </table>
-                <input
-                  className="button-tabla-act"
-                  type="button"
-                  value="Guardar"
-                  onClick={CreateAct}
-                />
+                <div style={{ display: 'inline-block' }}>
+                  <input
+                    className="button-tabla-act"
+                    type="button"
+                    value="Guardar"
+                    onClick={CreateAct}
+                  />
+                  <input
+                    className="button-tabla-act"
+                    type="button"
+                    value="Eliminar"
+                    onClick={deleteact}
+                  />
+                </div>
               </div>
             </div>
           </div>

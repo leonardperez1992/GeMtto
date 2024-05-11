@@ -56,10 +56,10 @@ function ActMtto() {
                 <Link
                   style={{
                     fontSize: '25px',
-                    border: '2px solid gray',
                     width: '100px',
                     padding: '10px',
                     borderRadius: '10px',
+                    backgroundColor: '#dfeaf5',
                   }}
                   to="/createactmtto"
                   className="link"

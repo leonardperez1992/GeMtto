@@ -361,7 +361,6 @@ input[type='password'] {
 .link {
   color: #1a2537;
   text-align: center;
-  font-style: italic;
 }
 .link:hover {
   color: cadetblue;

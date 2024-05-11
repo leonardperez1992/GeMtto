@@ -41,8 +41,10 @@ function EditFichaTecnica() {
       body: { id },
     });
     if (response.success) {
+      console.log(response);
       setGetFicha(response.ficha);
       setFicha(response.ficha);
+      setImagen(response.ficha.imagen[0].data_url);
     } else {
       alert(`Sin conexión con el Servidor ${response.message}`);
     }
@@ -109,6 +111,7 @@ function EditFichaTecnica() {
       }
     }
   };
+
   return (
     <div>
       <main>
@@ -127,7 +130,10 @@ function EditFichaTecnica() {
                 </td>
               </tr>
               <tr>
-                <td>IMAGEN</td>
+                <td>
+                  {' '}
+                  <img src={imagen} alt="" width="250" />
+                </td>
                 <td colSpan={3} rowSpan={3}>
                   <ImageUploading
                     value={imagen}
@@ -157,7 +163,7 @@ function EditFichaTecnica() {
                         <button onClick={onImageRemoveAll}>
                           Eliminar imagen
                         </button>
-                        {imageList.map((image, index) => (
+                        {/* {imageList.map((image, index) => (
                           <div key={index} className="image-item">
                             <img src={image['data_url']} alt="" width="100" />
                             <div className="image-item__btn-wrapper">
@@ -169,7 +175,7 @@ function EditFichaTecnica() {
                               </button>
                             </div>
                           </div>
-                        ))}
+                        ))} */}
                       </div>
                     )}
                   </ImageUploading>
@@ -180,51 +186,91 @@ function EditFichaTecnica() {
               <tr>
                 <th>MARCA</th>
                 <td>
-                  <input name="marca" onChange={handleSave} />
+                  <input
+                    name="marca"
+                    onChange={handleSave}
+                    defaultValue={ficha?.marca}
+                  />
                 </td>
                 <th>MODELO</th>
                 <td>
-                  <input name="modelo" onChange={handleSave} />
+                  <input
+                    name="modelo"
+                    onChange={handleSave}
+                    defaultValue={ficha?.modelo}
+                  />
                 </td>
               </tr>
               <tr>
                 <th>TECNOLOGÍA PREDOMINANTE</th>
                 <td>
-                  <input name="tecnologia" onChange={handleSave} />
+                  <input
+                    name="tecnologia"
+                    onChange={handleSave}
+                    defaultValue={ficha?.tecnologia}
+                  />
                 </td>
                 <th>CLASIFICACIÓN BIOMÉDICA</th>
                 <td>
-                  <input name="clas_biomedica" onChange={handleSave} />
+                  <input
+                    name="clas_biomedica"
+                    onChange={handleSave}
+                    defaultValue={ficha?.clas_biomedica}
+                  />
                 </td>
               </tr>
               <tr>
                 <th>VOLTAJE</th>
                 <td>
-                  <input name="voltaje" onChange={handleSave} />
+                  <input
+                    name="voltaje"
+                    onChange={handleSave}
+                    defaultValue={ficha?.voltaje}
+                  />
                 </td>
                 <th>AMPERAJE</th>
                 <td>
-                  <input name="amperaje" onChange={handleSave} />
+                  <input
+                    name="amperaje"
+                    onChange={handleSave}
+                    defaultValue={ficha?.amperaje}
+                  />
                 </td>
               </tr>
               <tr>
                 <th>TEMPERATURA</th>
                 <td>
-                  <input name="temperatura" onChange={handleSave} />
+                  <input
+                    name="temperatura"
+                    onChange={handleSave}
+                    defaultValue={ficha?.temperatura}
+                  />
                 </td>
                 <th>FRECUENCIA</th>
                 <td>
-                  <input name="frecuencia" onChange={handleSave} />
+                  <input
+                    name="frecuencia"
+                    onChange={handleSave}
+                    defaultValue={ficha?.frecuencia}
+                  />
                 </td>
               </tr>
               <tr>
                 <th>POTENCIA</th>
                 <td>
-                  <input name="potencia" onChange={handleSave} />
+                  <input
+                    name="potencia"
+                    onChange={handleSave}
+                    defaultValue={ficha?.potencia}
+                  />
                 </td>
                 <th>BATERÍA</th>
                 <td>
-                  <input name="bateria" onChange={handleSave} />
+                  <input
+                    name="bateria"
+                    onChange={handleSave}
+                    defaultValue={ficha?.bateria}
+                  />
                 </td>
               </tr>
               <tr>
@@ -253,6 +299,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio1"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio1}
                   />
                 </td>
                 <td colSpan={2}>
@@ -260,6 +307,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad1"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad1}
                   />
                 </td>
               </tr>
@@ -269,6 +317,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio2"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio2}
                   />
                 </td>
                 <td colSpan={2}>
@@ -276,6 +325,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad2"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad2}
                   />
                 </td>
               </tr>
@@ -285,6 +335,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio3"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio3}
                   />
                 </td>
                 <td colSpan={2}>
@@ -292,6 +343,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad3"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad3}
                   />
                 </td>
               </tr>
@@ -301,6 +353,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio4"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio4}
                   />
                 </td>
                 <td colSpan={2}>
@@ -308,6 +361,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad4"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad4}
                   />
                 </td>
               </tr>
@@ -317,6 +371,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio5"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio5}
                   />
                 </td>
                 <td colSpan={2}>
@@ -324,6 +379,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad5"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad5}
                   />
                 </td>
               </tr>
@@ -333,6 +389,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="accesorio6"
                     onChange={handleSave}
+                    defaultValue={ficha?.accesorio6}
                   />
                 </td>
                 <td colSpan={2}>
@@ -340,6 +397,7 @@ function EditFichaTecnica() {
                     className="input-ficha"
                     name="cantidad6"
                     onChange={handleSave}
+                    defaultValue={ficha?.cantidad6}
                   />
                 </td>
               </tr>
@@ -359,6 +417,7 @@ function EditFichaTecnica() {
                   <textarea
                     name="recomendaciones"
                     onChange={handleSave}
+                    defaultValue={ficha?.recomendaciones}
                   ></textarea>
                 </td>
               </tr>

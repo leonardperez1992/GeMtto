@@ -190,69 +190,93 @@ function ReportePdf() {
                 <th colSpan={4}>REPUESTOS, INSUMOS, MATERIALES EMPLEADOS</th>
               </tr>
               <tr>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   <label>CANTIDAD</label>
                 </td>
-                <td colSpan={2}>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
                   <label>DESCRIPCION</label>
                 </td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   <label>VALOR</label>
                 </td>
               </tr>
               <tr>
-                <td>{reporte?.cantidad1}</td>
-                <td colSpan={2}>{reporte?.descripcion1}</td>
-                <td>{reporte?.valor1}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.cantidad1}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.descripcion1}
+                </td>
+                <td style={{ textAlign: 'center' }}>{reporte?.valor1}</td>
               </tr>
               <tr>
-                <td>{reporte?.cantidad2}</td>
-                <td colSpan={2}>{reporte?.descripcion2}</td>
-                <td>{reporte?.valor2}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.cantidad2}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.descripcion2}
+                </td>
+                <td style={{ textAlign: 'center' }}>{reporte?.valor2}</td>
               </tr>
               <tr>
-                <td>{reporte?.cantidad3}</td>
-                <td colSpan={2}>{reporte?.descripcion3}</td>
-                <td>{reporte?.valor3}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.cantidad3}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.descripcion3}
+                </td>
+                <td style={{ textAlign: 'center' }}>{reporte?.valor3}</td>
               </tr>
               <tr>
-                <td>{reporte?.cantidad4}</td>
-                <td colSpan={2}>{reporte?.descripcion4}</td>
-                <td>{reporte?.valor4}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.cantidad4}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.descripcion4}
+                </td>
+                <td style={{ textAlign: 'center' }}>{reporte?.valor4}</td>
               </tr>
               <tr>
                 <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
               </tr>
               <tr>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   <label>PARÁMETRO</label>
                 </td>
-                <td colSpan={2}>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
                   <label>VALOR PROGRAMADO</label>
                 </td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   <label>VALOR MEDIDO</label>
                 </td>
               </tr>
               <tr>
-                <td>{reporte?.parametro1}</td>
-                <td colSpan={2}>{reporte?.valor_programado1}</td>
-                <td>{reporte?.valor_medido1}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.parametro1}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.valor_programado1}
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  {reporte?.valor_medido1}
+                </td>
               </tr>
               <tr>
-                <td>{reporte?.parametro2}</td>
-                <td colSpan={2}>{reporte?.valor_programado2}</td>
-                <td>{reporte?.valor_medido2}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.parametro2}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.valor_programado2}
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  {reporte?.valor_medido2}
+                </td>
               </tr>
               <tr>
-                <td>{reporte?.parametro3}</td>
-                <td colSpan={2}>{reporte?.valor_programado3}</td>
-                <td>{reporte?.valor_medido3}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.parametro3}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.valor_programado3}
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  {reporte?.valor_medido3}
+                </td>
               </tr>
               <tr>
-                <td>{reporte?.parametro4}</td>
-                <td colSpan={2}>{reporte?.valor_programado4}</td>
-                <td>{reporte?.valor_medido4}</td>
+                <td style={{ textAlign: 'center' }}>{reporte?.parametro4}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.valor_programado4}
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  {reporte?.valor_medido4}
+                </td>
               </tr>
               <tr>
                 <th colSpan={4}>OBSERVACIONES</th>

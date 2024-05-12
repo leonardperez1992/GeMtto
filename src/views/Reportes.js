@@ -111,6 +111,13 @@ function Reportes() {
                           >
                             Ver
                           </Link>
+                          <br></br>
+                          <Link
+                            to={`/editareporte?id=${item._id}`}
+                            className="nav-link"
+                          >
+                            Editar
+                          </Link>
                         </td>
                       </tr>
                     );

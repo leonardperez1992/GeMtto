@@ -41,7 +41,7 @@ function EditFichaTecnica() {
     });
     if (response.success) {
       setFicha(response.ficha);
-      setImagen(response.ficha.imagen[0].data_url);
+      setImagen(response.ficha.imagen);
     } else {
       alert(`Sin conexión con el Servidor ${response.message}`);
     }
@@ -106,6 +106,7 @@ function EditFichaTecnica() {
       }
     }
   };
+
   console.log(ficha);
 
   return (
@@ -126,11 +127,7 @@ function EditFichaTecnica() {
                 </td>
               </tr>
               <tr>
-                <td>
-                  {' '}
-                  <img src={imagen} alt="" width="250" />
-                </td>
-                <td colSpan={3} rowSpan={3}>
+                <td colSpan={4} rowSpan={3}>
                   <ImageUploading
                     value={imagen}
                     onChange={onChange}
@@ -159,7 +156,7 @@ function EditFichaTecnica() {
                         <button onClick={onImageRemoveAll}>
                           Eliminar imagen
                         </button>
-                        {/* {imageList.map((image, index) => (
+                        {imageList.map((image, index) => (
                           <div key={index} className="image-item">
                             <img src={image['data_url']} alt="" width="100" />
                             <div className="image-item__btn-wrapper">
@@ -171,7 +168,7 @@ function EditFichaTecnica() {
                               </button>
                             </div>
                           </div>
-                        ))} */}
+                        ))}
                       </div>
                     )}
                   </ImageUploading>

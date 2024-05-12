@@ -16,6 +16,7 @@ import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
 import FirmarReportes from './views/FirmarReportes';
 import ReportePdf from './views/ReportePdf';
+import UpdateReporte from './views/UpdateReporte';
 import HojaDeVida from './views/HojadeVida';
 import VerPdf from './views/VerPdf';
 import EditInventary from './views/EditInventary';
@@ -62,6 +63,7 @@ const RouterContainer = () => {
           <Route path="/reporte" element={<ReportePdf />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/firmareportes" element={<FirmarReportes />} />
+          <Route path="/editareporte" element={<UpdateReporte />} />
           <Route path="/actmtto" element={<ActMtto />} />
           <Route path="/createactmtto" element={<CreateActMtto />} />
           <Route path="/editaract" element={<EditActMtto />} />

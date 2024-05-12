@@ -24,6 +24,7 @@ export const apiObtenerReporte = apiReportes + '/obtenerreporte';
 export const apiObtenerReportes = apiReportes + '/obtenerreportes';
 export const apiCreateReporte = apiReportes + '/createreporte';
 export const apiFirmarReportes = apiReportes + '/firmareporte';
+export const apiUpdateReporte = apiReportes + '/updatereporte';
 export const apiEliminarReportes = apiReportes + '/deletereporte';
 export const apiIps = baseUrl + '/ips';
 export const apiCreateIps = apiIps + '/createips';

@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { apiObtenerReporte, apiUpdateReporte } from '../utils/api';
 import request from '../utils/request';
-import SignatureCanvas from 'react-signature-canvas';
 
 function UpdateReporte() {
-  const imgIng = useRef({});
-  const imgRec = useRef({});
   const [reporte, setReporte] = useState({
     numero_reporte: '',
     institucion: '',
@@ -53,8 +50,6 @@ function UpdateReporte() {
     nombre_recibe: '',
     cargo_recibe: '',
   });
-  const [firmaIng, setFirmaIng] = useState('');
-  const [firmaRecibe, setFirmaRecibe] = useState('');
 
   const obtenerReporte = async (id) => {
     const response = await request({
@@ -64,24 +59,9 @@ function UpdateReporte() {
     });
     if (response.success) {
       setReporte(response.reporte);
-      if (response.reporte.firma_ingeniero && response.reporte.firma_recibe) {
-        imgIng.current.fromData(response.reporte.firma_ingeniero);
-        imgRec.current.fromData(response.reporte.firma_recibe);
-      }
     } else {
       alert(`${response.message}`);
     }
-  };
-
-  const firmaIngRef = useRef({});
-  const firmaRecref = useRef({});
-
-  const saveFirmaIng = (signature) => {
-    setFirmaIng(signature);
-  };
-
-  const saveFirmaRecibe = (signature) => {
-    setFirmaRecibe(signature);
   };
 
   useEffect(function () {
@@ -96,8 +76,9 @@ function UpdateReporte() {
     });
   };
 
-  const CreateReport = async () => {
+  const UpdateReport = async () => {
     const body = {
+      _id: reporte._id,
       numero_reporte: reporte.numero_reporte,
       institucion: reporte.institucion,
       fecha: reporte.fecha,
@@ -137,10 +118,8 @@ function UpdateReporte() {
       valor_medido4: reporte.valor_medido4,
       observaciones: reporte.observaciones,
       estado_final: reporte.estado_final,
-      firma_ingeniero: firmaIng,
       nombre_ingeniero: reporte.nombre_ingeniero,
       cargo_ingeniero: reporte.cargo_ingeniero,
-      firma_recibe: firmaRecibe,
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
@@ -154,7 +133,7 @@ function UpdateReporte() {
       });
       if (response.success) {
         alert('Reporte creado exitosamente');
-        window.location.href = './inventarioua';
+        window.location.href = './reportes';
       } else {
         alert(`${response.message}`);
       }
@@ -293,7 +272,7 @@ function UpdateReporte() {
                     <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
                   </tr>
                   <tr>
-                    <td colSpan={4}>
+                    <td colSpan={4} style={{ height: '150px' }}>
                       <textarea
                         name="desc_servicio"
                         onChange={handleSave}
@@ -583,64 +562,13 @@ function UpdateReporte() {
                   </tr>
                   <tr>
                     <td colSpan={2}>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{ width: 450, height: 150 }}
-                        ref={firmaIngRef}
-                        maxWidth={2}
-                        onEnd={() => {
-                          saveFirmaIng(firmaIngRef.current.toData());
-                        }}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{
-                          width: 450,
-                          height: 150,
-                        }}
-                        maxWidth={2}
-                        ref={firmaRecref}
-                        onEnd={() => {
-                          saveFirmaRecibe(firmaRecref.current.toData());
-                        }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <button
-                        onClick={() => {
-                          firmaIngRef.current.clear();
-                          saveFirmaIng(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                    <td colSpan={2}>
-                      {' '}
-                      <button
-                        onClick={() => {
-                          firmaRecref.current.clear();
-                          saveFirmaRecibe(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
                       <label>NOMBRE: </label>
                       <input
                         className="input-reportparam"
                         name="nombre_ingeniero"
                         type="text"
                         onChange={handleSave}
+                        defaultValue={reporte?.nombre_ingeniero}
                       />
                     </td>
                     <td colSpan={2}>
@@ -650,6 +578,7 @@ function UpdateReporte() {
                         name="nombre_recibe"
                         type="text"
                         onChange={handleSave}
+                        defaultValue={reporte?.nombre_recibe}
                       />
                     </td>
                   </tr>
@@ -661,6 +590,7 @@ function UpdateReporte() {
                         name="cargo_ingeniero"
                         type="text"
                         onChange={handleSave}
+                        defaultValue={reporte?.cargo_ingeniero}
                       />
                     </td>
                     <td colSpan={2}>
@@ -670,6 +600,7 @@ function UpdateReporte() {
                         name="cargo_recibe"
                         type="text"
                         onChange={handleSave}
+                        defaultValue={reporte?.cargo_recibe}
                       />
                     </td>
                   </tr>
@@ -681,9 +612,9 @@ function UpdateReporte() {
               >
                 <input
                   type="button"
-                  value="Crear"
+                  value="Guardar"
                   className="button"
-                  onClick={CreateReport}
+                  onClick={UpdateReport}
                 />
               </div>
             </div>

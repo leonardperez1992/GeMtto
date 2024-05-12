@@ -13,6 +13,7 @@ export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';
 export const apiGetFichaById = apiFicha + '/obtenerfichabyid';
 export const apiUpdateFicha = apiFicha + '/updateficha';
+export const apiDeleteFicha = apiFicha + '/deleteficha';
 export const apiActMtto = baseUrl + '/actmtto';
 export const apiCreateActMtto = apiActMtto + '/createactmtto';
 export const apiGetActMtto = apiActMtto + '/getactmtto';

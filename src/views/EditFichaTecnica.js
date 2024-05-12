@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiUpdateFicha, apiGetFichaById } from '../utils/api';
+import { apiUpdateFicha, apiGetFichaById, apiDeleteFicha } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 
@@ -107,7 +107,30 @@ function EditFichaTecnica() {
     }
   };
 
-  console.log(ficha);
+  const deleteficha = async () => {
+    let confirmar = window.confirm('Deseas eliminar este archivo?');
+    if (confirmar) {
+      const body = {
+        _id: ficha._id,
+      };
+      if (!body) {
+        alert('Por favor Seleccione un equipo');
+        window.location.href = './reportes';
+      } else {
+        const response = await request({
+          link: apiDeleteFicha,
+          body,
+          method: 'POST',
+        });
+        if (response.success) {
+          alert(`${response.message}`);
+          window.location.href = './fichastecnicas';
+        } else {
+          alert(`${response.message}`);
+        }
+      }
+    }
+  };
 
   return (
     <div>
@@ -416,13 +439,21 @@ function EditFichaTecnica() {
               </tr>
             </tbody>
           </table>
-          <div className="button-contenedor">
-            <input
-              type="button"
-              value="Guardar"
+          <div style={{ display: 'inline-block' }}>
+            <button
               className="button"
+              style={{ width: '20%', margin: '10px' }}
               onClick={Create}
-            />
+            >
+              Guardar
+            </button>
+            <button
+              className="button"
+              style={{ width: '20%', margin: '10px' }}
+              onClick={deleteficha}
+            >
+              Eliminar
+            </button>
           </div>
         </section>
       </main>

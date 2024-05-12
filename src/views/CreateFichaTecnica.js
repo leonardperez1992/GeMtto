@@ -80,7 +80,7 @@ function CreateFichaTecnica() {
       });
       if (response.success) {
         alert('Ficha técnica creado exitosamente');
-        window.location.href = './inventarioua';
+        window.location.href = './fichastecnicas';
       } else {
         alert(`${response.message}`);
       }

@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.1.50:3002/api';
+const baseUrl = 'http://192.168.1.59:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';
@@ -12,6 +12,7 @@ export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';
 export const apiGetFichaById = apiFicha + '/obtenerfichabyid';
+export const apiUpdateFicha = apiFicha + '/updateficha';
 export const apiActMtto = baseUrl + '/actmtto';
 export const apiCreateActMtto = apiActMtto + '/createactmtto';
 export const apiGetActMtto = apiActMtto + '/getactmtto';

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { apiCrearFicha, apiGetFichaById } from '../utils/api';
+import { apiUpdateFicha, apiGetFichaById } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 
 function EditFichaTecnica() {
-  const [getFicha, setGetFicha] = useState([]);
   const [imagen, setImagen] = useState();
   const [ficha, setFicha] = useState({
     imagen: '',
@@ -41,8 +40,6 @@ function EditFichaTecnica() {
       body: { id },
     });
     if (response.success) {
-      console.log(response);
-      setGetFicha(response.ficha);
       setFicha(response.ficha);
       setImagen(response.ficha.imagen[0].data_url);
     } else {
@@ -54,10 +51,7 @@ function EditFichaTecnica() {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');
     ObtenerFicha(idEquipo);
-    console.log(idEquipo);
   }, []);
-
-  console.log(getFicha);
 
   const handleSave = (e) => {
     setFicha(function (prev) {
@@ -74,8 +68,9 @@ function EditFichaTecnica() {
       alert('Por favor diligencie todos los campos.');
     } else {
       const response = await request({
-        link: apiCrearFicha,
+        link: apiUpdateFicha,
         body: {
+          _id: ficha._id,
           imagen: imagen,
           marca: ficha.marca,
           modelo: ficha.modelo,
@@ -104,13 +99,14 @@ function EditFichaTecnica() {
         method: 'POST',
       });
       if (response.success) {
-        alert('Ficha técnica creado exitosamente');
-        window.location.href = './inventarioua';
+        alert('Archivo actualizado exitosamente');
+        window.location.href = './fichastecnicas';
       } else {
         alert(`${response.message}`);
       }
     }
   };
+  console.log(ficha);
 
   return (
     <div>
@@ -426,7 +422,7 @@ function EditFichaTecnica() {
           <div className="button-contenedor">
             <input
               type="button"
-              value="Crear"
+              value="Guardar"
               className="button"
               onClick={Create}
             />

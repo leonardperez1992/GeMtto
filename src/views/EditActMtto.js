@@ -7,8 +7,7 @@ import {
 import request from '../utils/request';
 
 function EditActMtto() {
-  const [actmtto, setActmtto] = useState([]);
-  const [EditactMtto, setEditActmtto] = useState({
+  const [actmtto, setActmtto] = useState({
     _id: '',
     equipo: '',
     actividades: '',
@@ -27,14 +26,13 @@ function EditActMtto() {
     });
     if (response.success) {
       setActmtto(response.actmtto);
-      setEditActmtto(response.actmtto);
     } else {
       alert(`Sin conexión con el Servidor ${response.message}`);
     }
   };
 
   const handleSave = (e) => {
-    setEditActmtto(function (prev) {
+    setActmtto(function (prev) {
       return { ...prev, [e.target.name]: e.target.value };
     });
   };
@@ -46,20 +44,20 @@ function EditActMtto() {
   }, []);
 
   const CreateAct = async () => {
-    if (!EditactMtto.equipo) {
+    if (!actmtto.equipo) {
       alert('Por favor diligencie todos los campos.');
     } else {
       const response = await request({
         link: apiSetActMtto,
         body: {
-          id: EditactMtto._id,
-          equipo: EditactMtto.equipo,
-          actividades: EditactMtto.actividades,
-          parametro1: EditactMtto.parametro1,
-          parametro2: EditactMtto.parametro2,
-          parametro3: EditactMtto.parametro3,
-          parametro4: EditactMtto.parametro4,
-          parametro5: EditactMtto.parametro5,
+          id: actmtto._id,
+          equipo: actmtto.equipo,
+          actividades: actmtto.actividades,
+          parametro1: actmtto.parametro1,
+          parametro2: actmtto.parametro2,
+          parametro3: actmtto.parametro3,
+          parametro4: actmtto.parametro4,
+          parametro5: actmtto.parametro5,
         },
         method: 'POST',
       });
@@ -76,7 +74,7 @@ function EditActMtto() {
     let confirmar = window.confirm('Deseas eliminar este archivo?');
     if (confirmar) {
       const body = {
-        _id: EditactMtto._id,
+        _id: actmtto._id,
       };
       if (!body) {
         alert('Por favor Seleccione un equipo');

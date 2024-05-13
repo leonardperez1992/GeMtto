@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { apiUpdateFicha, apiGetFichaById, apiDeleteFicha } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
+import { TfiSave } from 'react-icons/tfi';
+import { BsTrash } from 'react-icons/bs';
 
 function EditFichaTecnica() {
   const [imagen, setImagen] = useState();
@@ -136,324 +138,354 @@ function EditFichaTecnica() {
     <div>
       <main>
         <section>
-          <table>
-            <tbody>
-              <tr>
-                <td
-                  colSpan={4}
-                  style={{
-                    backgroundColor: 'rgb(0, 74, 116)',
-                    color: 'white',
-                  }}
-                >
-                  1,2 INFORMACIÓN TÉCNICA
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={4} rowSpan={3}>
-                  <ImageUploading
-                    value={imagen}
-                    onChange={onChange}
-                    maxNumber={maxNumber}
-                    dataURLKey="data_url"
-                  >
-                    {({
-                      imageList,
-                      onImageUpload,
-                      onImageRemoveAll,
-                      onImageUpdate,
-                      onImageRemove,
-                      isDragging,
-                      dragProps,
-                    }) => (
-                      // write your building UI
-                      <div className="upload__image-wrapper">
-                        <button
-                          style={isDragging ? { color: 'red' } : undefined}
-                          onClick={onImageUpload}
-                          {...dragProps}
+          <div>
+            <div>
+              <div>
+                <table className="tabla-act">
+                  <tbody>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        style={{
+                          backgroundColor: 'rgb(0, 74, 116)',
+                          color: 'white',
+                        }}
+                      >
+                        1,2 INFORMACIÓN TÉCNICA
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        rowSpan={3}
+                        style={{ backgroundColor: '#ecf4f6' }}
+                      >
+                        <ImageUploading
+                          value={imagen}
+                          onChange={onChange}
+                          maxNumber={maxNumber}
+                          dataURLKey="data_url"
                         >
-                          Subir imagen
-                        </button>
-                        &nbsp;
-                        <button onClick={onImageRemoveAll}>
-                          Eliminar imagen
-                        </button>
-                        {imageList.map((image, index) => (
-                          <div key={index} className="image-item">
-                            <img src={image['data_url']} alt="" width="100" />
-                            <div className="image-item__btn-wrapper">
-                              <button onClick={() => onImageUpdate(index)}>
-                                Actualizar
+                          {({
+                            imageList,
+                            onImageUpload,
+                            onImageRemoveAll,
+                            onImageUpdate,
+                            onImageRemove,
+                            isDragging,
+                            dragProps,
+                          }) => (
+                            // write your building UI
+                            <div className="upload__image-wrapper">
+                              <button
+                                style={
+                                  isDragging ? { color: 'red' } : undefined
+                                }
+                                onClick={onImageUpload}
+                                {...dragProps}
+                              >
+                                Subir imagen
                               </button>
-                              <button onClick={() => onImageRemove(index)}>
-                                Eliminar
+                              &nbsp;
+                              <button onClick={onImageRemoveAll}>
+                                Eliminar imagen
                               </button>
+                              {imageList.map((image, index) => (
+                                <div key={index} className="image-item">
+                                  <img
+                                    src={image['data_url']}
+                                    alt=""
+                                    width="100"
+                                  />
+                                  <div className="image-item__btn-wrapper">
+                                    <button
+                                      onClick={() => onImageUpdate(index)}
+                                    >
+                                      Actualizar
+                                    </button>
+                                    <button
+                                      onClick={() => onImageRemove(index)}
+                                    >
+                                      Eliminar
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </ImageUploading>
-                </td>
-              </tr>
-              <tr></tr>
-              <tr></tr>
-              <tr>
-                <th>MARCA</th>
-                <td>
-                  <input
-                    name="marca"
-                    onChange={handleSave}
-                    defaultValue={ficha?.marca}
+                          )}
+                        </ImageUploading>
+                      </td>
+                    </tr>
+                    <tr></tr>
+                    <tr></tr>
+                    <tr>
+                      <th>MARCA</th>
+                      <td>
+                        <input
+                          name="marca"
+                          onChange={handleSave}
+                          defaultValue={ficha?.marca}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                      <th>MODELO</th>
+                      <td>
+                        <input
+                          name="modelo"
+                          onChange={handleSave}
+                          defaultValue={ficha?.modelo}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>TECNOLOGÍA PREDOMINANTE</th>
+                      <td>
+                        <input
+                          name="tecnologia"
+                          onChange={handleSave}
+                          defaultValue={ficha?.tecnologia}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                      <th>CLASIFICACIÓN BIOMÉDICA</th>
+                      <td>
+                        <input
+                          name="clas_biomedica"
+                          onChange={handleSave}
+                          defaultValue={ficha?.clas_biomedica}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>VOLTAJE</th>
+                      <td>
+                        <input
+                          name="voltaje"
+                          onChange={handleSave}
+                          defaultValue={ficha?.voltaje}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                      <th>AMPERAJE</th>
+                      <td>
+                        <input
+                          name="amperaje"
+                          onChange={handleSave}
+                          defaultValue={ficha?.amperaje}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>TEMPERATURA</th>
+                      <td>
+                        <input
+                          name="temperatura"
+                          onChange={handleSave}
+                          defaultValue={ficha?.temperatura}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                      <th>FRECUENCIA</th>
+                      <td>
+                        <input
+                          name="frecuencia"
+                          onChange={handleSave}
+                          defaultValue={ficha?.frecuencia}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>POTENCIA</th>
+                      <td>
+                        <input
+                          name="potencia"
+                          onChange={handleSave}
+                          defaultValue={ficha?.potencia}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                      <th>BATERÍA</th>
+                      <td>
+                        <input
+                          name="bateria"
+                          onChange={handleSave}
+                          defaultValue={ficha?.bateria}
+                          className="input-tabla-act"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={2}
+                        style={{
+                          backgroundColor: 'rgb(0, 74, 116)',
+                          color: 'white',
+                        }}
+                      >
+                        1,3 ACCESORIOS
+                      </td>
+                      <td
+                        colSpan={2}
+                        style={{
+                          backgroundColor: 'rgb(0, 74, 116)',
+                          color: 'white',
+                        }}
+                      >
+                        CANTIDAD
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio1"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio1}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad1"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad1}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio2"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio2}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad2"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad2}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio3"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio3}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad3"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad3}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio4"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio4}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad4"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad4}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio5"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio5}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad5"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad5}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="accesorio6"
+                          onChange={handleSave}
+                          defaultValue={ficha?.accesorio6}
+                        />
+                      </td>
+                      <td colSpan={2}>
+                        <input
+                          className="input-tabla-act"
+                          name="cantidad6"
+                          onChange={handleSave}
+                          defaultValue={ficha?.cantidad6}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        style={{
+                          backgroundColor: 'rgb(0, 74, 116)',
+                          color: 'white',
+                        }}
+                      >
+                        1,3 RECOMENDACIONES DE FABRICANTE
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={4} style={{ height: '200px' }}>
+                        <textarea
+                          name="recomendaciones"
+                          onChange={handleSave}
+                          defaultValue={ficha?.recomendaciones}
+                          className="input-tabla-act"
+                        ></textarea>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style={{ display: 'inline-block' }}>
+                  <TfiSave
+                    className="icon1"
+                    title="Guardar"
+                    size={25}
+                    onClick={Create}
                   />
-                </td>
-                <th>MODELO</th>
-                <td>
-                  <input
-                    name="modelo"
-                    onChange={handleSave}
-                    defaultValue={ficha?.modelo}
+
+                  <BsTrash
+                    className="icon1"
+                    title="Eliminar"
+                    size={25}
+                    onClick={deleteficha}
                   />
-                </td>
-              </tr>
-              <tr>
-                <th>TECNOLOGÍA PREDOMINANTE</th>
-                <td>
-                  <input
-                    name="tecnologia"
-                    onChange={handleSave}
-                    defaultValue={ficha?.tecnologia}
-                  />
-                </td>
-                <th>CLASIFICACIÓN BIOMÉDICA</th>
-                <td>
-                  <input
-                    name="clas_biomedica"
-                    onChange={handleSave}
-                    defaultValue={ficha?.clas_biomedica}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <th>VOLTAJE</th>
-                <td>
-                  <input
-                    name="voltaje"
-                    onChange={handleSave}
-                    defaultValue={ficha?.voltaje}
-                  />
-                </td>
-                <th>AMPERAJE</th>
-                <td>
-                  <input
-                    name="amperaje"
-                    onChange={handleSave}
-                    defaultValue={ficha?.amperaje}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <th>TEMPERATURA</th>
-                <td>
-                  <input
-                    name="temperatura"
-                    onChange={handleSave}
-                    defaultValue={ficha?.temperatura}
-                  />
-                </td>
-                <th>FRECUENCIA</th>
-                <td>
-                  <input
-                    name="frecuencia"
-                    onChange={handleSave}
-                    defaultValue={ficha?.frecuencia}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <th>POTENCIA</th>
-                <td>
-                  <input
-                    name="potencia"
-                    onChange={handleSave}
-                    defaultValue={ficha?.potencia}
-                  />
-                </td>
-                <th>BATERÍA</th>
-                <td>
-                  <input
-                    name="bateria"
-                    onChange={handleSave}
-                    defaultValue={ficha?.bateria}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td
-                  colSpan={2}
-                  style={{
-                    backgroundColor: 'rgb(0, 74, 116)',
-                    color: 'white',
-                  }}
-                >
-                  1,3 ACCESORIOS
-                </td>
-                <td
-                  colSpan={2}
-                  style={{
-                    backgroundColor: 'rgb(0, 74, 116)',
-                    color: 'white',
-                  }}
-                >
-                  CANTIDAD
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio1"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio1}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad1"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad1}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio2"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio2}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad2"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad2}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio3"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio3}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad3"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad3}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio4"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio4}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad4"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad4}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio5"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio5}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad5"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad5}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="accesorio6"
-                    onChange={handleSave}
-                    defaultValue={ficha?.accesorio6}
-                  />
-                </td>
-                <td colSpan={2}>
-                  <input
-                    className="input-ficha"
-                    name="cantidad6"
-                    onChange={handleSave}
-                    defaultValue={ficha?.cantidad6}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td
-                  colSpan={4}
-                  style={{
-                    backgroundColor: 'rgb(0, 74, 116)',
-                    color: 'white',
-                  }}
-                >
-                  1,3 RECOMENDACIONES DE FABRICANTE
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={4} style={{ height: '200px' }}>
-                  <textarea
-                    name="recomendaciones"
-                    onChange={handleSave}
-                    defaultValue={ficha?.recomendaciones}
-                  ></textarea>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div style={{ display: 'inline-block' }}>
-            <button
-              className="button"
-              style={{ width: '20%', margin: '10px' }}
-              onClick={Create}
-            >
-              Guardar
-            </button>
-            <button
-              className="button"
-              style={{ width: '20%', margin: '10px' }}
-              onClick={deleteficha}
-            >
-              Eliminar
-            </button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

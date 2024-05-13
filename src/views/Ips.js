@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiIps } from '../utils/api';
 import request from '../utils/request';
+import { HiOutlineDocumentPlus } from 'react-icons/hi2';
+import { GoSearch } from 'react-icons/go';
 
 function Ips() {
   const [ips, setIps] = useState([]);
@@ -53,29 +55,29 @@ function Ips() {
         <section>
           <div>
             <div>
-              <p>
+              <div className="div-buscar" style={{ display: 'inline-block' }}>
                 <Link
                   style={{
                     fontSize: '25px',
-                    border: '2px solid gray',
                     width: '100px',
-                    padding: '10px',
+                    padding: '5px',
                     borderRadius: '10px',
+                    backgroundColor: '#dfeaf5',
+                    fontStyle: 'normal',
                   }}
                   to="/crearips"
                   className="link"
                 >
-                  ¡Agregar Ips!
+                  <HiOutlineDocumentPlus title="Crear" size={25} />
                 </Link>
-              </p>
-              <div className="div-buscar">
-                <label>Buscar:</label>
                 <input
+                  style={{ backgroundColor: '#ecf4f6' }}
                   className="input-buscar"
                   value={buscar}
-                  placeholder="Equipo"
+                  placeholder="Ips"
                   onChange={handleSave}
                 />
+                <GoSearch size={25} />
               </div>
               <table className="tabla-actividades">
                 <thead>

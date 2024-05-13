@@ -4,6 +4,8 @@ import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import generatePDF, { Resolution } from 'react-to-pdf';
 import { Link } from 'react-router-dom';
+import { GrDocumentPdf } from 'react-icons/gr';
+import { BsTrash } from 'react-icons/bs';
 
 function ReportePdf() {
   const imgIng = useRef({});
@@ -32,7 +34,7 @@ function ReportePdf() {
   };
 
   const deleteReport = async () => {
-    let confirmar = window.confirm('Deseas eliminar el equipo?');
+    let confirmar = window.confirm('Deseas eliminar el archivo?');
     if (confirmar) {
       const body = {
         _id: reporte._id,
@@ -345,20 +347,18 @@ function ReportePdf() {
       </div>
 
       <div style={{ display: 'inline-block' }}>
-        <button
-          className="button"
-          style={{ width: '20%', margin: '10px' }}
+        <GrDocumentPdf
+          className="icon1"
+          title="Eliminar"
+          size={50}
           onClick={() => generatePDF(targetRef, options)}
-        >
-          Descargar
-        </button>
-        <button
-          className="button"
-          style={{ width: '20%', margin: '10px' }}
+        />
+        <BsTrash
+          className="icon1"
+          title="Eliminar"
+          size={50}
           onClick={deleteReport}
-        >
-          Eliminar
-        </button>
+        />
       </div>
     </div>
   );

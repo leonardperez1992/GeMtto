@@ -218,7 +218,6 @@ function EditActMtto() {
                     size={25}
                     onClick={CreateAct}
                   />
-
                   <BsTrash
                     className="icon1"
                     title="Eliminar"

@@ -2,6 +2,10 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiReportes } from '../utils/api';
 import request from '../utils/request';
+import { FaFileSignature } from 'react-icons/fa';
+import { GoSearch } from 'react-icons/go';
+import { GoEye } from 'react-icons/go';
+import { CiEdit } from 'react-icons/ci';
 
 function Reportes() {
   const [reportes, setReportes] = useState([]);
@@ -51,32 +55,33 @@ function Reportes() {
         <section>
           <div>
             <div>
-              <p>
+              <div
+                className="div-buscar"
+                style={{ display: 'inline-block', alignContent: 'center' }}
+              >
                 <Link
                   style={{
                     fontSize: '25px',
-                    border: '2px solid gray',
                     width: '100px',
-
-                    padding: '10px',
+                    padding: '5px',
                     borderRadius: '10px',
+                    backgroundColor: '#dfeaf5',
+                    fontStyle: 'normal',
                   }}
                   to="/firmareportes"
                   className="link"
                 >
-                  ¡Firmar Reportes!
+                  <FaFileSignature title="Firmar" size={30} />
                 </Link>
-              </p>
-              <div className="div-buscar">
-                <label>Buscar:</label>
                 <input
                   className="input-buscar"
                   value={buscar}
                   placeholder="Digite la serie"
                   onChange={handleSave}
                 />
+                <GoSearch size={25} />
               </div>
-              <table className="tabla-reportes">
+              <table className="tabla-actividades">
                 <thead>
                   <tr>
                     <th>Nº REPORTE</th>
@@ -109,14 +114,22 @@ function Reportes() {
                             to={`/reporte?id=${item._id}`}
                             className="nav-link"
                           >
-                            Ver
+                            <GoEye
+                              style={{ padding: '5px' }}
+                              title="Ver"
+                              size={20}
+                            />
                           </Link>
                           <br></br>
                           <Link
                             to={`/editareporte?id=${item._id}`}
                             className="nav-link"
                           >
-                            Editar
+                            <CiEdit
+                              style={{ padding: '5px' }}
+                              title="Editar"
+                              size={20}
+                            />
                           </Link>
                         </td>
                       </tr>

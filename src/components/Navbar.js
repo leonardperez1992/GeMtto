@@ -34,11 +34,6 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link to="/createinventary" className="nav-link">
-                        Equipo
-                      </Link>
-                    </li>
-                    <li>
                       <Link to="/inventarioua" className="nav-link">
                         Inventario
                       </Link>

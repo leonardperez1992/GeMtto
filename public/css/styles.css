@@ -54,6 +54,17 @@ body {
     margin: auto;
     text-align: left;
     word-wrap: break-word;
+    background-color: #ecf4f6;
+    border-radius: 10px;
+    border-color: white;
+  }
+
+  .table th {
+    width: auto;
+    margin: auto;
+    text-align: left;
+    word-wrap: break-word;
+    border-radius: 10%;
   }
 
   .tabla-reporte-2 {
@@ -582,6 +593,9 @@ label {
   width: auto;
   margin: 2rem;
   text-align: left;
+  background-color: #ecf4f6;
+  border-radius: 10px;
+  border-color: white;
 }
 
 .tabla-actividades th {
@@ -589,6 +603,7 @@ label {
   margin: 2rem;
   background-color: rgb(0, 74, 116);
   text-align: center;
+  border-radius: 5px;
 }
 
 textarea {
@@ -625,11 +640,13 @@ textarea {
 
 .input-tabla-act {
   width: 100%;
+  padding-left: 2%;
+  padding-right: 2%;
   text-align: left;
   border-radius: 10px;
   border-color: white;
   background-color: #dfeaf5;
-  font-size: larger;
+  font-size: medium;
 }
 
 .button-tabla-act {
@@ -639,4 +656,11 @@ textarea {
   border-color: white;
   background-color: #dfeaf5;
   font-size: larger;
+}
+
+.icon1 {
+  padding: 10px;
+  margin: 10px;
+  background-color: #dfeaf5;
+  border-radius: 10px;
 }

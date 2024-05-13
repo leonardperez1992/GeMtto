@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiCreateInventario, apiIps } from '../utils/api';
 import request from '../utils/request';
+import { TfiSave } from 'react-icons/tfi';
 
 function CreateInventary() {
   const [ipss, setIpss] = useState([]);
@@ -80,8 +81,7 @@ function CreateInventary() {
     <div>
       <div>
         <div className="contenedor">
-          <h1>Agregar Equipo</h1>
-          <table className="tabla-reporte-2">
+          <table className="tabla-act">
             <thead>
               <tr>
                 <td
@@ -103,7 +103,7 @@ function CreateInventary() {
                 <td colSpan={3}>
                   {' '}
                   <select
-                    className="form-select"
+                    className="input-tabla-act"
                     aria-label="select example"
                     onChange={function (e) {
                       setIps(e.target.value);
@@ -127,9 +127,9 @@ function CreateInventary() {
                 <td colSpan={3}>
                   {' '}
                   <input
+                    className="input-tabla-act"
                     name="servicio"
                     onChange={handleSave}
-                    style={{ width: '50%' }}
                   />
                 </td>
               </tr>
@@ -142,7 +142,7 @@ function CreateInventary() {
                   <input
                     name="ubicacion"
                     onChange={handleSave}
-                    style={{ width: '50%' }}
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -164,7 +164,7 @@ function CreateInventary() {
                   <input
                     name="equipo"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>MARCA</th>
@@ -172,7 +172,7 @@ function CreateInventary() {
                   <input
                     name="marca"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -182,7 +182,7 @@ function CreateInventary() {
                   <input
                     name="modelo"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>SERIE</th>
@@ -190,7 +190,7 @@ function CreateInventary() {
                   <input
                     name="serie"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -200,7 +200,7 @@ function CreateInventary() {
                   <input
                     name="inventario"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>REG. SANITARIO</th>
@@ -208,7 +208,7 @@ function CreateInventary() {
                   <input
                     name="registro_invima"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -220,7 +220,7 @@ function CreateInventary() {
                   <input
                     name="riesgo"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>FORMA DE ADQUISICIÓN</th>
@@ -228,7 +228,7 @@ function CreateInventary() {
                   <input
                     name="forma_adquisicion"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -239,6 +239,7 @@ function CreateInventary() {
                     name="fecha_instalacion"
                     type="date"
                     onChange={handleSave}
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>FECHA DE FABRICACIÓN</th>
@@ -247,6 +248,7 @@ function CreateInventary() {
                     name="fecha_fabricacion"
                     type="date"
                     onChange={handleSave}
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
@@ -256,7 +258,7 @@ function CreateInventary() {
                   <input
                     name="periodicidad"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
                 <th>RESPONSABLE</th>
@@ -264,19 +266,18 @@ function CreateInventary() {
                   <input
                     name="responsable"
                     onChange={handleSave}
-                    className="input-form"
+                    className="input-tabla-act"
                   />
                 </td>
               </tr>
             </tbody>
           </table>
           <div style={{ display: 'inline-block' }}>
-            <input
-              type="button"
-              value="Crear"
-              className="button"
+            <TfiSave
+              className="icon1"
+              title="Guardar"
+              size={25}
               onClick={CreateServ}
-              style={{ width: '20%' }}
             />
           </div>
         </div>

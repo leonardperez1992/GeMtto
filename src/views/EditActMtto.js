@@ -5,6 +5,8 @@ import {
   apiDeleteActMtto,
 } from '../utils/api';
 import request from '../utils/request';
+import { TfiSave } from 'react-icons/tfi';
+import { BsTrash } from 'react-icons/bs';
 
 function EditActMtto() {
   const [actmtto, setActmtto] = useState({
@@ -210,16 +212,17 @@ function EditActMtto() {
                   </tbody>
                 </table>
                 <div style={{ display: 'inline-block' }}>
-                  <input
-                    className="button-tabla-act"
-                    type="button"
-                    value="Guardar"
+                  <TfiSave
+                    className="icon1"
+                    title="Guardar"
+                    size={25}
                     onClick={CreateAct}
                   />
-                  <input
-                    className="button-tabla-act"
-                    type="button"
-                    value="Eliminar"
+
+                  <BsTrash
+                    className="icon1"
+                    title="Eliminar"
+                    size={25}
                     onClick={deleteact}
                   />
                 </div>

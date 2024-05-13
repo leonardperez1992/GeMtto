@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiCreateActMtto } from '../utils/api';
 import request from '../utils/request';
+import { TfiSave } from 'react-icons/tfi';
 
 function CreateActMtto() {
   const [actMtto, setActmtto] = useState({
@@ -152,10 +153,10 @@ function CreateActMtto() {
                     </tr>
                   </tbody>
                 </table>
-                <input
-                  className="button-tabla-act"
-                  type="button"
-                  value="Guardar"
+                <TfiSave
+                  className="icon1"
+                  title="Guardar"
+                  size={25}
                   onClick={CreateAct}
                 />
               </div>

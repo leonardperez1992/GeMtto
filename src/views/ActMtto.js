@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiActMtto } from '../utils/api';
 import request from '../utils/request';
+import { LuClipboardEdit } from 'react-icons/lu';
+import { HiOutlineDocumentPlus } from 'react-icons/hi2';
+import { GoSearch } from 'react-icons/go';
 
 function ActMtto() {
   const [actmtto, setActmtto] = useState([]);
@@ -52,29 +55,29 @@ function ActMtto() {
         <section>
           <div>
             <div>
-              <p>
+              <div className="div-buscar" style={{ display: 'inline-block' }}>
                 <Link
                   style={{
                     fontSize: '25px',
                     width: '100px',
-                    padding: '10px',
+                    padding: '5px',
                     borderRadius: '10px',
                     backgroundColor: '#dfeaf5',
+                    fontStyle: 'normal',
                   }}
                   to="/createactmtto"
                   className="link"
                 >
-                  ¡Agregar Actividades!
+                  <HiOutlineDocumentPlus title="Crear" size={25} />
                 </Link>
-              </p>
-              <div className="div-buscar">
-                <label>Buscar:</label>
                 <input
+                  style={{ backgroundColor: '#ecf4f6' }}
                   className="input-buscar"
                   value={buscar}
                   placeholder="Equipo"
                   onChange={handleSave}
                 />
+                <GoSearch size={25} />
               </div>
               <table className="tabla-actividades">
                 <thead>
@@ -103,7 +106,7 @@ function ActMtto() {
                             to={`/editaract?id=${item?._id}`}
                             className="nav-link"
                           >
-                            Editar
+                            <LuClipboardEdit size={20} title="Editar" />
                           </Link>
                         </td>
                       </tr>

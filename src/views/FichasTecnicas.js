@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiFicha } from '../utils/api';
 import request from '../utils/request';
+import { HiOutlineDocumentPlus } from 'react-icons/hi2';
+import { GoSearch } from 'react-icons/go';
+import { LuClipboardEdit } from 'react-icons/lu';
 
 function FichasTecnicas() {
   const [fichas, setFichas] = useState([]);
@@ -52,63 +55,62 @@ function FichasTecnicas() {
       <main>
         <section>
           <div>
-            <div>
-              <p>
-                <Link
-                  style={{
-                    fontSize: '25px',
-                    border: '2px solid gray',
-                    width: '100px',
-                    padding: '10px',
-                    borderRadius: '10px',
-                  }}
-                  to="/crearfichatecnica"
-                  className="link"
-                >
-                  ¡Agregar Ficha Tecnica!
-                </Link>
-              </p>
-              <div className="div-buscar">
-                <label>Buscar:</label>
-                <input
-                  className="input-buscar"
-                  value={buscar}
-                  placeholder="Equipo"
-                  onChange={handleSave}
-                />
-              </div>
-              <table className="tabla-actividades">
-                <thead>
-                  <tr>
-                    <th>MARCA</th>
-                    <th>MODELO</th>
-                    <th>CLAS. BIOMEDICA</th>
-                    <th>TECNOLOGÍA</th>
-                    <th>ACCIÓN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fichasTecnicas.map(function (item) {
-                    return (
-                      <tr>
-                        <td>{item?.marca}</td>
-                        <td>{item?.modelo}</td>
-                        <td>{item?.clas_biomedica}</td>
-                        <td>{item?.tecnologia}</td>
-                        <td>
-                          <Link
-                            to={`/editarfichatecnica?id=${item?._id}`}
-                            className="nav-link"
-                          >
-                            Editar
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="div-buscar" style={{ display: 'inline-block' }}>
+              <Link
+                style={{
+                  fontSize: '25px',
+                  width: '100px',
+                  padding: '5px',
+                  borderRadius: '10px',
+                  backgroundColor: '#dfeaf5',
+                  fontStyle: 'normal',
+                }}
+                to="/crearfichatecnica"
+                className="link"
+              >
+                <HiOutlineDocumentPlus title="Crear" size={25} />
+              </Link>
+
+              <input
+                className="input-buscar"
+                value={buscar}
+                placeholder="Equipo"
+                onChange={handleSave}
+              />
+              <GoSearch size={25} />
             </div>
+
+            <table className="tabla-actividades">
+              <thead>
+                <tr>
+                  <th>MARCA</th>
+                  <th>MODELO</th>
+                  <th>RIESGO</th>
+                  <th>TECNOLOGÍA</th>
+                  <th>ACCIÓN</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fichasTecnicas.map(function (item) {
+                  return (
+                    <tr>
+                      <td>{item?.marca}</td>
+                      <td>{item?.modelo}</td>
+                      <td>{item?.clas_biomedica}</td>
+                      <td>{item?.tecnologia}</td>
+                      <td>
+                        <Link
+                          to={`/editarfichatecnica?id=${item?._id}`}
+                          className="nav-link"
+                        >
+                          <LuClipboardEdit size={20} title="Editar" />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </section>
       </main>

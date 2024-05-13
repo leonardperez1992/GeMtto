@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { apiCrearFicha } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
-
 import { TfiSave } from 'react-icons/tfi';
 
 function CreateFichaTecnica() {

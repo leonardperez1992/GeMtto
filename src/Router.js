@@ -14,6 +14,7 @@ import CreateActMtto from './views/CreateActMtto';
 import EditActMtto from './views/EditActMtto';
 import CrearIps from './views/CrearIps';
 import Reportes from './views/Reportes';
+import Repuestos from './views/Repuestos';
 import FirmarReportes from './views/FirmarReportes';
 import ReportePdf from './views/ReportePdf';
 import UpdateReporte from './views/UpdateReporte';
@@ -62,6 +63,7 @@ const RouterContainer = () => {
           <Route path="/reporteService" element={<ReporteService />} />
           <Route path="/reporte" element={<ReportePdf />} />
           <Route path="/reportes" element={<Reportes />} />
+          <Route path="/repuestos" element={<Repuestos />} />
           <Route path="/firmareportes" element={<FirmarReportes />} />
           <Route path="/editareporte" element={<UpdateReporte />} />
           <Route path="/actmtto" element={<ActMtto />} />

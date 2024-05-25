@@ -6,6 +6,7 @@ import generatePDF, { Resolution } from 'react-to-pdf';
 import { Link } from 'react-router-dom';
 import { GrDocumentPdf } from 'react-icons/gr';
 import { BsTrash } from 'react-icons/bs';
+import { SlPrinter } from 'react-icons/sl';
 
 function ReportePdf() {
   const imgIng = useRef({});
@@ -16,6 +17,26 @@ function ReportePdf() {
   const options = {
     filename: `Reporte Nº${reporte.numero_reporte}`,
     method: 'save',
+    resolution: Resolution.LOW,
+    page: {
+      margin: {
+        top: 10,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      },
+      format: 'letter',
+      orientation: 'portrait',
+    },
+    canvas: {
+      mimeType: 'image/jpeg',
+      qualityRatio: 10,
+    },
+  };
+
+  const options_2 = {
+    filename: `Reporte Nº${reporte.numero_reporte}`,
+    method: 'open',
     resolution: Resolution.LOW,
     page: {
       margin: {
@@ -349,9 +370,15 @@ function ReportePdf() {
       <div style={{ display: 'inline-block' }}>
         <GrDocumentPdf
           className="icon1"
-          title="Eliminar"
+          title="Descargar"
           size={50}
           onClick={() => generatePDF(targetRef, options)}
+        />
+        <SlPrinter
+          className="icon1"
+          title="Imprimir"
+          size={50}
+          onClick={() => generatePDF(targetRef, options_2)}
         />
         <BsTrash
           className="icon1"

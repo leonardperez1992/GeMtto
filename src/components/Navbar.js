@@ -44,6 +44,11 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
+                      <Link to="/repuestos" className="nav-link">
+                        Repuestos
+                      </Link>
+                    </li>
+                    <li>
                       <Link to="/ips" className="nav-link">
                         Ips
                       </Link>

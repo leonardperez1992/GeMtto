@@ -174,7 +174,7 @@ function HojaDeVida() {
                       <img src={imagen} alt="" width="250" />
                     </td>
                     <th>EQUIPO</th>
-                    <td>{equipo?.equipo}</td>
+                    <td>{equipo?.equipo}</td>©
                   </tr>
                   <tr>
                     <th>MARCA</th>

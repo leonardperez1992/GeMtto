@@ -172,7 +172,9 @@ function ReportePdf() {
                 <th colSpan={4}>TIPO DE SERVICIO</th>
               </tr>
               <tr>
-                <td colSpan={4}>{reporte?.tipo_servicio}</td>
+                <td style={{ textAlign: 'center' }} colSpan={4}>
+                  {reporte?.tipo_servicio}
+                </td>
               </tr>
               <tr>
                 <th colSpan={4}>INFORMACION DEL EQUIPO</th>
@@ -305,21 +307,20 @@ function ReportePdf() {
                 <th colSpan={4}>OBSERVACIONES</th>
               </tr>
               <tr>
-                <td colSpan={2}>{reporte?.observaciones}</td>
+                <td style={{ textAlign: 'center' }} colSpan={2}>
+                  {reporte?.observaciones}
+                </td>
                 <td colSpan={2}>
-                  <Link
-                    to={`/verpdf?id=${reporte?.numero_reporte}`}
-                    className="nav-link"
-                  >
-                    Ver
-                  </Link>
+                  <a href={`${reporte?.observaciones}`}>Ver</a>
                 </td>
               </tr>
               <tr>
                 <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
               </tr>
               <tr>
-                <td colSpan={4}>{reporte?.estado_final}</td>
+                <td style={{ textAlign: 'center' }} colSpan={4}>
+                  {reporte?.estado_final}
+                </td>
               </tr>
               <tr>
                 <th colSpan={2}>INGENIERO/TECNICO</th>

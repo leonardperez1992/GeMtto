@@ -3,7 +3,6 @@ import { apiObtenerReporte, apiEliminarReportes } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import generatePDF, { Resolution } from 'react-to-pdf';
-import { Link } from 'react-router-dom';
 import { GrDocumentPdf } from 'react-icons/gr';
 import { BsTrash } from 'react-icons/bs';
 import { SlPrinter } from 'react-icons/sl';
@@ -15,7 +14,7 @@ function ReportePdf() {
   const targetRef = useRef();
 
   const options = {
-    filename: `Reporte Nº${reporte.numero_reporte}`,
+    filename: `Reporte Nº${reporte.numero_reporte}-SN ${reporte.serie}`,
     method: 'save',
     resolution: Resolution.LOW,
     page: {

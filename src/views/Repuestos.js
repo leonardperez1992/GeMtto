@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiReportes } from '../utils/api';
 import request from '../utils/request';
-import { FaFileSignature } from 'react-icons/fa';
 import { GoSearch } from 'react-icons/go';
 import { GoEye } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';

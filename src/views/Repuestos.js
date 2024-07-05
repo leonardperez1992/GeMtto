@@ -36,7 +36,7 @@ function Repuestos() {
     inventarios = reportes;
   } else {
     inventarios = reportes.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase())
+      dato.institucion.toLowerCase().includes(buscar.toLowerCase())
     );
   }
 
@@ -59,24 +59,10 @@ function Repuestos() {
                 className="div-buscar"
                 style={{ display: 'inline-block', alignContent: 'center' }}
               >
-                <Link
-                  style={{
-                    fontSize: '25px',
-                    width: '100px',
-                    padding: '5px',
-                    borderRadius: '10px',
-                    backgroundColor: '#dfeaf5',
-                    fontStyle: 'normal',
-                  }}
-                  to="/firmareportes"
-                  className="link"
-                >
-                  <FaFileSignature title="Firmar" size={30} />
-                </Link>
                 <input
                   className="input-buscar"
                   value={buscar}
-                  placeholder="Digite la serie"
+                  placeholder="Digite la Ips"
                   onChange={handleSave}
                 />
                 <GoSearch size={25} />

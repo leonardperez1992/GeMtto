@@ -216,7 +216,9 @@ function ReporteService() {
         alert('Reporte creado exitosamente');
         window.location.href = './inventarioua';
       } else {
-        alert(`${response.message}`);
+        alert(
+          `${response.message}Verifique que todos los campos estén diligenciados`
+        );
       }
     }
   };

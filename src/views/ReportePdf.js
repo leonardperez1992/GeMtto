@@ -108,6 +108,26 @@ function ReportePdf() {
   return (
     <div>
       <div>
+        <div style={{ display: 'inline-block' }}>
+          <GrDocumentPdf
+            className="icon1"
+            title="Descargar"
+            size={50}
+            onClick={() => generatePDF(targetRef, options)}
+          />
+          <SlPrinter
+            className="icon1"
+            title="Imprimir"
+            size={50}
+            onClick={() => generatePDF(targetRef, options_2)}
+          />
+          <BsTrash
+            className="icon1"
+            title="Eliminar"
+            size={50}
+            onClick={deleteReport}
+          />
+        </div>
         <div className="contenedor" ref={targetRef}>
           <table className="tabla-reporte">
             <thead>
@@ -365,27 +385,6 @@ function ReportePdf() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div style={{ display: 'inline-block' }}>
-        <GrDocumentPdf
-          className="icon1"
-          title="Descargar"
-          size={50}
-          onClick={() => generatePDF(targetRef, options)}
-        />
-        <SlPrinter
-          className="icon1"
-          title="Imprimir"
-          size={50}
-          onClick={() => generatePDF(targetRef, options_2)}
-        />
-        <BsTrash
-          className="icon1"
-          title="Eliminar"
-          size={50}
-          onClick={deleteReport}
-        />
       </div>
     </div>
   );

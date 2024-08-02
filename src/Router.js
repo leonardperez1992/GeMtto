@@ -38,7 +38,7 @@ const RouterContainer = () => {
       dispatch(saveUser(JSON.parse(user)));
     }
     setVerify(true);
-  }, []);
+  }, [dispatch]);
 
   if (!verify) {
     return null;

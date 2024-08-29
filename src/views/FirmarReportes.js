@@ -97,15 +97,15 @@ function FirmarReportes() {
     reportesList = reportes;
   } else {
     reportesList = reportes.filter((dato) =>
-      dato.fecha.toLowerCase().includes(buscar.toLowerCase())
+      dato.serie.toLowerCase().includes(buscar.toLowerCase())
     );
   }
 
   reportesList.sort(function (a, b) {
-    if (a.fecha < b.fecha) {
+    if (a.serie < b.serie) {
       return 1;
     }
-    if (a.fecha > b.fecha) {
+    if (a.serie > b.serie) {
       return -1;
     }
     return 0;
@@ -236,7 +236,7 @@ function FirmarReportes() {
                     className="input-report"
                     value={buscar}
                     type="text"
-                    placeholder="Digite la fecha"
+                    placeholder="Digite la Serie"
                     onChange={handleSave2}
                   />
                 </td>

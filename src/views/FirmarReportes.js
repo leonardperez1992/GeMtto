@@ -102,16 +102,14 @@ function FirmarReportes() {
   }
 
   reportesList.sort(function (a, b) {
-    if (a.serie < b.serie) {
+    if (a.fecha < b.fecha) {
       return 1;
     }
-    if (a.serie > b.serie) {
+    if (a.fecha > b.fecha) {
       return -1;
     }
     return 0;
   });
-
-  console.log(reporteFirma);
 
   return (
     <div>

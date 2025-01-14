@@ -14,7 +14,7 @@ function ReportePdf() {
   const targetRef = useRef();
 
   const options = {
-    filename: `${reporte.fecha} Reporte Nº${reporte.numero_reporte}-SN ${reporte.serie}`,
+    filename: `${reporte.fecha} -SN ${reporte.serie} -Reporte Nº${reporte.numero_reporte}`,
     method: 'save',
     resolution: Resolution.LOW,
     page: {

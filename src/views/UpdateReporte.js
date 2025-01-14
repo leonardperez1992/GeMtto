@@ -132,7 +132,7 @@ function UpdateReporte() {
         method: 'POST',
       });
       if (response.success) {
-        alert('Reporte creado exitosamente');
+        alert('Reporte actualizado exitosamente');
         window.location.href = './reportes';
       } else {
         alert(`${response.message}`);
@@ -208,7 +208,13 @@ function UpdateReporte() {
                   <tr>
                     <td colSpan={2}>
                       <label>SERVICIO: </label>
-                      {reporte?.servicio}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="servicio"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.servicio}
+                      />
                     </td>
                     <td colSpan={2}>
                       <label>CIUDAD: </label>

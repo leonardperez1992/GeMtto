@@ -29,6 +29,11 @@ function Navbar() {
                       </Link>
                     </li>
                     <li>
+                      <Link to="/informes" className="nav-link">
+                        Informes
+                      </Link>
+                    </li>
+                    <li>
                       <Link to="/fichastecnicas" className="nav-link">
                         Ficha tec.
                       </Link>

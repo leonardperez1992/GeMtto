@@ -26,6 +26,7 @@ import FichasTecnicas from './views/FichasTecnicas';
 import CreateFichaTecnica from './views/CreateFichaTecnica';
 import EditFichaTecnica from './views/EditFichaTecnica';
 import Ips from './views/Ips';
+import Informes from './views/Informes';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -72,6 +73,7 @@ const RouterContainer = () => {
           <Route path="/ips" element={<Ips />} />
           <Route path="/crearips" element={<CrearIps />} />
           <Route path="/verpdf" element={<VerPdf />} />
+          <Route path="/informes" element={<Informes />} />
         </Routes>
       </Router>
     </React.StrictMode>

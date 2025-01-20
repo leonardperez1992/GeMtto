@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.31.181:3002/api';
+const baseUrl = 'http://192.168.1.8:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';

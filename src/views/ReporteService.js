@@ -540,7 +540,7 @@ function ReporteService() {
                   </tr>
                   <tr>
                     <td>PARÁMETRO</td>
-                    <td colSpan={2}>VALOR PROGRAMADO</td>
+                    <td colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
                     <td>VALOR MEDIDO</td>
                   </tr>
                   <tr>

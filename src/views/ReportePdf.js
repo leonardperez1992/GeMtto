@@ -14,7 +14,7 @@ function ReportePdf() {
   const targetRef = useRef();
 
   const options = {
-    filename: `${reporte.fecha} -SN ${reporte.serie} -Reporte Nº${reporte.numero_reporte}`,
+    filename: `${reporte.fecha} -SN ${reporte.serie} -Reporte Nº ${reporte.numero_reporte}`,
     method: 'save',
     resolution: Resolution.LOW,
     page: {
@@ -280,7 +280,7 @@ function ReportePdf() {
                   <label>PARÁMETRO</label>
                 </td>
                 <td style={{ textAlign: 'center' }} colSpan={2}>
-                  <label>VALOR PROGRAMADO</label>
+                  <label>VALOR PROGRAMADO (TOLERANCIA)</label>
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   <label>VALOR MEDIDO</label>

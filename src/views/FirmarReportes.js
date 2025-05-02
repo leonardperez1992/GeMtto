@@ -129,7 +129,7 @@ function FirmarReportes() {
                       width: 350,
                       height: 150,
                     }}
-                    maxWidth={2}
+                    maxWidth={1.5}
                     ref={firmaIngRef}
                     onEnd={() => {
                       saveFirmaIng(firmaIngRef.current.toData());
@@ -140,7 +140,7 @@ function FirmarReportes() {
                   <SignatureCanvas
                     canvasProps={{ width: 350, height: 150 }}
                     ref={firmaRecref}
-                    maxWidth={2}
+                    maxWidth={1.5}
                     onEnd={() => {
                       saveFirmaRecibe(firmaRecref.current.toData());
                     }}

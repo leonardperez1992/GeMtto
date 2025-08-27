@@ -220,7 +220,7 @@ function UpdateReporte() {
                       <label>CIUDAD: </label>
                       <input
                         style={{ width: 'auto', height: 'auto' }}
-                        name="servicio"
+                        name="ciudad"
                         type="text"
                         onChange={handleSave}
                         defaultValue={reporte?.ciudad}

@@ -241,7 +241,7 @@ function ReportePdf() {
                   <label>DESCRIPCION</label>
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  <label>VALOR</label>
+                  <label>VALOR UNITARIO</label>
                 </td>
               </tr>
               <tr>

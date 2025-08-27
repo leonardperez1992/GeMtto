@@ -429,7 +429,7 @@ function ReporteService() {
                   <tr>
                     <td>CANTIDAD</td>
                     <td colSpan={2}>DESCRIPCION</td>
-                    <td>VALOR</td>
+                    <td>VALOR UNITARIO</td>
                   </tr>
                   <tr>
                     <td>

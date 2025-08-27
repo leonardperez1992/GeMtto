@@ -226,7 +226,7 @@ function FirmarReportes() {
           </div>
         </div>
         <div>
-          <table className="tabla-reportes">
+          <table className="table">
             <thead>
               <tr>
                 <td colSpan={2}>
@@ -245,7 +245,7 @@ function FirmarReportes() {
                 <th>FECHA</th>
                 <th>EQUIPO</th>
                 <th>SERIE</th>
-                <th>INSTITUCION</th>
+                <th>SERVICIO</th>
                 <th>INSTITUCION</th>
                 <th>ING. RESPONSABLE</th>
                 <th>RECIBE</th>

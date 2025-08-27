@@ -218,7 +218,13 @@ function UpdateReporte() {
                     </td>
                     <td colSpan={2}>
                       <label>CIUDAD: </label>
-                      {reporte?.ciudad}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="servicio"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.ciudad}
+                      />
                     </td>
                   </tr>
                   <tr>
@@ -241,21 +247,45 @@ function UpdateReporte() {
                   <tr>
                     <td colSpan={2}>
                       <label>EQUIPO: </label>
-                      {reporte?.equipo}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="equipo"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.equipo}
+                      />
                     </td>
                     <td colSpan={2}>
                       <label>MARCA: </label>
-                      {reporte?.marca}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="marca"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.marca}
+                      />
                     </td>
                   </tr>
                   <tr>
                     <td>
                       <label>MODELO: </label>
-                      {reporte?.modelo}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="modelo"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.modelo}
+                      />
                     </td>
                     <td colSpan={2} style={{ backgroundColor: 'white' }}>
                       <label>SERIE: </label>
-                      {reporte?.serie}
+                      <input
+                        style={{ width: 'auto', height: 'auto' }}
+                        name="serie"
+                        type="text"
+                        onChange={handleSave}
+                        defaultValue={reporte?.serie}
+                      />
                     </td>
                     <td>
                       <label>INVENTARIO: </label>

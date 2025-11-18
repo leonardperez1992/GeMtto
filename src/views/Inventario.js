@@ -46,10 +46,7 @@ function Inventario() {
       <main>
         <section>
           <div>
-            <div
-              className="div-buscar"
-              style={{ display: 'inline-block', width: '50%' }}
-            >
+            <div className="div-buscar" style={{ display: 'inline-block' }}>
               <Link
                 style={{
                   fontSize: '25px',
@@ -65,20 +62,12 @@ function Inventario() {
                 <HiOutlineDocumentPlus title="Crear" size={25} />
               </Link>
               <input
-                style={{
-                  width: '50%',
-                  backgroundColor: '#ecf4f6',
-                  borderStyle: 'solid',
-                  borderColor: 'gray',
-                  borderWidth: '1px',
-                  borderRadius: '5px',
-                }}
+                className="input-buscar"
                 value={buscar}
-                type="text"
                 placeholder="Digite la serie"
                 onChange={handleSave}
               />
-              <GoSearch size={30} />
+              <GoSearch size={30} className="lupa" />
             </div>
             <div>
               <table className="table">

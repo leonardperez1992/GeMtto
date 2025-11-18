@@ -77,7 +77,7 @@ function FichasTecnicas() {
                 placeholder="Equipo"
                 onChange={handleSave}
               />
-              <GoSearch size={25} />
+              <GoSearch size={25} className="lupa" />
             </div>
 
             <table className="tabla-actividades">

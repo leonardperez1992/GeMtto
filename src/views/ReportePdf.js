@@ -129,7 +129,7 @@ function ReportePdf() {
           />
         </div>
         <div className="contenedor" ref={targetRef}>
-          <table className="tabla-reporte">
+          <table className="tabla-reporte-pdf">
             <thead>
               <tr>
                 <td colSpan={2}>

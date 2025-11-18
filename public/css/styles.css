@@ -5,7 +5,7 @@ body {
   justify-content: center;
   height: 100%;
   font-family: 'Arial';
-  width: 100%;
+  background-color: #3b3838ff;
 }
 
 * {
@@ -26,12 +26,17 @@ body {
     border-collapse: collapse;
     table-layout: fixed;
     font-size: x-large;
+    background-color: #3b3838ff;
+    color: white;
+    border-color: white;
   }
 
   .tabla-reporte td {
     width: auto;
     margin: 2rem;
     text-align: left;
+    background-color: #3b3838ff;
+    color: white;
   }
 
   .tabla-reporte th {
@@ -41,12 +46,35 @@ body {
     text-align: center;
   }
 
+  .tabla-reporte-pdf {
+    width: 80%;
+    min-height: fit-content;
+    margin: 1rem;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: x-large;
+  }
+
+  .tabla-reporte-pdf td {
+    width: auto;
+    margin: 2rem;
+    text-align: left;
+  }
+
+  .tabla-reporte-pdf th {
+    width: auto;
+    margin: 2rem;
+  }
+
   .table {
     width: 100%;
     margin: 1rem;
     border-collapse: collapse;
     caption-side: bottom;
     table-layout: fixed;
+    background-color: #3b3838ff;
+    color: white;
+    border-color: white;
   }
 
   .table td {
@@ -54,8 +82,9 @@ body {
     margin: auto;
     text-align: left;
     word-wrap: break-word;
-    background-color: #ecf4f6;
     border-radius: 10px;
+    background-color: #3b3838ff;
+    color: white;
     border-color: white;
   }
 
@@ -109,7 +138,6 @@ body {
   .tabla-reportes th {
     width: 25%;
     margin: 2rem;
-
     padding: 0.5em;
   }
 
@@ -434,42 +462,12 @@ tr {
   color: black;
 }
 
-/* Media query para hacer la barra de navegación responsive */
-/* @media screen and (min-width: 100px) and (max-width: 600px) {
-  .navbar {
-    display: flexbox;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-    padding: 10px;
-    color: black;
-  }
-
-  .nav-list {
-    list-style: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
-    color: black;
-  }
-
-  .nav-list li {
-    border: 1px inset #000;
-    border-radius: 10px;
-    background-color: aliceblue;
-  }
-  .nav-list a {
-    text-decoration: none;
-    color: black;
-  }
-} */
-
 .navbar {
   justify-content: center;
   align-items: center;
-  background-color: white;
+  background-color: #3b3838ff;
   padding: 10px;
-  color: black;
+  color: rgb(236, 226, 226);
   width: 90%;
 }
 
@@ -477,7 +475,7 @@ tr {
   display: flex;
   margin: 0;
   padding: 10px;
-  color: black;
+  color: rgb(250, 242, 242);
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -487,8 +485,20 @@ tr {
   margin-right: 1px;
   border: 1px inset #000;
   border-radius: 10px;
-  background-color: aliceblue;
+  border-color: white;
   padding: 10px;
+  color: white;
+}
+
+.nav-item {
+  border-color: white;
+}
+
+.nav-list Link {
+  color: white;
+}
+.nav-link {
+  color: white;
 }
 
 ul {
@@ -514,6 +524,8 @@ a {
   font-size: '14px';
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
+  background-color: #3b3838ff;
+  color: white;
 }
 
 .input-report {
@@ -559,12 +571,19 @@ a {
 
 .input-buscar {
   width: 20%;
-  border: 1px solid gray;
+  border: 1px solid;
   margin: 5px;
   border-radius: 5px;
   height: 10%;
   font-size: larger;
   padding: 1%;
+  background-color: #3b3838ff;
+  color: white;
+  border-color: white;
+}
+
+.lupa {
+  color: white;
 }
 
 .input-ficha {
@@ -589,6 +608,9 @@ label {
   border-collapse: collapse;
   table-layout: fixed;
   overflow-wrap: break-word;
+  background-color: #3b3838ff;
+  color: white;
+  border-color: white;
 }
 
 .tabla-actividades td {
@@ -597,8 +619,9 @@ label {
   text-align: left;
   background-color: #ecf4f6;
   border-radius: 10px;
+  background-color: #3b3838ff;
+  color: white;
   border-color: white;
-
   text-overflow: ellipsis;
 }
 
@@ -616,6 +639,18 @@ textarea {
   padding: 0;
   margin: 0;
   font-family: 'Arial';
+  background-color: #3b3838ff;
+  color: white;
+}
+
+input {
+  background-color: #3b3838ff;
+  color: white;
+}
+
+select {
+  background-color: #3b3838ff;
+  color: white;
 }
 
 .tabla-act {

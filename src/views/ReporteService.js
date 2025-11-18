@@ -232,21 +232,12 @@ function ReporteService() {
               <table className="tabla-reporte">
                 <thead>
                   <tr>
-                    <td
-                      colSpan={1}
-                      style={{ backgroundColor: 'white', textAlign: 'center' }}
-                    >
-                      <img
-                        src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
-                        alt=""
-                        width="70%"
-                      />
-                    </td>
+                    <td colSpan={1}></td>
                     <td
                       colSpan={2}
                       style={{
-                        backgroundColor: 'white',
-                        color: 'black',
+                        backgroundColor: '#3b3838ff',
+                        color: 'white',
                         textAlign: 'center',
                         fontSize: '90%',
                       }}
@@ -255,14 +246,20 @@ function ReporteService() {
                     </td>
                     <td
                       style={{
-                        backgroundColor: 'white',
-                        color: 'black',
+                        backgroundColor: '#3b3838ff',
+                        color: 'white',
                         textAlign: 'center',
                         fontSize: '70%',
                       }}
                     >
                       Nº DE REPORTE:{' '}
-                      <label style={{ color: 'red', fontSize: '120%' }}>
+                      <label
+                        style={{
+                          backgroundColor: '#3b3838ff',
+                          color: 'white',
+                          fontSize: '120%',
+                        }}
+                      >
                         {numReporte}
                       </label>
                     </td>
@@ -280,7 +277,9 @@ function ReporteService() {
                     <td colSpan={2}>
                       <label>FECHA: </label>
                       <input
-                        style={{ fontSize: '14px' }}
+                        style={{
+                          fontSize: '14px',
+                        }}
                         name="fecha"
                         type="date"
                         onChange={handleSave}
@@ -371,7 +370,7 @@ function ReporteService() {
                       <label>MODELO: </label>
                       {equipo?.modelo}
                     </td>
-                    <td colSpan={2} style={{ backgroundColor: 'white' }}>
+                    <td colSpan={2}>
                       <label>SERIE: </label>
                       {equipo?.serie}
                     </td>

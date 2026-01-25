@@ -279,6 +279,8 @@ function ReporteService() {
                       <input
                         style={{
                           fontSize: '14px',
+                          backgroundColor: 'black',
+                          color: 'white',
                         }}
                         name="fecha"
                         type="date"

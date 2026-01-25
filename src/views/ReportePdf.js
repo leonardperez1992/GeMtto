@@ -329,9 +329,7 @@ function ReportePdf() {
                 <td style={{ textAlign: 'center' }} colSpan={2}>
                   {reporte?.observaciones}
                 </td>
-                <td colSpan={2}>
-                  <a href={`${reporte?.observaciones}`}>Ver</a>
-                </td>
+                <td colSpan={2}></td>
               </tr>
               <tr>
                 <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>

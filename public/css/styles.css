@@ -352,6 +352,8 @@ input[type='password'] {
   padding: 10px;
   border: none;
   text-align: center;
+  background-color: #3b3838ff;
+  color: white;
 }
 
 .input-contenedor {
@@ -666,6 +668,8 @@ select {
   text-align: left;
   border-radius: 10px;
   border-color: white;
+  background-color: #3b3838ff;
+  color: white;
 }
 
 .tabla-act th {
@@ -683,8 +687,8 @@ select {
   padding-right: 2%;
   text-align: left;
   border-radius: 10px;
-  border-color: white;
-  background-color: #dfeaf5;
+  border-color: #505151;
+  background-color: #505151;
   font-size: auto;
 }
 

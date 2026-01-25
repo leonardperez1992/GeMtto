@@ -24,7 +24,7 @@ function Login() {
     <div>
       <div></div>
       <div className="div-form">
-        <h2>Iniciar Sesión</h2>
+        <h2 style={{ color: 'white' }}>Iniciar Sesión</h2>
         <div className="input-contenedor">
           <input
             name="usuario"

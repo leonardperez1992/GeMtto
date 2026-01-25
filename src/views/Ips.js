@@ -71,13 +71,12 @@ function Ips() {
                   <HiOutlineDocumentPlus title="Crear" size={25} />
                 </Link>
                 <input
-                  style={{ backgroundColor: '#ecf4f6' }}
                   className="input-buscar"
                   value={buscar}
                   placeholder="Ips"
                   onChange={handleSave}
                 />
-                <GoSearch size={25} />
+                <GoSearch size={25} className="lupa" />
               </div>
               <table className="tabla-actividades">
                 <thead>

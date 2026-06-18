@@ -35,8 +35,12 @@ function Reportes() {
   if (!buscar) {
     inventarios = reportes;
   } else {
-    inventarios = reportes.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase())
+    inventarios = reportes.filter(
+      (dato) =>
+        dato.serie.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.institucion.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.servicio.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.equipo.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 
@@ -85,6 +89,7 @@ function Reportes() {
                 <thead>
                   <tr>
                     <th>Nº REPORTE</th>
+                    <th>TIPO SERVICIO</th>
                     <th>FECHA</th>
                     <th>EQUIPO</th>
                     <th>MARCA</th>
@@ -101,6 +106,7 @@ function Reportes() {
                     return (
                       <tr>
                         <td>{item?.numero_reporte}</td>
+                        <td>{item?.tipo_servicio}</td>
                         <td>{item?.fecha}</td>
                         <td>{item?.equipo}</td>
                         <td>{item?.marca}</td>

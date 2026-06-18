@@ -586,7 +586,6 @@ function UpdateReporte() {
                       <input
                         name="estado_final"
                         type="text"
-                        value="EQUIPO FUNCIONANDO CORRECTAMENTE"
                         onChange={handleSave}
                         defaultValue={reporte?.estado_final}
                       />

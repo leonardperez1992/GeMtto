@@ -96,8 +96,12 @@ function FirmarReportes() {
   if (!buscar) {
     reportesList = reportes;
   } else {
-    reportesList = reportes.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase())
+    reportesList = reportes.filter(
+      (dato) =>
+        dato.serie.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.institucion.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.servicio.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.equipo.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 

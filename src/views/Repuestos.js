@@ -35,7 +35,7 @@ function Repuestos() {
     inventarios = reportes;
   } else {
     inventarios = reportes.filter((dato) =>
-      dato.institucion.toLowerCase().includes(buscar.toLowerCase())
+      dato.serie.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 
@@ -61,7 +61,7 @@ function Repuestos() {
                 <input
                   className="input-buscar"
                   value={buscar}
-                  placeholder="Digite la Ips"
+                  placeholder="Digite la Serie"
                   onChange={handleSave}
                 />
                 <GoSearch size={25} />
@@ -76,6 +76,7 @@ function Repuestos() {
                     <th>MODELO</th>
                     <th>SERIE</th>
                     <th>INSTITUCION</th>
+                    <th>SERVICIO</th>
                     <th>CANTIDAD</th>
                     <th>DESCRIPCION</th>
                     <th>VALOR</th>
@@ -93,6 +94,7 @@ function Repuestos() {
                         <td>{item?.modelo}</td>
                         <td>{item?.serie}</td>
                         <td>{item?.institucion}</td>
+                        <td>{item?.servicio}</td>
                         <td>
                           {item?.cantidad1}
                           <br></br>

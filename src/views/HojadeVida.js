@@ -350,7 +350,7 @@ function HojaDeVida() {
                         <td>
                           <Link
                             to={`/reporte?id=${item._id}`}
-                            className="nav-link"
+                            style={{ color: 'BLACK' }}
                           >
                             Ver
                           </Link>

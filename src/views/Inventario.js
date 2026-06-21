@@ -37,7 +37,7 @@ function Inventario() {
     inventarios = inventario;
   } else if (buscar) {
     inventarios = inventario.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase())
+      dato.serie.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 

@@ -217,609 +217,599 @@ function ReporteService() {
         window.location.href = './inventarioua';
       } else {
         alert(
-          `${response.message}Verifique que todos los campos estén diligenciados`
+          `${response.message}Verifique que todos los campos estén diligenciados`,
         );
       }
     }
   };
 
   return (
-    <div className="contenedor">
-      <main>
-        <section>
-          <div>
-            <div>
-              <table className="tabla-reporte">
-                <thead>
-                  <tr>
-                    <td colSpan={1}></td>
-                    <td
-                      colSpan={2}
-                      style={{
-                        backgroundColor: '#3b3838ff',
-                        color: 'white',
-                        textAlign: 'center',
-                        fontSize: '90%',
-                      }}
-                    >
-                      REPORTE DE SERVICIO
-                    </td>
-                    <td
-                      style={{
-                        backgroundColor: '#3b3838ff',
-                        color: 'white',
-                        textAlign: 'center',
-                        fontSize: '70%',
-                      }}
-                    >
-                      Nº DE REPORTE:{' '}
-                      <label
-                        style={{
-                          backgroundColor: '#3b3838ff',
-                          color: 'white',
-                          fontSize: '120%',
-                        }}
-                      >
-                        {numReporte}
-                      </label>
-                    </td>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>IPS/CLIENTE: </label>
-                      {equipo?.institucion}
-                    </td>
-                    <td colSpan={2}>
-                      <label>FECHA: </label>
-                      <input
-                        style={{
-                          fontSize: '14px',
-                          backgroundColor: 'black',
-                          color: 'white',
-                        }}
-                        name="fecha"
-                        type="date"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>SERVICIO: </label>
-                      {equipo?.servicio}
-                    </td>
-                    <td colSpan={2}>
-                      <label>CIUDAD: </label>
-                      <select
-                        className="select"
-                        aria-label="select example"
-                        onChange={function (e) {
-                          setCiudad(e.target.value);
-                        }}
-                      >
-                        <option value={''}>Seleccione</option>
-                        {ips.map(function (value, index) {
-                          return (
-                            <option key={index} value={value.ciudad}>
-                              {value.ciudad}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>TIPO DE SERVICIO</th>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        name="tipo_servicio"
-                        type="radio"
-                        value="MTTO PREVENTIVO"
-                        onChange={handleSave}
-                      ></input>
-                      <label>MTTO PREVENTIVO</label>
-                    </td>
-                    <td>
-                      <input
-                        name="tipo_servicio"
-                        type="radio"
-                        value="MTTO CORRECTIVO"
-                        onChange={handleSave}
-                      ></input>
-                      <label>MTTO CORRECTIVO</label>
-                    </td>
-                    <td>
-                      <input
-                        name="tipo_servicio"
-                        type="radio"
-                        value="INSTALACION"
-                        onChange={handleSave}
-                      ></input>
-                      <label> INSTALACIÓN</label>
-                    </td>
-                    <td>
-                      <input
-                        name="tipo_servicio"
-                        type="radio"
-                        value="OTRO"
-                        onChange={handleSave}
-                      ></input>
-                      <label> OTRO </label>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>INFORMACION DEL EQUIPO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>EQUIPO: </label>
-                      {equipo?.equipo}
-                    </td>
-                    <td colSpan={2}>
-                      <label>MARCA: </label>
-                      {equipo?.marca}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label>MODELO: </label>
-                      {equipo?.modelo}
-                    </td>
-                    <td colSpan={2}>
-                      <label>SERIE: </label>
-                      {equipo?.serie}
-                    </td>
-                    <td>
-                      <label>INVENTARIO: </label>
-                      {equipo?.inventario}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <textarea
-                        name="problema_reportado"
-                        onChange={handleSave}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <select
-                        className="select"
-                        aria-label="select example"
-                        onChange={function (e) {
-                          setActmto(e.target.value);
-                        }}
-                      >
-                        <option value={''}>
-                          Seleccione si es un Mantenimiento Preventivo
-                        </option>
-                        {actMtos.map(function (value, index) {
-                          return (
-                            <option key={index} value={value.actividades}>
-                              {value.equipo}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <textarea
-                        name="desc_servicio"
-                        onChange={handleSave}
-                        defaultValue={actMto}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>
-                      REPUESTOS, INSUMOS, MATERIALES EMPLEADOS
-                    </th>
-                  </tr>
-                  <tr>
-                    <td>CANTIDAD</td>
-                    <td colSpan={2}>DESCRIPCION</td>
-                    <td>VALOR UNITARIO</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
-                  </tr>
-                  <tr>
-                    <td>PARÁMETRO</td>
-                    <td colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
-                    <td>VALOR MEDIDO</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido1"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido2"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido3"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido4"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>OBSERVACIONES</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <textarea
-                        name="observaciones"
-                        onChange={handleSave}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        name="estado_final"
-                        type="radio"
-                        value="EQUIPO FUNCIONANDO CORRECTAMENTE"
-                        onChange={handleSave}
-                      />
-                      FUNCIONANDO CORRECTAMENTE
-                    </td>
-                    <td>
-                      <input
-                        name="estado_final"
-                        type="radio"
-                        value="EQUIPO EN ESPERA DE REPUESTOS "
-                        onChange={handleSave}
-                      />
-                      EN ESPERA DE REPUESTO
-                    </td>
-                    <td>
-                      <input
-                        name="estado_final"
-                        type="radio"
-                        value="EQUIPO FUERA DE SERVICIO"
-                        onChange={handleSave}
-                      />
-                      FUERA DE SERVICIO
-                    </td>
-                    <td>
-                      <input
-                        name="estado_final"
-                        type="radio"
-                        value="EQUIPO PARA BAJA"
-                        onChange={handleSave}
-                      />
-                      EQUIPO PARA BAJA
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={2}>INGENIERO/TECNICO</th>
-                    <th colSpan={2}>RECIBÍ A SATISFACCION</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{ width: 450, height: 150 }}
-                        ref={firmaIngRef}
-                        maxWidth={2}
-                        onEnd={() => {
-                          saveFirmaIng(firmaIngRef.current.toData());
-                        }}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                      <SignatureCanvas
-                        canvasProps={{
-                          width: 450,
-                          height: 150,
-                        }}
-                        maxWidth={2}
-                        ref={firmaRecref}
-                        onEnd={() => {
-                          saveFirmaRecibe(firmaRecref.current.toData());
-                        }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <button
-                        onClick={() => {
-                          firmaIngRef.current.clear();
-                          saveFirmaIng(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                    <td colSpan={2}>
-                      {' '}
-                      <button
-                        onClick={() => {
-                          firmaRecref.current.clear();
-                          saveFirmaRecibe(null);
-                        }}
-                      >
-                        {' '}
-                        Limpiar{' '}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>NOMBRE: </label>
-                      <input
-                        className="input-reportparam"
-                        name="nombre_ingeniero"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label>NOMBRE: </label>
-                      <input
-                        className="input-reportparam"
-                        name="nombre_recibe"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>CARGO: </label>
-                      <input
-                        className="input-reportparam"
-                        name="cargo_ingeniero"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label>CARGO: </label>
-                      <input
-                        className="input-reportparam"
-                        name="cargo_recibe"
-                        type="text"
-                        onChange={handleSave}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-                <tr>
-                  <td colSpan={1}>
-                    <h3>Adjuntar archivo</h3>
-                    <form onSubmit={handleSubmit}>
-                      <input type="file" onChange={handleChange} />
-                      <button type="submit">Cargar Archivo</button>
-                    </form>
-                  </td>
-                </tr>
-              </table>
-              <div className="button-contenedor">
+    <main className="contenedor">
+      <div className="contenedor">
+        {' '}
+        <table className="tabla-reporte">
+          <thead>
+            <tr>
+              <td colSpan={1}></td>
+              <td
+                colSpan={2}
+                style={{
+                  backgroundColor: '#3b3838ff',
+                  color: 'white',
+                  textAlign: 'center',
+                  fontSize: '90%',
+                }}
+              >
+                REPORTE DE SERVICIO
+              </td>
+              <td
+                style={{
+                  backgroundColor: '#3b3838ff',
+                  color: 'white',
+                  textAlign: 'center',
+                  fontSize: '70%',
+                }}
+              >
+                Nº DE REPORTE:{' '}
+                <label
+                  style={{
+                    backgroundColor: '#3b3838ff',
+                    color: 'white',
+                    fontSize: '120%',
+                  }}
+                >
+                  {numReporte}
+                </label>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label>IPS/CLIENTE: </label>
+                {equipo?.institucion}
+              </td>
+              <td colSpan={2}>
+                <label>FECHA: </label>
                 <input
-                  type="button"
-                  value="Crear"
-                  className="button"
-                  onClick={CreateReport}
+                  style={{
+                    fontSize: '14px',
+                    backgroundColor: 'black',
+                    color: 'white',
+                  }}
+                  name="fecha"
+                  type="date"
+                  onChange={handleSave}
                 />
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label>SERVICIO: </label>
+                {equipo?.servicio}
+              </td>
+              <td colSpan={2}>
+                <label>CIUDAD: </label>
+                <select
+                  className="select"
+                  aria-label="select example"
+                  onChange={function (e) {
+                    setCiudad(e.target.value);
+                  }}
+                >
+                  <option value={''}>Seleccione</option>
+                  {ips.map(function (value, index) {
+                    return (
+                      <option key={index} value={value.ciudad}>
+                        {value.ciudad}
+                      </option>
+                    );
+                  })}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>TIPO DE SERVICIO</th>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  name="tipo_servicio"
+                  type="radio"
+                  value="MTTO PREVENTIVO"
+                  onChange={handleSave}
+                ></input>
+                <label>MTTO PREVENTIVO</label>
+              </td>
+              <td>
+                <input
+                  name="tipo_servicio"
+                  type="radio"
+                  value="MTTO CORRECTIVO"
+                  onChange={handleSave}
+                ></input>
+                <label>MTTO CORRECTIVO</label>
+              </td>
+              <td>
+                <input
+                  name="tipo_servicio"
+                  type="radio"
+                  value="INSTALACION"
+                  onChange={handleSave}
+                ></input>
+                <label> INSTALACIÓN</label>
+              </td>
+              <td>
+                <input
+                  name="tipo_servicio"
+                  type="radio"
+                  value="OTRO"
+                  onChange={handleSave}
+                ></input>
+                <label> OTRO </label>
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>INFORMACION DEL EQUIPO</th>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label>EQUIPO: </label>
+                {equipo?.equipo}
+              </td>
+              <td colSpan={2}>
+                <label>MARCA: </label>
+                {equipo?.marca}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label>MODELO: </label>
+                {equipo?.modelo}
+              </td>
+              <td colSpan={2}>
+                <label>SERIE: </label>
+                {equipo?.serie}
+              </td>
+              <td>
+                <label>INVENTARIO: </label>
+                {equipo?.inventario}
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
+            </tr>
+            <tr>
+              <td colSpan={4}>
+                <textarea
+                  name="problema_reportado"
+                  onChange={handleSave}
+                ></textarea>
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
+            </tr>
+            <tr>
+              <td colSpan={4}>
+                <select
+                  className="select"
+                  aria-label="select example"
+                  onChange={function (e) {
+                    setActmto(e.target.value);
+                  }}
+                >
+                  <option value={''}>
+                    Seleccione si es un Mantenimiento Preventivo
+                  </option>
+                  {actMtos.map(function (value, index) {
+                    return (
+                      <option key={index} value={value.actividades}>
+                        {value.equipo}
+                      </option>
+                    );
+                  })}
+                </select>
+                <textarea
+                  name="desc_servicio"
+                  onChange={handleSave}
+                  defaultValue={actMto}
+                ></textarea>
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>REPUESTOS, INSUMOS, MATERIALES EMPLEADOS</th>
+            </tr>
+            <tr>
+              <td>CANTIDAD</td>
+              <td colSpan={2}>DESCRIPCION</td>
+              <td>VALOR UNITARIO</td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="cantidad1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="descripcion1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="cantidad2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="descripcion2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="cantidad3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="descripcion3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="cantidad4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="descripcion4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
+            </tr>
+            <tr>
+              <td>PARÁMETRO</td>
+              <td colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
+              <td>VALOR MEDIDO</td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="parametro1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="valor_programado1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor_medido1"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="parametro2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="valor_programado2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor_medido2"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="parametro3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="valor_programado3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor_medido3"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="parametro4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <input
+                  className="input-reportparam"
+                  name="valor_programado4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td>
+                <input
+                  className="input-reportparam"
+                  name="valor_medido4"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>OBSERVACIONES</th>
+            </tr>
+            <tr>
+              <td colSpan={4}>
+                <textarea name="observaciones" onChange={handleSave}></textarea>
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  name="estado_final"
+                  type="radio"
+                  value="EQUIPO FUNCIONANDO CORRECTAMENTE"
+                  onChange={handleSave}
+                />
+                FUNCIONANDO CORRECTAMENTE
+              </td>
+              <td>
+                <input
+                  name="estado_final"
+                  type="radio"
+                  value="EQUIPO EN ESPERA DE REPUESTOS "
+                  onChange={handleSave}
+                />
+                EN ESPERA DE REPUESTO
+              </td>
+              <td>
+                <input
+                  name="estado_final"
+                  type="radio"
+                  value="EQUIPO FUERA DE SERVICIO"
+                  onChange={handleSave}
+                />
+                FUERA DE SERVICIO
+              </td>
+              <td>
+                <input
+                  name="estado_final"
+                  type="radio"
+                  value="EQUIPO PARA BAJA"
+                  onChange={handleSave}
+                />
+                EQUIPO PARA BAJA
+              </td>
+            </tr>
+            <tr>
+              <th colSpan={2}>INGENIERO/TECNICO</th>
+              <th colSpan={2}>RECIBÍ A SATISFACCION</th>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                <SignatureCanvas
+                  canvasProps={{ width: 450, height: 150 }}
+                  ref={firmaIngRef}
+                  maxWidth={2}
+                  onEnd={() => {
+                    saveFirmaIng(firmaIngRef.current.toData());
+                  }}
+                />
+              </td>
+              <td colSpan={2}>
+                <label style={{ fontSize: '12px' }}>FIRMA: </label>
+                <SignatureCanvas
+                  canvasProps={{
+                    width: 450,
+                    height: 150,
+                  }}
+                  maxWidth={2}
+                  ref={firmaRecref}
+                  onEnd={() => {
+                    saveFirmaRecibe(firmaRecref.current.toData());
+                  }}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <button
+                  onClick={() => {
+                    firmaIngRef.current.clear();
+                    saveFirmaIng(null);
+                  }}
+                >
+                  {' '}
+                  Limpiar{' '}
+                </button>
+              </td>
+              <td colSpan={2}>
+                {' '}
+                <button
+                  onClick={() => {
+                    firmaRecref.current.clear();
+                    saveFirmaRecibe(null);
+                  }}
+                >
+                  {' '}
+                  Limpiar{' '}
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label>NOMBRE: </label>
+                <input
+                  className="input-reportparam"
+                  name="nombre_ingeniero"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <label>NOMBRE: </label>
+                <input
+                  className="input-reportparam"
+                  name="nombre_recibe"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <label>CARGO: </label>
+                <input
+                  className="input-reportparam"
+                  name="cargo_ingeniero"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+              <td colSpan={2}>
+                <label>CARGO: </label>
+                <input
+                  className="input-reportparam"
+                  name="cargo_recibe"
+                  type="text"
+                  onChange={handleSave}
+                />
+              </td>
+            </tr>
+          </tbody>
+          <tr>
+            <td colSpan={1}>
+              <h3>Adjuntar archivo</h3>
+              <form onSubmit={handleSubmit}>
+                <input type="file" onChange={handleChange} />
+                <button type="submit">Cargar Archivo</button>
+              </form>
+            </td>
+          </tr>
+        </table>
+        <div className="button-contenedor">
+          <input
+            type="button"
+            value="Crear"
+            className="button"
+            onClick={CreateReport}
+          />
+        </div>
+      </div>
+    </main>
   );
 }
 export default ReporteService;

@@ -36,8 +36,12 @@ function Inventario() {
   if (!buscar) {
     inventarios = inventario;
   } else if (buscar) {
-    inventarios = inventario.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase()),
+    inventarios = inventario.filter(
+      (dato) =>
+        dato.serie.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.institucion.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.servicio.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.equipo.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 

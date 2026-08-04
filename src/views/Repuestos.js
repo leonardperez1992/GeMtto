@@ -34,8 +34,12 @@ function Repuestos() {
   if (!buscar) {
     inventarios = reportes;
   } else {
-    inventarios = reportes.filter((dato) =>
-      dato.serie.toLowerCase().includes(buscar.toLowerCase()),
+    inventarios = reportes.filter(
+      (dato) =>
+        dato.serie.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.institucion.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.servicio.toLowerCase().includes(buscar.toLowerCase()) ||
+        dato.equipo.toLowerCase().includes(buscar.toLowerCase()),
     );
   }
 

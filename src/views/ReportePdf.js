@@ -70,14 +70,16 @@ function ReportePdf() {
         method: 'GET',
         body: { id },
       });
-      if (response && response.success) {
+      if (response && response.success && response.reporte) {
         setReporte(response.reporte);
-        if (response.reporte.firma_ingeniero && response.reporte.firma_recibe) {
-          setTimeout(() => {
-            if (imgIng.current?.fromData) imgIng.current.fromData(response.reporte.firma_ingeniero);
-            if (imgRec.current?.fromData) imgRec.current.fromData(response.reporte.firma_recibe);
-          }, 300);
-        }
+        setTimeout(() => {
+          if (response.reporte.firma_ingeniero && imgIng.current?.fromData) {
+            try { imgIng.current.fromData(response.reporte.firma_ingeniero); } catch (e) {}
+          }
+          if (response.reporte.firma_recibe && imgRec.current?.fromData) {
+            try { imgRec.current.fromData(response.reporte.firma_recibe); } catch (e) {}
+          }
+        }, 350);
       } else {
         alert(`${response?.message || 'Error al obtener reporte'}`);
       }
@@ -188,11 +190,19 @@ function ReportePdf() {
 
       {/* Printable Sheet (White Background, Sharp Borders) */}
       <div className="documento-reporte" ref={targetRef}>
-        <table className="tabla-documento">
+        <table className="tabla-documento" style={{ tableLayout: 'fixed', width: '100%' }}>
+          {/* Column definitions for perfect 4-column 25% / 25% / 25% / 25% symmetry */}
+          <colgroup>
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '25%' }} />
+          </colgroup>
+
           {/* Document Header */}
           <thead>
             <tr>
-              <td colSpan={2} style={{ width: '40%', padding: '12px', verticalAlign: 'middle', borderRight: '1px solid #94a3b8' }}>
+              <td colSpan={2} style={{ padding: '12px', verticalAlign: 'middle' }}>
                 <img
                   src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                   alt="Logo"
@@ -202,7 +212,6 @@ function ReportePdf() {
               <td
                 colSpan={2}
                 style={{
-                  width: '60%',
                   textAlign: 'center',
                   padding: '12px',
                   verticalAlign: 'middle',
@@ -307,8 +316,8 @@ function ReportePdf() {
               </td>
             </tr>
             <tr>
-              <td className="sub-header" style={{ width: '15%' }}>CANTIDAD</td>
-              <td className="sub-header" colSpan={2} style={{ width: '60%' }}>DESCRIPCIÓN</td>
+              <td className="sub-header" style={{ width: '25%' }}>CANTIDAD</td>
+              <td className="sub-header" colSpan={2} style={{ width: '50%' }}>DESCRIPCIÓN</td>
               <td className="sub-header" style={{ width: '25%' }}>VALOR UNITARIO</td>
             </tr>
             <tr>
@@ -339,9 +348,9 @@ function ReportePdf() {
               </td>
             </tr>
             <tr>
-              <td className="sub-header" style={{ width: '30%' }}>PARÁMETRO</td>
-              <td className="sub-header" colSpan={2} style={{ width: '40%' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
-              <td className="sub-header" style={{ width: '30%' }}>VALOR MEDIDO</td>
+              <td className="sub-header">PARÁMETRO</td>
+              <td className="sub-header" colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
+              <td className="sub-header">VALOR MEDIDO</td>
             </tr>
             <tr>
               <td>{reporte?.parametro1 || '-'}</td>
@@ -386,47 +395,47 @@ function ReportePdf() {
               </td>
             </tr>
 
-            {/* Sección: Firmas Centradas y Alineadas */}
+            {/* Sección: Firmas 100% Simétricas 50% / 50% Sin Cortes */}
             <tr>
-              <td colSpan={2} className="sub-header" style={{ width: '50%', textAlign: 'center' }}>
+              <td colSpan={2} className="sub-header" style={{ textAlign: 'center' }}>
                 INGENIERO / TÉCNICO RESPONSABLE
               </td>
-              <td colSpan={2} className="sub-header" style={{ width: '50%', textAlign: 'center' }}>
+              <td colSpan={2} className="sub-header" style={{ textAlign: 'center' }}>
                 RECIBÍ A CONFORMIDAD (CLIENTE)
               </td>
             </tr>
             <tr>
               {/* Firma Ingeniero Centrada */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '14px 10px', height: '145px' }}>
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '16px 12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                   <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
                     Firma del Ingeniero / Técnico
                   </div>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#fafafa', padding: '2px' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden' }}>
                     <SignatureCanvas
                       ref={imgIng}
                       canvasProps={{
-                        width: 280,
-                        height: 95,
-                        style: { display: 'block', margin: '0 auto', maxWidth: '100%' },
+                        width: 360,
+                        height: 140,
+                        style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
                       }}
                     />
                   </div>
                 </div>
               </td>
-              {/* Firma Recibe Centrada */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '14px 10px', height: '145px' }}>
+              {/* Firma Recibe Centrada (Idéntica en tamaño) */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '16px 12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                   <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
                     Firma de Quien Recibe
                   </div>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#fafafa', padding: '2px' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden' }}>
                     <SignatureCanvas
                       ref={imgRec}
                       canvasProps={{
-                        width: 280,
-                        height: 95,
-                        style: { display: 'block', margin: '0 auto', maxWidth: '100%' },
+                        width: 360,
+                        height: 140,
+                        style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
                       }}
                     />
                   </div>

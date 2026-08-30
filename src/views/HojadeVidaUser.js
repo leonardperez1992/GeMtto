@@ -223,36 +223,41 @@ function HojaDeVidaUser() {
               </td>
             </tr>
             <tr>
+              {/* Contenedor de la Foto Centrado */}
               <td
                 colSpan={2}
                 rowSpan={7}
                 style={{
                   textAlign: 'center',
                   verticalAlign: 'middle',
-                  padding: '14px',
+                  padding: '16px',
                   backgroundColor: '#f8fafc',
                   borderRight: '1.5px solid #1e293b',
                 }}
               >
-                {imagen ? (
-                  <img
-                    src={imagen}
-                    alt={equipo?.equipo}
-                    style={{
-                      maxHeight: '220px',
-                      maxWidth: '100%',
-                      objectFit: 'contain',
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                    }}
-                  />
-                ) : (
-                  <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>
-                    <FaFileMedical size={40} color="#cbd5e1" style={{ marginBottom: '8px' }} />
-                    <br />
-                    Sin fotografía registrada
-                  </div>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', width: '100%' }}>
+                  {imagen ? (
+                    <img
+                      src={imagen}
+                      alt={equipo?.equipo}
+                      style={{
+                        maxHeight: '190px',
+                        maxWidth: '90%',
+                        objectFit: 'contain',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        display: 'block',
+                        margin: '0 auto',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: '10px' }}>
+                      <FaFileMedical size={42} color="#cbd5e1" style={{ display: 'block', margin: '0 auto 8px auto' }} />
+                      Sin fotografía registrada
+                    </div>
+                  )}
+                </div>
               </td>
               <td style={{ width: '22%', fontWeight: '700', backgroundColor: '#f1f5f9' }}>NOMBRE EQUIPO:</td>
               <td style={{ width: '28%', fontWeight: 'bold', color: '#0f3b60' }}>{equipo?.equipo}</td>

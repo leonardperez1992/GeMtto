@@ -76,7 +76,7 @@ function ReportePdf() {
           setTimeout(() => {
             if (imgIng.current?.fromData) imgIng.current.fromData(response.reporte.firma_ingeniero);
             if (imgRec.current?.fromData) imgRec.current.fromData(response.reporte.firma_recibe);
-          }, 200);
+          }, 300);
         }
       } else {
         alert(`${response?.message || 'Error al obtener reporte'}`);
@@ -386,29 +386,51 @@ function ReportePdf() {
               </td>
             </tr>
 
-            {/* Sección: Firmas */}
+            {/* Sección: Firmas Centradas y Alineadas */}
             <tr>
-              <td colSpan={2} className="sub-header" style={{ width: '50%' }}>
+              <td colSpan={2} className="sub-header" style={{ width: '50%', textAlign: 'center' }}>
                 INGENIERO / TÉCNICO RESPONSABLE
               </td>
-              <td colSpan={2} className="sub-header" style={{ width: '50%' }}>
+              <td colSpan={2} className="sub-header" style={{ width: '50%', textAlign: 'center' }}>
                 RECIBÍ A CONFORMIDAD (CLIENTE)
               </td>
             </tr>
             <tr>
-              <td colSpan={2} style={{ textAlign: 'center', padding: '10px', height: '140px' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>Firma del Ingeniero</div>
-                <SignatureCanvas
-                  ref={imgIng}
-                  canvasProps={{ width: 340, height: 100, style: { border: '1px dashed #cbd5e1', borderRadius: '4px' } }}
-                />
+              {/* Firma Ingeniero Centrada */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '14px 10px', height: '145px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
+                    Firma del Ingeniero / Técnico
+                  </div>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#fafafa', padding: '2px' }}>
+                    <SignatureCanvas
+                      ref={imgIng}
+                      canvasProps={{
+                        width: 280,
+                        height: 95,
+                        style: { display: 'block', margin: '0 auto', maxWidth: '100%' },
+                      }}
+                    />
+                  </div>
+                </div>
               </td>
-              <td colSpan={2} style={{ textAlign: 'center', padding: '10px', height: '140px' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>Firma de Quien Recibe</div>
-                <SignatureCanvas
-                  ref={imgRec}
-                  canvasProps={{ width: 340, height: 100, style: { border: '1px dashed #cbd5e1', borderRadius: '4px' } }}
-                />
+              {/* Firma Recibe Centrada */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '14px 10px', height: '145px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
+                    Firma de Quien Recibe
+                  </div>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#fafafa', padding: '2px' }}>
+                    <SignatureCanvas
+                      ref={imgRec}
+                      canvasProps={{
+                        width: 280,
+                        height: 95,
+                        style: { display: 'block', margin: '0 auto', maxWidth: '100%' },
+                      }}
+                    />
+                  </div>
+                </div>
               </td>
             </tr>
             <tr>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -25,13 +25,14 @@ import {
   FaSave,
   FaArrowLeft,
   FaEraser,
+  FaBolt,
+  FaPen,
 } from 'react-icons/fa';
 
 function ReporteService() {
   const [allActMtos, setAllActMtos] = useState([]);
   const [actMto, setActmto] = useState('');
   const [equipo, setEquipo] = useState({});
-  const [ips, setIps] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [ciudad, setCiudad] = useState('');
   const [file, setFile] = useState(null);
@@ -126,7 +127,7 @@ function ReporteService() {
         const sorted = response.actmtto.sort((a, b) => (a.equipo || '').localeCompare(b.equipo || ''));
         setAllActMtos(sorted);
 
-        // Auto-fill protocol if equipment matches
+        // If it's preventivo and matches equipment, load default
         if (equipoNombre) {
           const match = sorted.find(
             (a) => a.equipo?.trim().toUpperCase() === equipoNombre.trim().toUpperCase()
@@ -153,7 +154,6 @@ function ReporteService() {
     try {
       const response = await request({ link: apiIps, method: 'GET' });
       if (response && response.success && response.ips) {
-        setIps(response.ips);
         const uniqueCities = Array.from(
           new Set(response.ips.map((item) => (item.ciudad ? item.ciudad.trim().toUpperCase() : '')).filter(Boolean))
         ).sort();
@@ -218,26 +218,47 @@ function ReporteService() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Filter activities specifically matching this equipment name
+  const actividadesFiltradas = useMemo(() => {
+    const eqName = (equipo?.equipo || reporte.equipo || '').trim().toUpperCase();
+    if (!eqName) return allActMtos;
+    const directMatches = allActMtos.filter(
+      (a) => a.equipo?.trim().toUpperCase() === eqName || a.equipo?.trim().toUpperCase().includes(eqName)
+    );
+    return directMatches.length > 0 ? directMatches : allActMtos;
+  }, [allActMtos, equipo, reporte.equipo]);
+
   const handleSave = (e) => {
     const { name, value } = e.target;
     setReporte((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectActividad = (e) => {
-    const selectedEquipoName = e.target.value;
-    if (!selectedEquipoName) return;
-    const selectedObj = allActMtos.find((item) => item.equipo === selectedEquipoName);
-    if (selectedObj) {
-      setActmto(selectedObj.actividades);
-      setReporte((prev) => ({
-        ...prev,
-        desc_servicio: selectedObj.actividades,
-        parametro1: selectedObj.parametro1 || prev.parametro1,
-        parametro2: selectedObj.parametro2 || prev.parametro2,
-        parametro3: selectedObj.parametro3 || prev.parametro3,
-        parametro4: selectedObj.parametro4 || prev.parametro4,
-      }));
+  const handleTipoServicio = (tipo) => {
+    setReporte((prev) => ({
+      ...prev,
+      tipo_servicio: tipo,
+      problema_reportado:
+        tipo === 'MTTO CORRECTIVO'
+          ? (prev.problema_reportado.includes('cronograma') ? '' : prev.problema_reportado)
+          : (prev.problema_reportado || 'Mantenimiento preventivo programado según cronograma institucional.'),
+      desc_servicio: tipo === 'MTTO CORRECTIVO' ? '' : prev.desc_servicio,
+    }));
+    if (tipo === 'MTTO CORRECTIVO') {
+      setActmto('');
     }
+  };
+
+  const handleCargarActividad = (selectedItem) => {
+    if (!selectedItem) return;
+    setActmto(selectedItem.actividades);
+    setReporte((prev) => ({
+      ...prev,
+      desc_servicio: selectedItem.actividades,
+      parametro1: selectedItem.parametro1 || prev.parametro1,
+      parametro2: selectedItem.parametro2 || prev.parametro2,
+      parametro3: selectedItem.parametro3 || prev.parametro3,
+      parametro4: selectedItem.parametro4 || prev.parametro4,
+    }));
   };
 
   const CreateReport = async (e) => {
@@ -270,8 +291,8 @@ function ReporteService() {
       modelo: equipo.modelo || reporte.modelo,
       serie: equipo.serie || reporte.serie,
       inventario: equipo.inventario || reporte.inventario || 'NA',
-      problema_reportado: reporte.problema_reportado || 'Mantenimiento preventivo programado.',
-      desc_servicio: actMto || reporte.desc_servicio,
+      problema_reportado: reporte.problema_reportado || 'Servicio técnico realizado.',
+      desc_servicio: reporte.desc_servicio || actMto,
       cantidad1: reporte.cantidad1 || 'NA',
       descripcion1: reporte.descripcion1 || 'NA',
       valor1: reporte.valor1 || 'NA',
@@ -460,7 +481,7 @@ function ReporteService() {
                     <strong style={{ color: '#38bdf8', marginRight: '8px' }}>CIUDAD:</strong>
                     <select
                       className="input-report"
-                      style={{ maxWidth: '260px', display: 'inline-block' }}
+                      style={{ maxWidth: '240px', display: 'inline-block' }}
                       value={ciudad}
                       onChange={(e) => {
                         setCiudad(e.target.value);
@@ -472,12 +493,6 @@ function ReporteService() {
                       {ciudades.map((cityName, idx) => (
                         <option key={idx} value={cityName}>
                           {cityName}
-                        </option>
-                      ))}
-                      {/* Fallback to IPS direct city names if any */}
-                      {ips.map((item, idx) => (
-                        <option key={`ips-${idx}`} value={item.ciudad || item.ips}>
-                          {item.ciudad} ({item.ips || item.nombre})
                         </option>
                       ))}
                     </select>
@@ -517,7 +532,7 @@ function ReporteService() {
                             type="radio"
                             value={tipo}
                             checked={reporte.tipo_servicio === tipo}
-                            onChange={handleSave}
+                            onChange={() => handleTipoServicio(tipo)}
                             style={{ transform: 'scale(1.2)' }}
                           />
                           {tipo}
@@ -573,7 +588,7 @@ function ReporteService() {
                     <textarea
                       name="problema_reportado"
                       className="textarea-report"
-                      placeholder="Describa el motivo del servicio o problema reportado por la institución..."
+                      placeholder="Describa el motivo del servicio, falla presentada o motivo de la intervención..."
                       value={reporte.problema_reportado}
                       onChange={handleSave}
                       rows={3}
@@ -585,33 +600,101 @@ function ReporteService() {
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
                     <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO (ACTIVIDADES DE MANTENIMIENTO)
+                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO
                   </th>
                 </tr>
                 <tr>
                   <td colSpan={4} style={{ padding: '16px' }}>
-                    <div style={{ marginBottom: '14px', backgroundColor: '#0f172a', padding: '12px 16px', borderRadius: '8px', border: '1px solid #334155' }}>
-                      <label style={{ fontSize: '12.5px', color: '#38bdf8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                        📋 SELECCIONAR ACTIVIDAD / PROTOCOLO SEGÚN TIPO DE EQUIPO ({allActMtos.length} DISPONIBLES):
-                      </label>
-                      <select
-                        className="input-report"
-                        style={{ width: '100%', fontSize: '13.5px' }}
-                        onChange={handleSelectActividad}
-                      >
-                        <option value="">-- Elige una actividad de la lista de mantenimiento para cargar el protocolo --</option>
-                        {allActMtos.map((item, index) => (
-                          <option key={index} value={item.equipo}>
-                            {item.equipo}
-                          </option>
-                        ))}
-                      </select>
+                    {/* Activity Filter / Action Toolbar */}
+                    <div
+                      style={{
+                        marginBottom: '14px',
+                        backgroundColor: '#0f172a',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #334155',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <div style={{ flex: '1 1 300px' }}>
+                        <label style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '700', display: 'block', marginBottom: '6px' }}>
+                          📋 PROTOCOLO DE ACTIVIDADES PARA ESTE EQUIPO:
+                        </label>
+                        <select
+                          className="input-report"
+                          style={{ width: '100%', fontSize: '13px' }}
+                          onChange={(e) => {
+                            const found = allActMtos.find((a) => a.equipo === e.target.value);
+                            if (found) handleCargarActividad(found);
+                          }}
+                        >
+                          <option value="">-- Seleccionar actividad de mantenimiento --</option>
+                          {actividadesFiltradas.map((item, index) => (
+                            <option key={index} value={item.equipo}>
+                              {item.equipo}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                        {actividadesFiltradas.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleCargarActividad(actividadesFiltradas[0])}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '9px 14px',
+                              backgroundColor: '#0369a1',
+                              color: '#ffffff',
+                              border: '1px solid #38bdf8',
+                              borderRadius: '6px',
+                              fontSize: '12.5px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            <FaBolt color="#fde047" /> Cargar Protocolo
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActmto('');
+                            setReporte((prev) => ({ ...prev, desc_servicio: '' }));
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '9px 14px',
+                            backgroundColor: '#334155',
+                            color: '#f8fafc',
+                            border: '1px solid #475569',
+                            borderRadius: '6px',
+                            fontSize: '12.5px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <FaPen /> Escribir Manualmente
+                        </button>
+                      </div>
                     </div>
+
                     <textarea
                       name="desc_servicio"
                       className="textarea-report"
-                      placeholder="Detalle paso a paso las actividades, pruebas técnicas, limpieza y verificación efectuadas..."
-                      value={actMto || reporte.desc_servicio}
+                      placeholder="Detalle paso a paso las actividades realizadas, diagnóstico técnico, reparaciones o pruebas de funcionamiento..."
+                      value={reporte.desc_servicio || actMto}
                       onChange={(e) => {
                         setActmto(e.target.value);
                         handleSave(e);

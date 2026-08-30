@@ -4,6 +4,8 @@ import { apiObtenerEquiposIps } from '../utils/api';
 import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
+import { GoSearch, GoEye } from 'react-icons/go';
+import { FaBoxes } from 'react-icons/fa';
 
 function InventarioUser() {
   const user = useSelector((state) => state.user);
@@ -68,108 +70,139 @@ function InventarioUser() {
   return (
     <div className="contenedor">
       <main>
-        <section>
-          <div>
-            <div>
-              <h3>Inventario General - {institucion || 'Mi Institución'}</h3>
-            </div>
-            <div>
-              <div
-                style={{
-                  width: '300px',
-                  margin: 10,
-                }}
-              >
-                <h4>Buscar:</h4>
-                <input
-                  style={{
-                    width: '100%',
-                    borderWidth: 1,
-                    margin: 5,
-                    borderRadius: 10,
-                    borderStyle: 'solid',
-                    height: 43,
-                    padding: '0 10px',
-                  }}
-                  value={buscar}
-                  type="text"
-                  placeholder="Buscar por equipo, serie, servicio..."
-                  onChange={handleSave}
-                />
-              </div>
+        {/* Header Title */}
+        <div style={{ marginBottom: '20px' }}>
+          <h2 style={{ margin: 0, color: '#0f2b48', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FaBoxes color="#0d6efd" /> Inventario de Equipos - {institucion || 'Mi Institución'}
+          </h2>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            Consulta y seguimiento del parque biomédico asignado a tu institución.
+          </p>
+        </div>
 
-              {loading ? (
-                <div style={{ textAlign: 'center', padding: '30px', color: '#6c757d' }}>
-                  Cargando inventario...
-                </div>
-              ) : (
-                <div>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>EQUIPO</th>
-                        <th>MARCA</th>
-                        <th>MODELO</th>
-                        <th>SERIE</th>
-                        <th>INSTITUCION</th>
-                        <th>SERVICIO</th>
-                        <th>UBICACIÓN</th>
-                        <th>REG. INVIMA</th>
-                        <th>RIESGO</th>
-                        <th>RESPONSABLE</th>
-                        <th>ACCION</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedInventarios.length === 0 ? (
-                        <tr>
-                          <td colSpan="11" style={{ textAlign: 'center', padding: '20px', color: '#6c757d' }}>
-                            No se encontraron equipos.
+        {/* Toolbar & Search */}
+        <div className="div-buscar">
+          <div style={{ flex: '1 1 300px', position: 'relative', width: '100%' }}>
+            <input
+              className="input-buscar"
+              style={{ width: '100%', paddingRight: '40px' }}
+              value={buscar}
+              placeholder="Buscar por equipo, serie, marca, servicio o ubicación..."
+              onChange={handleSave}
+            />
+            <GoSearch
+              size={18}
+              style={{
+                position: 'absolute',
+                right: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#64748b',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Table & Content */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '16px' }}>
+            Cargando inventario de equipos...
+          </div>
+        ) : (
+          <div>
+            <div className="table-responsive-card">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>EQUIPO</th>
+                    <th>MARCA</th>
+                    <th>MODELO</th>
+                    <th>SERIE</th>
+                    <th>SERVICIO</th>
+                    <th>UBICACIÓN</th>
+                    <th>REG. INVIMA</th>
+                    <th>RIESGO</th>
+                    <th>RESPONSABLE</th>
+                    <th style={{ textAlign: 'center' }}>HOJA DE VIDA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedInventarios.length === 0 ? (
+                    <tr>
+                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                        No se encontraron equipos en esta institución.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedInventarios.map(function (item) {
+                      return (
+                        <tr key={item._id}>
+                          <td><strong>{item?.equipo}</strong></td>
+                          <td>{item?.marca}</td>
+                          <td>{item?.modelo}</td>
+                          <td>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0f3b60' }}>
+                              {item?.serie}
+                            </span>
+                          </td>
+                          <td>{item?.servicio}</td>
+                          <td>{item?.ubicacion}</td>
+                          <td>{item?.registro_invima}</td>
+                          <td>
+                            {item?.riesgo && (
+                              <span
+                                style={{
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 'bold',
+                                  backgroundColor: '#e0f2fe',
+                                  color: '#0369a1',
+                                }}
+                              >
+                                {item.riesgo}
+                              </span>
+                            )}
+                          </td>
+                          <td>{item?.responsable}</td>
+                          <td style={{ textAlign: 'center' }}>
+                            <Link
+                              to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                backgroundColor: '#0d6efd',
+                                color: '#fff',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                textDecoration: 'none',
+                              }}
+                            >
+                              <GoEye size={16} /> Ver Hoja
+                            </Link>
                           </td>
                         </tr>
-                      ) : (
-                        paginatedInventarios.map(function (item) {
-                          return (
-                            <tr key={item._id}>
-                              <td>{item?.equipo}</td>
-                              <td>{item?.marca}</td>
-                              <td>{item?.modelo}</td>
-                              <td>{item?.serie}</td>
-                              <td>{item?.institucion}</td>
-                              <td>{item?.servicio}</td>
-                              <td>{item?.ubicacion}</td>
-                              <td>{item?.registro_invima}</td>
-                              <td>{item?.riesgo}</td>
-                              <td>{item?.responsable}</td>
-                              <td>
-                                <Link
-                                  to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                                  className="nav-link"
-                                >
-                                  Hoja de Vida
-                                </Link>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-
-                  {/* Pagination */}
-                  <Pagination
-                    totalItems={filteredInventarios.length}
-                    itemsPerPage={itemsPerPage}
-                    currentPage={currentPage}
-                    onPageChange={(page) => setCurrentPage(page)}
-                    onItemsPerPageChange={(size) => setItemsPerPage(size)}
-                    pageSizeOptions={[15, 25, 50, 100]}
-                  />
-                </div>
-              )}
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
+
+            {/* Pagination Controls */}
+            <Pagination
+              totalItems={filteredInventarios.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              onItemsPerPageChange={(size) => setItemsPerPage(size)}
+              pageSizeOptions={[15, 25, 50, 100]}
+            />
           </div>
-        </section>
+        )}
       </main>
     </div>
   );

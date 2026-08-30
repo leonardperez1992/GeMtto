@@ -371,3 +371,76 @@ textarea:focus {
     width: 100%;
   }
 }
+
+/* ===================================================
+   DOCUMENTOS IMPRIMIBLES / HOJA DE VIDA Y REPORTE (FONDO BLANCO)
+   =================================================== */
+
+.documento-hoja-vida, .documento-reporte {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  max-width: 1050px;
+  margin: 20px auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid #cbd5e1;
+}
+
+.tabla-documento {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-size: 13px !important;
+  margin-bottom: 20px !important;
+  border: 1.5px solid #1e293b !important;
+}
+
+.tabla-documento th {
+  background-color: #0f3b60 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 8px 10px !important;
+  border: 1px solid #334155 !important;
+  text-align: left !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+}
+
+.tabla-documento td {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  padding: 8px 10px !important;
+  border: 1px solid #94a3b8 !important;
+  vertical-align: middle !important;
+  font-size: 13px !important;
+  text-align: left !important;
+}
+
+.tabla-documento .seccion-titulo {
+  background-color: #0f3b60 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.5px !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+  border: 1.5px solid #0f3b60 !important;
+}
+
+.tabla-documento .sub-header {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  padding: 6px 10px !important;
+  border: 1px solid #94a3b8 !important;
+  text-align: center !important;
+  font-size: 12px !important;
+}
+
+.label-bold {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin-right: 4px;
+}

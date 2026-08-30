@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { apiAlertas, apiIps } from '../utils/api';
+import { apiAlertas, apiIps, apiEliminarEquipos } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import { GoSearch, GoEye } from 'react-icons/go';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
-import { FaExclamationTriangle, FaCheckCircle, FaClock, FaQuestionCircle, FaSync, FaShieldAlt } from 'react-icons/fa';
+import {
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaClock,
+  FaQuestionCircle,
+  FaSync,
+  FaShieldAlt,
+  FaTrash,
+} from 'react-icons/fa';
 
 function AlertasMtto() {
   const [alertas, setAlertas] = useState([]);
@@ -15,6 +23,10 @@ function AlertasMtto() {
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
   const [filtroIps, setFiltroIps] = useState('TODAS');
   const [listaIps, setListaIps] = useState([]);
+
+  // Selection & Bulk Deletion
+  const [selectedEquipos, setSelectedEquipos] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,6 +102,7 @@ function AlertasMtto() {
   // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedEquipos([]);
   }, [buscar, filtroEstado, filtroIps, itemsPerPage]);
 
   // Paginated items
@@ -97,6 +110,54 @@ function AlertasMtto() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAlertas.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAlertas, currentPage, itemsPerPage]);
+
+  // Checkbox handlers
+  const handleCheckboxChange = (id) => {
+    setSelectedEquipos((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allIds = filteredAlertas.map((a) => a._id);
+      setSelectedEquipos(allIds);
+    } else {
+      setSelectedEquipos([]);
+    }
+  };
+
+  // Bulk Delete Handler
+  const handleDeleteSelected = async () => {
+    if (selectedEquipos.length === 0) {
+      alert('Por favor selecciona al menos un equipo de la tabla');
+      return;
+    }
+
+    const confirmMsg = `¿Estás seguro de que deseas eliminar definitivamente los ${selectedEquipos.length} equipo(s) seleccionados (dados de baja) del inventario?\n\nEsta acción eliminará estos equipos y no se puede deshacer.`;
+    if (window.confirm(confirmMsg)) {
+      setDeleting(true);
+      try {
+        const response = await request({
+          link: apiEliminarEquipos,
+          body: { ids: selectedEquipos },
+          method: 'POST',
+        });
+        if (response && response.success) {
+          alert(`¡${response.deletedCount || selectedEquipos.length} equipo(s) eliminados exitosamente!`);
+          setSelectedEquipos([]);
+          fetchAlertas();
+        } else {
+          alert(`${response?.message || 'Error al eliminar equipos'}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error de conexión al eliminar equipos');
+      } finally {
+        setDeleting(false);
+      }
+    }
+  };
 
   // Badge render helper
   const renderBadge = (item) => {
@@ -191,38 +252,64 @@ function AlertasMtto() {
   return (
     <div className="contenedor">
       <main>
-        {/* Header Title */}
+        {/* Header Title & Actions */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FaShieldAlt color="#38bdf8" /> Semáforo y Alertas de Mantenimiento
             </h2>
             <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
-              Auditoría y control preventivo según periodicidad y último servicio realizado.
+              Auditoría y control preventivo. Selecciona equipos dados de baja para eliminarlos fácilmente.
             </p>
           </div>
-          <button
-            onClick={fetchAlertas}
-            disabled={loading}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              backgroundColor: '#0284c7',
-              color: '#fff',
-              border: '1px solid #38bdf8',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '700',
-              fontSize: '14px',
-              boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
-              transition: 'all 0.2s',
-            }}
-          >
-            <FaSync className={loading ? 'fa-spin' : ''} color="#ffffff" />
-            Actualizar
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {selectedEquipos.length > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                disabled={deleting}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  backgroundColor: '#7f1d1d',
+                  color: '#fca5a5',
+                  border: '1.5px solid #ef4444',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <FaTrash size={14} color="#fca5a5" />
+                {deleting ? 'Eliminando...' : `Eliminar ${selectedEquipos.length} Seleccionado(s)`}
+              </button>
+            )}
+            <button
+              onClick={fetchAlertas}
+              disabled={loading}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 18px',
+                backgroundColor: '#0284c7',
+                color: '#fff',
+                border: '1px solid #38bdf8',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '14px',
+                boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaSync className={loading ? 'fa-spin' : ''} color="#ffffff" />
+              Actualizar
+            </button>
+          </div>
         </div>
 
         {/* KPI Cards */}
@@ -428,6 +515,15 @@ function AlertasMtto() {
               <table className="table">
                 <thead>
                   <tr>
+                    <th style={{ textAlign: 'center', width: '50px' }}>
+                      <input
+                        type="checkbox"
+                        style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
+                        onChange={handleSelectAll}
+                        checked={filteredAlertas.length > 0 && selectedEquipos.length === filteredAlertas.length}
+                        title="Seleccionar todos los equipos filtrados"
+                      />
+                    </th>
                     <th>ESTADO</th>
                     <th>EQUIPO</th>
                     <th>MARCA / MODELO</th>
@@ -443,84 +539,101 @@ function AlertasMtto() {
                 <tbody>
                   {paginatedAlertas.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan="11" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron equipos con los filtros seleccionados.
                       </td>
                     </tr>
                   ) : (
-                    paginatedAlertas.map((item) => (
-                      <tr key={item._id}>
-                        <td>{renderBadge(item)}</td>
-                        <td>
-                          <strong style={{ color: '#f8fafc' }}>{item.equipo}</strong>
-                          {item.riesgo && (
-                            <div style={{ fontSize: '11px', color: '#38bdf8' }}>Riesgo: {item.riesgo}</div>
-                          )}
-                        </td>
-                        <td>
-                          <div style={{ color: '#cbd5e1' }}>{item.marca}</div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.modelo}</div>
-                        </td>
-                        <td>
-                          <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
-                            {item.serie}
-                          </span>
-                        </td>
-                        <td style={{ color: '#e2e8f0' }}>{item.institucion}</td>
-                        <td>
-                          <div style={{ color: '#cbd5e1' }}>{item.servicio}</div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.ubicacion}</div>
-                        </td>
-                        <td>
-                          <span style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>
-                            {item.periodicidad}
-                          </span>
-                        </td>
-                        <td>
-                          {item.ultimo_mantenimiento ? (
-                            <div>
-                              <div style={{ color: '#cbd5e1' }}>{item.ultimo_mantenimiento}</div>
-                              {item.ultimo_reporte_num && (
-                                <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '600' }}>
-                                  Rep. #{item.ultimo_reporte_num}
-                                </div>
-                              )}
+                    paginatedAlertas.map((item) => {
+                      const isSelected = selectedEquipos.includes(item._id);
+                      return (
+                        <tr
+                          key={item._id}
+                          style={{
+                            backgroundColor: isSelected ? 'rgba(239, 68, 68, 0.12)' : 'inherit',
+                          }}
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleCheckboxChange(item._id)}
+                              style={{ transform: 'scale(1.25)', cursor: 'pointer' }}
+                              title="Seleccionar para dar de baja / eliminar"
+                            />
+                          </td>
+                          <td>{renderBadge(item)}</td>
+                          <td>
+                            <strong style={{ color: '#f8fafc' }}>{item.equipo}</strong>
+                            {item.riesgo && (
+                              <div style={{ fontSize: '11px', color: '#38bdf8' }}>Riesgo: {item.riesgo}</div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ color: '#cbd5e1' }}>{item.marca}</div>
+                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.modelo}</div>
+                          </td>
+                          <td>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
+                              {item.serie}
+                            </span>
+                          </td>
+                          <td style={{ color: '#e2e8f0' }}>{item.institucion}</td>
+                          <td>
+                            <div style={{ color: '#cbd5e1' }}>{item.servicio}</div>
+                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.ubicacion}</div>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>
+                              {item.periodicidad}
+                            </span>
+                          </td>
+                          <td>
+                            {item.ultimo_mantenimiento ? (
+                              <div>
+                                <div style={{ color: '#cbd5e1' }}>{item.ultimo_mantenimiento}</div>
+                                {item.ultimo_reporte_num && (
+                                  <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '600' }}>
+                                    Rep. #{item.ultimo_reporte_num}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: '12px' }}>Sin registro</span>
+                            )}
+                          </td>
+                          <td>
+                            {item.proximo_mantenimiento ? (
+                              <strong style={{ color: item.estado === 'VENCIDO' ? '#ef4444' : item.estado === 'PROXIMO' ? '#f59e0b' : '#10b981' }}>
+                                {item.proximo_mantenimiento}
+                              </strong>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: '12px' }}>No programado</span>
+                            )}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                              {/* Boton Mtto */}
+                              <Link
+                                to={`/reporteService?id=${item._id}&equipo=${encodeURIComponent(item.equipo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&servicio=${encodeURIComponent(item.servicio || '')}&marca=${encodeURIComponent(item.marca || '')}&modelo=${encodeURIComponent(item.modelo || '')}`}
+                                title="Hacer Mantenimiento"
+                                className="action-btn action-btn-primary"
+                              >
+                                <HiOutlineDocumentPlus size={16} color="#ffffff" />
+                              </Link>
+                              {/* Boton Ver Hoja */}
+                              <Link
+                                to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
+                                title="Ver Hoja de Vida"
+                                className="action-btn action-btn-view"
+                              >
+                                <GoEye size={16} color="#38bdf8" />
+                              </Link>
                             </div>
-                          ) : (
-                            <span style={{ color: '#64748b', fontSize: '12px' }}>Sin registro</span>
-                          )}
-                        </td>
-                        <td>
-                          {item.proximo_mantenimiento ? (
-                            <strong style={{ color: item.estado === 'VENCIDO' ? '#ef4444' : item.estado === 'PROXIMO' ? '#f59e0b' : '#10b981' }}>
-                              {item.proximo_mantenimiento}
-                            </strong>
-                          ) : (
-                            <span style={{ color: '#64748b', fontSize: '12px' }}>No programado</span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
-                            {/* Boton Mtto */}
-                            <Link
-                              to={`/reporteService?id=${item._id}&equipo=${encodeURIComponent(item.equipo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&servicio=${encodeURIComponent(item.servicio || '')}&marca=${encodeURIComponent(item.marca || '')}&modelo=${encodeURIComponent(item.modelo || '')}`}
-                              title="Hacer Mantenimiento"
-                              className="action-btn action-btn-primary"
-                            >
-                              <HiOutlineDocumentPlus size={16} color="#ffffff" />
-                            </Link>
-                            {/* Boton Ver Hoja */}
-                            <Link
-                              to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                              title="Ver Hoja de Vida"
-                              className="action-btn action-btn-view"
-                            >
-                              <GoEye size={16} color="#38bdf8" />
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

@@ -8,6 +8,7 @@ export const apiEditInventario = apiInventario + '/editinventario';
 export const apiObtenerEquipo = apiInventario + '/obtenerequipo';
 export const apiObtenerEquiposIps = apiInventario + '/obtenerequiposips';
 export const apiEliminarEquipo = apiInventario + '/deletequipo';
+export const apiEliminarEquipos = apiInventario + '/deleteequipos';
 export const apiFicha = baseUrl + '/ficha';
 export const apiCrearFicha = apiFicha + '/create';
 export const apiObtenerFicha = apiFicha + '/obtenerficha';

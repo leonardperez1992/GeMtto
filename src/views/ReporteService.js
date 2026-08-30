@@ -694,99 +694,117 @@ function ReporteService() {
               </td>
             </tr>
             <tr>
-              <th colSpan={2}>INGENIERO/TECNICO</th>
-              <th colSpan={2}>RECIBÍ A SATISFACCION</th>
+              <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#38bdf8' }}>INGENIERO / TÉCNICO RESPONSABLE</th>
+              <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#86efac' }}>RECIBÍ A SATISFACCIÓN (CLIENTE)</th>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                <SignatureCanvas
-                  canvasProps={{ width: 450, height: 150 }}
-                  ref={firmaIngRef}
-                  maxWidth={2}
-                  onEnd={() => {
-                    saveFirmaIng(firmaIngRef.current.toData());
-                  }}
-                />
+              <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #0284c7', display: 'inline-block' }}>
+                  <SignatureCanvas
+                    canvasProps={{ width: 340, height: 130, style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff' } }}
+                    penColor="#000000"
+                    ref={firmaIngRef}
+                    maxWidth={2}
+                    onEnd={() => {
+                      saveFirmaIng(firmaIngRef.current.toData());
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    type="button"
+                    className="btn-limpiar-firma"
+                    onClick={() => {
+                      firmaIngRef.current.clear();
+                      saveFirmaIng(null);
+                    }}
+                  >
+                    Limpiar Firma
+                  </button>
+                </div>
               </td>
-              <td colSpan={2}>
-                <label style={{ fontSize: '12px' }}>FIRMA: </label>
-                <SignatureCanvas
-                  canvasProps={{
-                    width: 450,
-                    height: 150,
-                  }}
-                  maxWidth={2}
-                  ref={firmaRecref}
-                  onEnd={() => {
-                    saveFirmaRecibe(firmaRecref.current.toData());
-                  }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <button
-                  onClick={() => {
-                    firmaIngRef.current.clear();
-                    saveFirmaIng(null);
-                  }}
-                >
-                  {' '}
-                  Limpiar{' '}
-                </button>
-              </td>
-              <td colSpan={2}>
-                {' '}
-                <button
-                  onClick={() => {
-                    firmaRecref.current.clear();
-                    saveFirmaRecibe(null);
-                  }}
-                >
-                  {' '}
-                  Limpiar{' '}
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <label>NOMBRE: </label>
-                <input
-                  className="input-reportparam"
-                  name="nombre_ingeniero"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <label>NOMBRE: </label>
-                <input
-                  className="input-reportparam"
-                  name="nombre_recibe"
-                  type="text"
-                  onChange={handleSave}
-                />
+              <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #10b981', display: 'inline-block' }}>
+                  <SignatureCanvas
+                    canvasProps={{
+                      width: 340,
+                      height: 130,
+                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff' },
+                    }}
+                    penColor="#000000"
+                    maxWidth={2}
+                    ref={firmaRecref}
+                    onEnd={() => {
+                      saveFirmaRecibe(firmaRecref.current.toData());
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    type="button"
+                    className="btn-limpiar-firma"
+                    onClick={() => {
+                      firmaRecref.current.clear();
+                      saveFirmaRecibe(null);
+                    }}
+                  >
+                    Limpiar Firma
+                  </button>
+                </div>
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <label>CARGO: </label>
-                <input
-                  className="input-reportparam"
-                  name="cargo_ingeniero"
-                  type="text"
-                  onChange={handleSave}
-                />
+              <td colSpan={2} style={{ padding: '12px' }}>
+                <div className="campo-firma-box">
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>NOMBRE DEL INGENIERO:</label>
+                  <input
+                    className="campo-firma-input"
+                    name="nombre_ingeniero"
+                    type="text"
+                    placeholder="Ej. Ing. Carlos Pérez"
+                    onChange={handleSave}
+                  />
+                </div>
               </td>
-              <td colSpan={2}>
-                <label>CARGO: </label>
-                <input
-                  className="input-reportparam"
-                  name="cargo_recibe"
-                  type="text"
-                  onChange={handleSave}
-                />
+              <td colSpan={2} style={{ padding: '12px' }}>
+                <div className="campo-firma-box">
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>NOMBRE DE QUIEN RECIBE:</label>
+                  <input
+                    className="campo-firma-input"
+                    name="nombre_recibe"
+                    type="text"
+                    placeholder="Ej. Dra. María González"
+                    onChange={handleSave}
+                  />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2} style={{ padding: '12px' }}>
+                <div className="campo-firma-box">
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>CARGO:</label>
+                  <input
+                    className="campo-firma-input"
+                    name="cargo_ingeniero"
+                    type="text"
+                    placeholder="Ej. Ingeniero Biomédico"
+                    onChange={handleSave}
+                  />
+                </div>
+              </td>
+              <td colSpan={2} style={{ padding: '12px' }}>
+                <div className="campo-firma-box">
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>CARGO:</label>
+                  <input
+                    className="campo-firma-input"
+                    name="cargo_recibe"
+                    type="text"
+                    placeholder="Ej. Jefe de Área / Coordinador"
+                    onChange={handleSave}
+                  />
+                </div>
               </td>
             </tr>
           </tbody>

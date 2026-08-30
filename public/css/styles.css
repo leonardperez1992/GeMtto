@@ -444,3 +444,67 @@ textarea:focus {
   color: #0f172a !important;
   margin-right: 4px;
 }
+
+/* ===================================================
+   PANELES DE FIRMA DIGITAL Y CAMPOS DE NOMBRE/CARGO
+   =================================================== */
+
+.firma-pad-blanco {
+  background-color: #ffffff !important;
+  border: 2px dashed #0284c7 !important;
+  border-radius: 8px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  cursor: crosshair !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.campo-firma-box {
+  background-color: #0f172a;
+  border: 1.5px solid #334155;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo-firma-input {
+  width: 100% !important;
+  padding: 9px 12px !important;
+  border: 1.5px solid #38bdf8 !important;
+  background-color: #0b1329 !important;
+  color: #f8fafc !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  transition: all 0.2s !important;
+}
+
+.campo-firma-input:focus {
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3) !important;
+}
+
+.btn-limpiar-firma {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.btn-limpiar-firma:hover {
+  background-color: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+}

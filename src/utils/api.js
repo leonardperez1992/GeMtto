@@ -1,4 +1,4 @@
-const baseUrl = 'http://192.168.1.8:3002/api';
+const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
 export const apiAuth = baseUrl + '/auth';

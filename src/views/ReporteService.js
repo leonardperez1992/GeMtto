@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
   apiCreateReporte,
-  apiGetActMtto,
+  apiActMtto,
   apiSetFiles,
   apiIps,
   apiObtenerEquipo,
@@ -28,10 +28,11 @@ import {
 } from 'react-icons/fa';
 
 function ReporteService() {
-  const [actMtos, setActmtos] = useState([]);
+  const [allActMtos, setAllActMtos] = useState([]);
   const [actMto, setActmto] = useState('');
   const [equipo, setEquipo] = useState({});
   const [ips, setIps] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
   const [ciudad, setCiudad] = useState('');
   const [file, setFile] = useState(null);
   const [numReporte] = useState(new Date().valueOf());
@@ -50,7 +51,7 @@ function ReporteService() {
     modelo: '',
     serie: '',
     inventario: 'NA',
-    problema_reportado: '',
+    problema_reportado: 'Mantenimiento preventivo programado según cronograma institucional.',
     desc_servicio: '',
     cantidad1: '',
     descripcion1: '',
@@ -115,26 +116,62 @@ function ReporteService() {
       .finally(() => setUploading(false));
   }
 
-  const obtenerActMtos = async (equipoNombre) => {
+  const obtenerTodasActividades = async (equipoNombre) => {
     try {
       const response = await request({
-        link: apiGetActMtto,
+        link: apiActMtto,
         method: 'GET',
-        body: { equipo: equipoNombre },
       });
-      if (response && response.success && response.actMto) {
-        setActmtos(response.actMto);
+      if (response && response.success && response.actmtto) {
+        const sorted = response.actmtto.sort((a, b) => (a.equipo || '').localeCompare(b.equipo || ''));
+        setAllActMtos(sorted);
+
+        // Auto-fill protocol if equipment matches
+        if (equipoNombre) {
+          const match = sorted.find(
+            (a) => a.equipo?.trim().toUpperCase() === equipoNombre.trim().toUpperCase()
+          );
+          if (match) {
+            setActmto(match.actividades);
+            setReporte((prev) => ({
+              ...prev,
+              desc_servicio: match.actividades,
+              parametro1: prev.parametro1 || match.parametro1 || '',
+              parametro2: prev.parametro2 || match.parametro2 || '',
+              parametro3: prev.parametro3 || match.parametro3 || '',
+              parametro4: prev.parametro4 || match.parametro4 || '',
+            }));
+          }
+        }
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const obtenerIps = async () => {
+  const obtenerIps = async (currentInstitucion) => {
     try {
-      const response = await request({ link: apiIps + '/getips', method: 'GET' });
+      const response = await request({ link: apiIps, method: 'GET' });
       if (response && response.success && response.ips) {
         setIps(response.ips);
+        const uniqueCities = Array.from(
+          new Set(response.ips.map((item) => (item.ciudad ? item.ciudad.trim().toUpperCase() : '')).filter(Boolean))
+        ).sort();
+        setCiudades(uniqueCities);
+
+        // Auto-select city if currentInstitucion matches
+        if (currentInstitucion) {
+          const matchIps = response.ips.find(
+            (item) =>
+              (item.ips && item.ips.toUpperCase() === currentInstitucion.toUpperCase()) ||
+              (item.nombre && item.nombre.toUpperCase() === currentInstitucion.toUpperCase())
+          );
+          if (matchIps && matchIps.ciudad) {
+            const city = matchIps.ciudad.trim().toUpperCase();
+            setCiudad(city);
+            setReporte((prev) => ({ ...prev, ciudad: city }));
+          }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -161,7 +198,8 @@ function ReporteService() {
           servicio: eq.servicio,
           institucion: eq.institucion,
         }));
-        obtenerActMtos(eq.equipo);
+        obtenerIps(eq.institucion);
+        obtenerTodasActividades(eq.equipo);
       }
     } catch (e) {
       console.error(e);
@@ -173,14 +211,33 @@ function ReporteService() {
     let idEquipo = queryParameters.get('id');
     if (idEquipo) {
       obtenerEquipo(idEquipo);
+    } else {
+      obtenerIps('');
+      obtenerTodasActividades('');
     }
-    obtenerIps();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = (e) => {
     const { name, value } = e.target;
     setReporte((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectActividad = (e) => {
+    const selectedEquipoName = e.target.value;
+    if (!selectedEquipoName) return;
+    const selectedObj = allActMtos.find((item) => item.equipo === selectedEquipoName);
+    if (selectedObj) {
+      setActmto(selectedObj.actividades);
+      setReporte((prev) => ({
+        ...prev,
+        desc_servicio: selectedObj.actividades,
+        parametro1: selectedObj.parametro1 || prev.parametro1,
+        parametro2: selectedObj.parametro2 || prev.parametro2,
+        parametro3: selectedObj.parametro3 || prev.parametro3,
+        parametro4: selectedObj.parametro4 || prev.parametro4,
+      }));
+    }
   };
 
   const CreateReport = async (e) => {
@@ -378,7 +435,7 @@ function ReporteService() {
                   <td colSpan={2} style={{ width: '50%' }}>
                     <strong style={{ color: '#38bdf8' }}>IPS / CLIENTE: </strong>
                     <span style={{ color: '#f8fafc', fontWeight: '700', fontSize: '15px' }}>
-                      {equipo?.institucion || 'No especificada'}
+                      {equipo?.institucion || reporte.institucion || 'No especificada'}
                     </span>
                   </td>
                   <td colSpan={2} style={{ width: '50%' }}>
@@ -397,13 +454,13 @@ function ReporteService() {
                 <tr>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8' }}>SERVICIO / ÁREA: </strong>
-                    <span style={{ color: '#f8fafc' }}>{equipo?.servicio || '-'}</span>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.servicio || reporte.servicio || '-'}</span>
                   </td>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8', marginRight: '8px' }}>CIUDAD:</strong>
                     <select
                       className="input-report"
-                      style={{ maxWidth: '240px', display: 'inline-block' }}
+                      style={{ maxWidth: '260px', display: 'inline-block' }}
                       value={ciudad}
                       onChange={(e) => {
                         setCiudad(e.target.value);
@@ -411,10 +468,16 @@ function ReporteService() {
                       }}
                       required
                     >
-                      <option value="">-- Seleccione Ciudad --</option>
-                      {ips.map((value, index) => (
-                        <option key={index} value={value.ciudad}>
-                          {value.ciudad} ({value.nombre || value.ips})
+                      <option value="">-- Seleccionar Ciudad --</option>
+                      {ciudades.map((cityName, idx) => (
+                        <option key={idx} value={cityName}>
+                          {cityName}
+                        </option>
+                      ))}
+                      {/* Fallback to IPS direct city names if any */}
+                      {ips.map((item, idx) => (
+                        <option key={`ips-${idx}`} value={item.ciudad || item.ips}>
+                          {item.ciudad} ({item.ips || item.nombre})
                         </option>
                       ))}
                     </select>
@@ -474,27 +537,27 @@ function ReporteService() {
                 <tr>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8' }}>EQUIPO: </strong>
-                    <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{equipo?.equipo || '-'}</span>
+                    <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{equipo?.equipo || reporte.equipo || '-'}</span>
                   </td>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8' }}>MARCA: </strong>
-                    <span style={{ color: '#f8fafc' }}>{equipo?.marca || '-'}</span>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.marca || reporte.marca || '-'}</span>
                   </td>
                 </tr>
                 <tr>
                   <td>
                     <strong style={{ color: '#38bdf8' }}>MODELO: </strong>
-                    <span style={{ color: '#f8fafc' }}>{equipo?.modelo || '-'}</span>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.modelo || reporte.modelo || '-'}</span>
                   </td>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8' }}>SERIE: </strong>
                     <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>
-                      {equipo?.serie || '-'}
+                      {equipo?.serie || reporte.serie || '-'}
                     </span>
                   </td>
                   <td>
                     <strong style={{ color: '#38bdf8' }}>INVENTARIO: </strong>
-                    <span style={{ color: '#f8fafc' }}>{equipo?.inventario || 'NA'}</span>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.inventario || reporte.inventario || 'NA'}</span>
                   </td>
                 </tr>
 
@@ -522,33 +585,28 @@ function ReporteService() {
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
                     <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO / PROTOCOLO
+                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO (ACTIVIDADES DE MANTENIMIENTO)
                   </th>
                 </tr>
                 <tr>
-                  <td colSpan={4} style={{ padding: '14px' }}>
-                    {actMtos.length > 0 && (
-                      <div style={{ marginBottom: '10px' }}>
-                        <label style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                          📋 CARGAR PROTOCOLO PREVENTIVO PREDEFINIDO:
-                        </label>
-                        <select
-                          className="input-report"
-                          style={{ width: '100%', marginBottom: '8px' }}
-                          onChange={(e) => {
-                            setActmto(e.target.value);
-                            setReporte((prev) => ({ ...prev, desc_servicio: e.target.value }));
-                          }}
-                        >
-                          <option value="">-- Seleccionar protocolo estándar para {equipo?.equipo} --</option>
-                          {actMtos.map((value, index) => (
-                            <option key={index} value={value.actividades}>
-                              {value.equipo} - Ver protocolo
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                  <td colSpan={4} style={{ padding: '16px' }}>
+                    <div style={{ marginBottom: '14px', backgroundColor: '#0f172a', padding: '12px 16px', borderRadius: '8px', border: '1px solid #334155' }}>
+                      <label style={{ fontSize: '12.5px', color: '#38bdf8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        📋 SELECCIONAR ACTIVIDAD / PROTOCOLO SEGÚN TIPO DE EQUIPO ({allActMtos.length} DISPONIBLES):
+                      </label>
+                      <select
+                        className="input-report"
+                        style={{ width: '100%', fontSize: '13.5px' }}
+                        onChange={handleSelectActividad}
+                      >
+                        <option value="">-- Elige una actividad de la lista de mantenimiento para cargar el protocolo --</option>
+                        {allActMtos.map((item, index) => (
+                          <option key={index} value={item.equipo}>
+                            {item.equipo}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <textarea
                       name="desc_servicio"
                       className="textarea-report"
@@ -558,7 +616,7 @@ function ReporteService() {
                         setActmto(e.target.value);
                         handleSave(e);
                       }}
-                      rows={4}
+                      rows={5}
                       required
                     />
                   </td>

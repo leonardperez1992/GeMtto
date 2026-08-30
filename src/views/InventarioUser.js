@@ -72,10 +72,10 @@ function InventarioUser() {
       <main>
         {/* Header Title */}
         <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: '#0f2b48', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FaBoxes color="#0d6efd" /> Inventario de Equipos - {institucion || 'Mi Institución'}
+          <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FaBoxes color="#38bdf8" /> Inventario de Equipos - {institucion || 'Mi Institución'}
           </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+          <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
             Consulta y seguimiento del parque biomédico asignado a tu institución.
           </p>
         </div>
@@ -91,13 +91,13 @@ function InventarioUser() {
               onChange={handleSave}
             />
             <GoSearch
-              size={18}
+              size={20}
               style={{
                 position: 'absolute',
                 right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#64748b',
+                color: '#38bdf8',
               }}
             />
           </div>
@@ -105,7 +105,7 @@ function InventarioUser() {
 
         {/* Table & Content */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '16px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '16px' }}>
             Cargando inventario de equipos...
           </div>
         ) : (
@@ -129,7 +129,7 @@ function InventarioUser() {
                 <tbody>
                   {paginatedInventarios.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron equipos en esta institución.
                       </td>
                     </tr>
@@ -137,17 +137,17 @@ function InventarioUser() {
                     paginatedInventarios.map(function (item) {
                       return (
                         <tr key={item._id}>
-                          <td><strong>{item?.equipo}</strong></td>
-                          <td>{item?.marca}</td>
-                          <td>{item?.modelo}</td>
+                          <td><strong style={{ color: '#f8fafc' }}>{item?.equipo}</strong></td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.marca}</td>
+                          <td style={{ color: '#94a3b8' }}>{item?.modelo}</td>
                           <td>
-                            <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0f3b60' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
                               {item?.serie}
                             </span>
                           </td>
-                          <td>{item?.servicio}</td>
-                          <td>{item?.ubicacion}</td>
-                          <td>{item?.registro_invima}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.servicio}</td>
+                          <td style={{ color: '#94a3b8' }}>{item?.ubicacion}</td>
+                          <td style={{ color: '#cbd5e1', fontSize: '12px' }}>{item?.registro_invima}</td>
                           <td>
                             {item?.riesgo && (
                               <span
@@ -156,32 +156,23 @@ function InventarioUser() {
                                   borderRadius: '6px',
                                   fontSize: '11px',
                                   fontWeight: 'bold',
-                                  backgroundColor: '#e0f2fe',
-                                  color: '#0369a1',
+                                  backgroundColor: '#0369a1',
+                                  color: '#e0f2fe',
+                                  border: '1px solid #38bdf8',
                                 }}
                               >
                                 {item.riesgo}
                               </span>
                             )}
                           </td>
-                          <td>{item?.responsable}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.responsable}</td>
                           <td style={{ textAlign: 'center' }}>
                             <Link
                               to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                backgroundColor: '#0d6efd',
-                                color: '#fff',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                fontSize: '13px',
-                                fontWeight: '500',
-                                textDecoration: 'none',
-                              }}
+                              className="action-btn action-btn-view"
+                              title="Ver Hoja de Vida"
                             >
-                              <GoEye size={16} /> Ver Hoja
+                              <GoEye size={16} color="#38bdf8" /> Ver Hoja
                             </Link>
                           </td>
                         </tr>

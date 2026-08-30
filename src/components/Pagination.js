@@ -46,24 +46,24 @@ function Pagination({
   const buttonStyle = (isActive) => ({
     padding: '7px 14px',
     margin: '0 3px',
-    border: isActive ? '1px solid #0d6efd' : '1px solid #cbd5e1',
+    border: isActive ? '1px solid #38bdf8' : '1px solid #334155',
     borderRadius: '8px',
-    backgroundColor: isActive ? '#0d6efd' : '#ffffff',
-    color: isActive ? '#ffffff' : '#334155',
-    fontWeight: isActive ? '600' : '500',
+    backgroundColor: isActive ? '#0284c7' : '#0f172a',
+    color: isActive ? '#ffffff' : '#e2e8f0',
+    fontWeight: isActive ? '700' : '500',
     cursor: 'pointer',
     fontSize: '13.5px',
-    boxShadow: isActive ? '0 2px 4px rgba(13,110,253,0.3)' : '0 1px 2px rgba(0,0,0,0.05)',
+    boxShadow: isActive ? '0 0 10px rgba(56, 189, 248, 0.4)' : 'none',
     transition: 'all 0.15s ease',
   });
 
   const disabledButtonStyle = {
     padding: '7px 14px',
     margin: '0 3px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid #1e293b',
     borderRadius: '8px',
-    backgroundColor: '#f8fafc',
-    color: '#94a3b8',
+    backgroundColor: '#0b1329',
+    color: '#475569',
     cursor: 'not-allowed',
     fontSize: '13.5px',
   };
@@ -76,37 +76,37 @@ function Pagination({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '16px 20px',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#1e293b',
         borderRadius: '10px',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        border: '1px solid #334155',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
         marginTop: '16px',
         marginBottom: '20px',
         gap: '14px',
       }}
     >
       {/* Summary Info */}
-      <div style={{ fontSize: '13.5px', color: '#64748b' }}>
-        Mostrando <strong style={{ color: '#1e293b' }}>{startItem}</strong> - <strong style={{ color: '#1e293b' }}>{endItem}</strong> de <strong style={{ color: '#0d6efd' }}>{totalItems}</strong> registros
+      <div style={{ fontSize: '13.5px', color: '#94a3b8' }}>
+        Mostrando <strong style={{ color: '#f8fafc' }}>{startItem}</strong> - <strong style={{ color: '#f8fafc' }}>{endItem}</strong> de <strong style={{ color: '#38bdf8' }}>{totalItems}</strong> registros
       </div>
 
       {/* Center / Controls */}
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         {/* Page Size Selector */}
         {onItemsPerPageChange && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px' }}>
-            <span style={{ color: '#64748b' }}>Filas:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px' }}>
+            <span style={{ color: '#94a3b8' }}>Filas por pág:</span>
             <select
               value={itemsPerPage}
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
               style={{
                 padding: '5px 10px',
                 borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                backgroundColor: '#f8fafc',
+                border: '1px solid #334155',
+                backgroundColor: '#0f172a',
                 fontSize: '13.5px',
-                color: '#1e293b',
-                fontWeight: '500',
+                color: '#f8fafc',
+                fontWeight: '600',
                 cursor: 'pointer',
               }}
             >
@@ -136,7 +136,7 @@ function Pagination({
               <button onClick={() => onPageChange(1)} style={buttonStyle(false)}>
                 1
               </button>
-              {pages[0] > 2 && <span style={{ padding: '0 4px', color: '#94a3b8' }}>...</span>}
+              {pages[0] > 2 && <span style={{ padding: '0 4px', color: '#64748b' }}>...</span>}
             </>
           )}
 
@@ -155,7 +155,7 @@ function Pagination({
           {pages[pages.length - 1] < totalPages && (
             <>
               {pages[pages.length - 1] < totalPages - 1 && (
-                <span style={{ padding: '0 4px', color: '#94a3b8' }}>...</span>
+                <span style={{ padding: '0 4px', color: '#64748b' }}>...</span>
               )}
               <button onClick={() => onPageChange(totalPages)} style={buttonStyle(false)}>
                 {totalPages}

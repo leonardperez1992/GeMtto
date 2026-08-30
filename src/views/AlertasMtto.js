@@ -108,9 +108,9 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#fee2e2',
-              color: '#b91c1c',
-              border: '1px solid #fca5a5',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              color: '#fca5a5',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
               padding: '5px 10px',
               borderRadius: '20px',
               fontWeight: '700',
@@ -118,7 +118,7 @@ function AlertasMtto() {
               whiteSpace: 'nowrap',
             }}
           >
-            <FaExclamationTriangle size={12} />
+            <FaExclamationTriangle size={12} color="#fca5a5" />
             VENCIDO ({Math.abs(item.dias_restantes)} d)
           </span>
         );
@@ -129,9 +129,9 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#fef3c7',
-              color: '#b45309',
-              border: '1px solid #fcd34d',
+              backgroundColor: 'rgba(245, 158, 11, 0.2)',
+              color: '#fde047',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
               padding: '5px 10px',
               borderRadius: '20px',
               fontWeight: '700',
@@ -139,7 +139,7 @@ function AlertasMtto() {
               whiteSpace: 'nowrap',
             }}
           >
-            <FaClock size={12} />
+            <FaClock size={12} color="#fde047" />
             PRÓXIMO ({item.dias_restantes} d)
           </span>
         );
@@ -150,9 +150,9 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#dcfce7',
-              color: '#15803d',
-              border: '1px solid #86efac',
+              backgroundColor: 'rgba(34, 197, 94, 0.2)',
+              color: '#86efac',
+              border: '1px solid rgba(34, 197, 94, 0.4)',
               padding: '5px 10px',
               borderRadius: '20px',
               fontWeight: '700',
@@ -160,7 +160,7 @@ function AlertasMtto() {
               whiteSpace: 'nowrap',
             }}
           >
-            <FaCheckCircle size={12} />
+            <FaCheckCircle size={12} color="#86efac" />
             AL DÍA ({item.dias_restantes} d)
           </span>
         );
@@ -171,9 +171,9 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#f1f5f9',
-              color: '#64748b',
-              border: '1px solid #cbd5e1',
+              backgroundColor: 'rgba(100, 116, 139, 0.2)',
+              color: '#cbd5e1',
+              border: '1px solid rgba(100, 116, 139, 0.4)',
               padding: '5px 10px',
               borderRadius: '20px',
               fontWeight: '600',
@@ -181,7 +181,7 @@ function AlertasMtto() {
               whiteSpace: 'nowrap',
             }}
           >
-            <FaQuestionCircle size={12} />
+            <FaQuestionCircle size={12} color="#94a3b8" />
             SIN REGISTRO
           </span>
         );
@@ -194,10 +194,10 @@ function AlertasMtto() {
         {/* Header Title */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h2 style={{ margin: 0, color: '#0f2b48', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FaShieldAlt color="#0d6efd" /> Semáforo y Alertas de Mantenimiento
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FaShieldAlt color="#38bdf8" /> Semáforo y Alertas de Mantenimiento
             </h2>
-            <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
               Auditoría y control preventivo según periodicidad y último servicio realizado.
             </p>
           </div>
@@ -209,18 +209,18 @@ function AlertasMtto() {
               alignItems: 'center',
               gap: '8px',
               padding: '10px 18px',
-              backgroundColor: '#0d6efd',
+              backgroundColor: '#0284c7',
               color: '#fff',
-              border: 'none',
+              border: '1px solid #38bdf8',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: '600',
+              fontWeight: '700',
               fontSize: '14px',
-              boxShadow: '0 2px 4px rgba(13,110,253,0.25)',
+              boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
               transition: 'all 0.2s',
             }}
           >
-            <FaSync className={loading ? 'fa-spin' : ''} />
+            <FaSync className={loading ? 'fa-spin' : ''} color="#ffffff" />
             Actualizar
           </button>
         </div>
@@ -240,15 +240,15 @@ function AlertasMtto() {
             style={{
               padding: '16px 20px',
               borderRadius: '12px',
-              backgroundColor: filtroEstado === 'TODOS' ? '#eff6ff' : '#ffffff',
-              border: filtroEstado === 'TODOS' ? '2px solid #0d6efd' : '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              backgroundColor: filtroEstado === 'TODOS' ? '#1e3a8a' : '#1e293b',
+              border: filtroEstado === 'TODOS' ? '2px solid #38bdf8' : '1px solid #334155',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', letterSpacing: '0.5px' }}>TOTAL EQUIPOS</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#0d6efd', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', letterSpacing: '0.5px' }}>TOTAL EQUIPOS</div>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#38bdf8', marginTop: '4px' }}>
               {resumen.total}
             </div>
           </div>
@@ -259,17 +259,17 @@ function AlertasMtto() {
             style={{
               padding: '16px 20px',
               borderRadius: '12px',
-              backgroundColor: filtroEstado === 'VENCIDO' ? '#fef2f2' : '#ffffff',
-              border: filtroEstado === 'VENCIDO' ? '2px solid #ef4444' : '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              backgroundColor: filtroEstado === 'VENCIDO' ? '#450a0a' : '#1e293b',
+              border: filtroEstado === 'VENCIDO' ? '2px solid #ef4444' : '1px solid #334155',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#dc2626', fontWeight: '700', letterSpacing: '0.5px' }}>
-              <FaExclamationTriangle /> VENCIDOS
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#fca5a5', fontWeight: '700', letterSpacing: '0.5px' }}>
+              <FaExclamationTriangle color="#fca5a5" /> VENCIDOS
             </div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#dc2626', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#ef4444', marginTop: '4px' }}>
               {resumen.vencidos}
             </div>
           </div>
@@ -280,17 +280,17 @@ function AlertasMtto() {
             style={{
               padding: '16px 20px',
               borderRadius: '12px',
-              backgroundColor: filtroEstado === 'PROXIMO' ? '#fffbeb' : '#ffffff',
-              border: filtroEstado === 'PROXIMO' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              backgroundColor: filtroEstado === 'PROXIMO' ? '#451a03' : '#1e293b',
+              border: filtroEstado === 'PROXIMO' ? '2px solid #f59e0b' : '1px solid #334155',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#d97706', fontWeight: '700', letterSpacing: '0.5px' }}>
-              <FaClock /> PRÓXIMOS (30 DÍAS)
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#fde047', fontWeight: '700', letterSpacing: '0.5px' }}>
+              <FaClock color="#fde047" /> PRÓXIMOS (30 DÍAS)
             </div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#d97706', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
               {resumen.proximos}
             </div>
           </div>
@@ -301,17 +301,17 @@ function AlertasMtto() {
             style={{
               padding: '16px 20px',
               borderRadius: '12px',
-              backgroundColor: filtroEstado === 'AL_DIA' ? '#f0fdf4' : '#ffffff',
-              border: filtroEstado === 'AL_DIA' ? '2px solid #10b981' : '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              backgroundColor: filtroEstado === 'AL_DIA' ? '#052e16' : '#1e293b',
+              border: filtroEstado === 'AL_DIA' ? '2px solid #10b981' : '1px solid #334155',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#16a34a', fontWeight: '700', letterSpacing: '0.5px' }}>
-              <FaCheckCircle /> AL DÍA
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#86efac', fontWeight: '700', letterSpacing: '0.5px' }}>
+              <FaCheckCircle color="#86efac" /> AL DÍA
             </div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#16a34a', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
               {resumen.al_dia}
             </div>
           </div>
@@ -322,17 +322,17 @@ function AlertasMtto() {
             style={{
               padding: '16px 20px',
               borderRadius: '12px',
-              backgroundColor: filtroEstado === 'SIN_REGISTRO' ? '#f8fafc' : '#ffffff',
-              border: filtroEstado === 'SIN_REGISTRO' ? '2px solid #64748b' : '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              backgroundColor: filtroEstado === 'SIN_REGISTRO' ? '#0f172a' : '#1e293b',
+              border: filtroEstado === 'SIN_REGISTRO' ? '2px solid #94a3b8' : '1px solid #334155',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748b', fontWeight: '700', letterSpacing: '0.5px' }}>
-              <FaQuestionCircle /> SIN REGISTRO
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#cbd5e1', fontWeight: '700', letterSpacing: '0.5px' }}>
+              <FaQuestionCircle color="#cbd5e1" /> SIN REGISTRO
             </div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#64748b', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#94a3b8', marginTop: '4px' }}>
               {resumen.sin_registro}
             </div>
           </div>
@@ -351,20 +351,20 @@ function AlertasMtto() {
               placeholder="Buscar por serie, equipo, marca, modelo, servicio o ubicación..."
             />
             <GoSearch
-              size={18}
+              size={20}
               style={{
                 position: 'absolute',
                 right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#64748b',
+                color: '#38bdf8',
               }}
             />
           </div>
 
           {/* Filter by IPS */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ fontSize: '13.5px', fontWeight: '600', color: '#475569', margin: 0 }}>
+            <label style={{ fontSize: '13.5px', fontWeight: '600', color: '#cbd5e1', margin: 0 }}>
               IPS:
             </label>
             <select
@@ -373,9 +373,10 @@ function AlertasMtto() {
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '1px solid #cbd5e1',
+                border: '1px solid #334155',
                 fontSize: '13.5px',
-                backgroundColor: '#fff',
+                backgroundColor: '#0f172a',
+                color: '#f8fafc',
                 cursor: 'pointer',
                 maxWidth: '220px',
               }}
@@ -391,7 +392,7 @@ function AlertasMtto() {
 
           {/* Filter by Estado */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ fontSize: '13.5px', fontWeight: '600', color: '#475569', margin: 0 }}>
+            <label style={{ fontSize: '13.5px', fontWeight: '600', color: '#cbd5e1', margin: 0 }}>
               Estado:
             </label>
             <select
@@ -400,9 +401,10 @@ function AlertasMtto() {
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '1px solid #cbd5e1',
+                border: '1px solid #334155',
                 fontSize: '13.5px',
-                backgroundColor: '#fff',
+                backgroundColor: '#0f172a',
+                color: '#f8fafc',
                 cursor: 'pointer',
               }}
             >
@@ -417,7 +419,7 @@ function AlertasMtto() {
 
         {/* Table & Results */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', fontSize: '16px', color: '#64748b' }}>
+          <div style={{ textAlign: 'center', padding: '40px', fontSize: '16px', color: '#94a3b8' }}>
             Calculando alertas de mantenimiento preventivo...
           </div>
         ) : (
@@ -441,7 +443,7 @@ function AlertasMtto() {
                 <tbody>
                   {paginatedAlertas.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron equipos con los filtros seleccionados.
                       </td>
                     </tr>
@@ -450,89 +452,70 @@ function AlertasMtto() {
                       <tr key={item._id}>
                         <td>{renderBadge(item)}</td>
                         <td>
-                          <strong>{item.equipo}</strong>
+                          <strong style={{ color: '#f8fafc' }}>{item.equipo}</strong>
                           {item.riesgo && (
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Riesgo: {item.riesgo}</div>
+                            <div style={{ fontSize: '11px', color: '#38bdf8' }}>Riesgo: {item.riesgo}</div>
                           )}
                         </td>
                         <td>
-                          {item.marca}
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>{item.modelo}</div>
+                          <div style={{ color: '#cbd5e1' }}>{item.marca}</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.modelo}</div>
                         </td>
                         <td>
-                          <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0f3b60' }}>
+                          <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
                             {item.serie}
                           </span>
                         </td>
-                        <td>{item.institucion}</td>
+                        <td style={{ color: '#e2e8f0' }}>{item.institucion}</td>
                         <td>
-                          {item.servicio}
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>{item.ubicacion}</div>
+                          <div style={{ color: '#cbd5e1' }}>{item.servicio}</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.ubicacion}</div>
                         </td>
                         <td>
-                          <span style={{ fontSize: '12px', fontWeight: '600', color: '#334155' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>
                             {item.periodicidad}
                           </span>
                         </td>
                         <td>
                           {item.ultimo_mantenimiento ? (
                             <div>
-                              <div>{item.ultimo_mantenimiento}</div>
+                              <div style={{ color: '#cbd5e1' }}>{item.ultimo_mantenimiento}</div>
                               {item.ultimo_reporte_num && (
-                                <div style={{ fontSize: '11px', color: '#0d6efd', fontWeight: '600' }}>
+                                <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '600' }}>
                                   Rep. #{item.ultimo_reporte_num}
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>Sin registro</span>
+                            <span style={{ color: '#64748b', fontSize: '12px' }}>Sin registro</span>
                           )}
                         </td>
                         <td>
                           {item.proximo_mantenimiento ? (
-                            <strong style={{ color: item.estado === 'VENCIDO' ? '#dc2626' : item.estado === 'PROXIMO' ? '#d97706' : '#16a34a' }}>
+                            <strong style={{ color: item.estado === 'VENCIDO' ? '#ef4444' : item.estado === 'PROXIMO' ? '#f59e0b' : '#10b981' }}>
                               {item.proximo_mantenimiento}
                             </strong>
                           ) : (
-                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>No programado</span>
+                            <span style={{ color: '#64748b', fontSize: '12px' }}>No programado</span>
                           )}
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                            {/* Boton Mtto */}
                             <Link
                               to={`/reporteService?id=${item._id}&equipo=${encodeURIComponent(item.equipo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&servicio=${encodeURIComponent(item.servicio || '')}&marca=${encodeURIComponent(item.marca || '')}&modelo=${encodeURIComponent(item.modelo || '')}`}
                               title="Hacer Mantenimiento"
-                              style={{
-                                padding: '6px 10px',
-                                borderRadius: '6px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                fontSize: '12px',
-                                textDecoration: 'none',
-                                backgroundColor: '#0d6efd',
-                                color: '#fff',
-                                fontWeight: '600',
-                              }}
+                              className="action-btn action-btn-primary"
                             >
-                              <HiOutlineDocumentPlus size={15} /> Mtto
+                              <HiOutlineDocumentPlus size={16} color="#ffffff" />
                             </Link>
+                            {/* Boton Ver Hoja */}
                             <Link
                               to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
                               title="Ver Hoja de Vida"
-                              style={{
-                                padding: '6px 8px',
-                                borderRadius: '6px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                fontSize: '12px',
-                                textDecoration: 'none',
-                                border: '1px solid #cbd5e1',
-                                color: '#334155',
-                                backgroundColor: '#f8fafc',
-                              }}
+                              className="action-btn action-btn-view"
                             >
-                              <GoEye size={16} />
+                              <GoEye size={16} color="#38bdf8" />
                             </Link>
                           </div>
                         </td>

@@ -81,10 +81,10 @@ function Reportes() {
         {/* Header Title & Actions */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h2 style={{ margin: 0, color: '#0f2b48', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FaFileInvoice color="#0d6efd" /> Reportes de Servicio Técnico
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FaFileInvoice color="#38bdf8" /> Reportes de Servicio Técnico
             </h2>
-            <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
               Historial de intervenciones, mantenimientos preventivos y correctivos.
             </p>
           </div>
@@ -98,14 +98,15 @@ function Reportes() {
               color: '#ffffff',
               padding: '10px 18px',
               borderRadius: '8px',
-              fontWeight: '600',
+              fontWeight: '700',
               fontSize: '14px',
               textDecoration: 'none',
-              boxShadow: '0 2px 4px rgba(15,59,96,0.25)',
+              boxShadow: '0 2px 8px rgba(15,59,96,0.5)',
+              border: '1px solid #38bdf8',
               transition: 'all 0.2s',
             }}
           >
-            <FaFileSignature size={14} /> Firmar Reportes Masivos
+            <FaFileSignature size={14} color="#38bdf8" /> Firmar Reportes Masivos
           </Link>
         </div>
 
@@ -120,13 +121,13 @@ function Reportes() {
               onChange={handleSave}
             />
             <GoSearch
-              size={18}
+              size={20}
               style={{
                 position: 'absolute',
                 right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#64748b',
+                color: '#38bdf8',
               }}
             />
           </div>
@@ -134,7 +135,7 @@ function Reportes() {
 
         {/* Table & Content */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '16px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '16px' }}>
             Cargando reportes de servicio...
           </div>
         ) : (
@@ -158,7 +159,7 @@ function Reportes() {
                 <tbody>
                   {paginatedReportes.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron reportes.
                       </td>
                     </tr>
@@ -167,70 +168,54 @@ function Reportes() {
                       return (
                         <tr key={item._id}>
                           <td>
-                            <strong style={{ color: '#0d6efd' }}>#{item?.numero_reporte}</strong>
+                            <strong style={{ color: '#38bdf8' }}>#{item?.numero_reporte}</strong>
                           </td>
                           <td>
                             <span
                               style={{
-                                padding: '3px 8px',
+                                padding: '4px 9px',
                                 borderRadius: '6px',
                                 fontSize: '11px',
                                 fontWeight: 'bold',
-                                backgroundColor: String(item?.tipo_servicio).includes('CORRECTIVO') ? '#fee2e2' : '#dcfce7',
-                                color: String(item?.tipo_servicio).includes('CORRECTIVO') ? '#b91c1c' : '#15803d',
+                                backgroundColor: String(item?.tipo_servicio).includes('CORRECTIVO') ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)',
+                                color: String(item?.tipo_servicio).includes('CORRECTIVO') ? '#fca5a5' : '#86efac',
+                                border: String(item?.tipo_servicio).includes('CORRECTIVO') ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(34, 197, 94, 0.4)',
                               }}
                             >
                               {item?.tipo_servicio}
                             </span>
                           </td>
-                          <td>{item?.fecha}</td>
-                          <td><strong>{item?.equipo}</strong></td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.fecha}</td>
+                          <td><strong style={{ color: '#f8fafc' }}>{item?.equipo}</strong></td>
                           <td>
-                            {item?.marca}
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>{item?.modelo}</div>
+                            <div style={{ color: '#cbd5e1' }}>{item?.marca}</div>
+                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item?.modelo}</div>
                           </td>
                           <td>
-                            <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0f3b60' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
                               {item?.serie}
                             </span>
                           </td>
-                          <td>{item?.institucion}</td>
-                          <td>{item?.servicio}</td>
-                          <td>{item?.nombre_ingeniero || 'No registrado'}</td>
+                          <td style={{ color: '#e2e8f0' }}>{item?.institucion}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.servicio}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.nombre_ingeniero || 'No registrado'}</td>
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                              {/* Botón Ver PDF */}
                               <Link
                                 to={`/reporte?id=${item._id}`}
                                 title="Ver / Imprimir Reporte PDF"
-                                style={{
-                                  padding: '6px 8px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#0d6efd',
-                                  color: '#fff',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  fontSize: '12px',
-                                  textDecoration: 'none',
-                                }}
+                                className="action-btn action-btn-view"
                               >
-                                <GoEye size={16} />
+                                <GoEye size={16} color="#38bdf8" />
                               </Link>
+                              {/* Botón Editar */}
                               <Link
                                 to={`/editareporte?id=${item._id}`}
                                 title="Editar Reporte"
-                                style={{
-                                  padding: '6px 8px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#fffbeb',
-                                  color: '#b45309',
-                                  border: '1px solid #fde68a',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  fontSize: '12px',
-                                  textDecoration: 'none',
-                                }}
+                                className="action-btn action-btn-edit"
                               >
-                                <CiEdit size={16} />
+                                <CiEdit size={16} color="#ffffff" />
                               </Link>
                             </div>
                           </td>

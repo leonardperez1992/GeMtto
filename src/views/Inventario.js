@@ -76,10 +76,10 @@ function Inventario() {
         {/* Header Title & Actions */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h2 style={{ margin: 0, color: '#0f2b48', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FaBoxes color="#0d6efd" /> Inventario General de Equipos
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FaBoxes color="#38bdf8" /> Inventario General de Equipos
             </h2>
-            <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
               Gestión centralizada de equipos médicos, hojas de vida y servicios técnicos.
             </p>
           </div>
@@ -89,14 +89,15 @@ function Inventario() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: '#0d6efd',
+              backgroundColor: '#0284c7',
               color: '#ffffff',
               padding: '10px 18px',
               borderRadius: '8px',
-              fontWeight: '600',
+              fontWeight: '700',
               fontSize: '14px',
               textDecoration: 'none',
-              boxShadow: '0 2px 4px rgba(13,110,253,0.25)',
+              boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
+              border: '1px solid #38bdf8',
               transition: 'all 0.2s',
             }}
           >
@@ -115,13 +116,13 @@ function Inventario() {
               onChange={handleSave}
             />
             <GoSearch
-              size={18}
+              size={20}
               style={{
                 position: 'absolute',
                 right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#64748b',
+                color: '#38bdf8',
               }}
             />
           </div>
@@ -129,7 +130,7 @@ function Inventario() {
 
         {/* Table & Content */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '16px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '16px' }}>
             Cargando inventario de equipos...
           </div>
         ) : (
@@ -154,7 +155,7 @@ function Inventario() {
                 <tbody>
                   {paginatedInventarios.length === 0 ? (
                     <tr>
-                      <td colSpan="11" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                      <td colSpan="11" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron equipos en el inventario.
                       </td>
                     </tr>
@@ -162,18 +163,18 @@ function Inventario() {
                     paginatedInventarios.map(function (item) {
                       return (
                         <tr key={item._id}>
-                          <td><strong>{item?.equipo}</strong></td>
-                          <td>{item?.marca}</td>
-                          <td>{item?.modelo}</td>
+                          <td><strong style={{ color: '#f8fafc' }}>{item?.equipo}</strong></td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.marca}</td>
+                          <td style={{ color: '#94a3b8' }}>{item?.modelo}</td>
                           <td>
-                            <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0f3b60' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8', fontSize: '13px' }}>
                               {item?.serie}
                             </span>
                           </td>
-                          <td>{item?.institucion}</td>
-                          <td>{item?.servicio}</td>
-                          <td>{item?.ubicacion}</td>
-                          <td>{item?.registro_invima}</td>
+                          <td style={{ color: '#e2e8f0' }}>{item?.institucion}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.servicio}</td>
+                          <td style={{ color: '#94a3b8' }}>{item?.ubicacion}</td>
+                          <td style={{ color: '#cbd5e1', fontSize: '12px' }}>{item?.registro_invima}</td>
                           <td>
                             {item?.riesgo && (
                               <span
@@ -182,68 +183,43 @@ function Inventario() {
                                   borderRadius: '6px',
                                   fontSize: '11px',
                                   fontWeight: 'bold',
-                                  backgroundColor: '#e0f2fe',
-                                  color: '#0369a1',
+                                  backgroundColor: '#0369a1',
+                                  color: '#e0f2fe',
+                                  border: '1px solid #38bdf8',
                                 }}
                               >
                                 {item.riesgo}
                               </span>
                             )}
                           </td>
-                          <td>{item?.responsable}</td>
+                          <td style={{ color: '#cbd5e1' }}>{item?.responsable}</td>
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                              {/* Botón Reporte */}
                               <Link
                                 to={`/reporteService?id=${item?._id}&equipo=${encodeURIComponent(item?.equipo || '')}&serie=${encodeURIComponent(item?.serie || '')}&institucion=${encodeURIComponent(item?.institucion || '')}&servicio=${encodeURIComponent(item?.servicio || '')}&marca=${encodeURIComponent(item?.marca || '')}&modelo=${encodeURIComponent(item?.modelo || '')}`}
                                 title="Crear Reporte de Servicio"
-                                style={{
-                                  padding: '6px 8px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#0d6efd',
-                                  color: '#fff',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  fontSize: '12px',
-                                  textDecoration: 'none',
-                                }}
+                                className="action-btn action-btn-primary"
                               >
-                                <HiOutlineDocumentPlus size={16} />
+                                <HiOutlineDocumentPlus size={16} color="#ffffff" />
                               </Link>
 
+                              {/* Botón Ver Hoja de Vida */}
                               <Link
                                 to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
                                 title="Ver Hoja de Vida"
-                                style={{
-                                  padding: '6px 8px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#f1f5f9',
-                                  color: '#334155',
-                                  border: '1px solid #cbd5e1',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  fontSize: '12px',
-                                  textDecoration: 'none',
-                                }}
+                                className="action-btn action-btn-view"
                               >
-                                <GoEye size={16} />
+                                <GoEye size={16} color="#38bdf8" />
                               </Link>
 
+                              {/* Botón Editar */}
                               <Link
                                 to={`/editarequipo?id=${item?._id}`}
                                 title="Editar Equipo"
-                                style={{
-                                  padding: '6px 8px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#fffbeb',
-                                  color: '#b45309',
-                                  border: '1px solid #fde68a',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  fontSize: '12px',
-                                  textDecoration: 'none',
-                                }}
+                                className="action-btn action-btn-edit"
                               >
-                                <CiEdit size={16} />
+                                <CiEdit size={16} color="#ffffff" />
                               </Link>
                             </div>
                           </td>

@@ -1,6 +1,23 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { apiObtenerReporte, apiUpdateReporte } from '../utils/api';
 import request from '../utils/request';
+import SignatureCanvas from 'react-signature-canvas';
+import {
+  FaEdit,
+  FaHospital,
+  FaWrench,
+  FaMicrochip,
+  FaExclamationCircle,
+  FaClipboardList,
+  FaCogs,
+  FaSlidersH,
+  FaCheckCircle,
+  FaSignature,
+  FaSave,
+  FaArrowLeft,
+  FaEraser,
+} from 'react-icons/fa';
 
 function UpdateReporte() {
   const [reporte, setReporte] = useState({
@@ -43,620 +60,692 @@ function UpdateReporte() {
     valor_medido4: '',
     observaciones: '',
     estado_final: '',
-    firma_ingeniero: '',
     nombre_ingeniero: '',
     cargo_ingeniero: '',
-    firma_recibe: '',
     nombre_recibe: '',
     cargo_recibe: '',
   });
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const firmaIngRef = useRef({});
+  const firmaRecref = useRef({});
+
   const obtenerReporte = async (id) => {
-    const response = await request({
-      link: apiObtenerReporte,
-      method: 'GET',
-      body: { id },
-    });
-    if (response.success) {
-      setReporte(response.reporte);
-    } else {
-      alert(`${response.message}`);
+    setLoading(true);
+    try {
+      const response = await request({
+        link: apiObtenerReporte,
+        method: 'GET',
+        body: { id },
+      });
+      if (response && response.success && response.reporte) {
+        setReporte(response.reporte);
+        setTimeout(() => {
+          if (response.reporte.firma_ingeniero && firmaIngRef.current?.fromData) {
+            try { firmaIngRef.current.fromData(response.reporte.firma_ingeniero); } catch (e) {}
+          }
+          if (response.reporte.firma_recibe && firmaRecref.current?.fromData) {
+            try { firmaRecref.current.fromData(response.reporte.firma_recibe); } catch (e) {}
+          }
+        }, 350);
+      } else {
+        alert(`${response?.message || 'Error al obtener reporte'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(function () {
+  useEffect(() => {
     let queryParameters = new URLSearchParams(window.location.search);
-    let idEquipo = queryParameters.get('id');
-    obtenerReporte(idEquipo);
+    let idReporte = queryParameters.get('id');
+    if (idReporte) {
+      obtenerReporte(idReporte);
+    } else {
+      alert('No se especificó el ID del reporte');
+      window.location.href = './reportes';
+    }
   }, []);
 
   const handleSave = (e) => {
-    setReporte(function (prev) {
-      return { ...prev, [e.target.name]: e.target.value };
-    });
+    const { name, value } = e.target;
+    setReporte((prev) => ({ ...prev, [name]: value }));
   };
 
-  const UpdateReport = async () => {
+  const UpdateReport = async (e) => {
+    if (e) e.preventDefault();
+    if (!reporte.equipo || !reporte.serie) {
+      alert('Por favor verifique los campos obligatorios del reporte.');
+      return;
+    }
+
+    const firmaIngData =
+      firmaIngRef.current && !firmaIngRef.current.isEmpty()
+        ? firmaIngRef.current.toData()
+        : reporte.firma_ingeniero || null;
+
+    const firmaRecData =
+      firmaRecref.current && !firmaRecref.current.isEmpty()
+        ? firmaRecref.current.toData()
+        : reporte.firma_recibe || null;
+
+    setSubmitting(true);
     const body = {
-      _id: reporte._id,
-      numero_reporte: reporte.numero_reporte,
-      institucion: reporte.institucion,
-      fecha: reporte.fecha,
-      servicio: reporte.servicio,
-      ciudad: reporte.ciudad,
-      tipo_servicio: reporte.tipo_servicio,
-      equipo: reporte.equipo,
-      marca: reporte.marca,
-      modelo: reporte.modelo,
-      serie: reporte.serie,
-      inventario: reporte.inventario,
-      problema_reportado: reporte.problema_reportado,
-      desc_servicio: reporte.desc_servicio,
-      cantidad1: reporte.cantidad1,
-      descripcion1: reporte.descripcion1,
-      valor1: reporte.valor1,
-      cantidad2: reporte.cantidad2,
-      descripcion2: reporte.descripcion2,
-      valor2: reporte.valor2,
-      cantidad3: reporte.cantidad3,
-      descripcion3: reporte.descripcion3,
-      valor3: reporte.valor3,
-      cantidad4: reporte.cantidad4,
-      descripcion4: reporte.descripcion4,
-      valor4: reporte.valor4,
-      parametro1: reporte.parametro1,
-      valor_programado1: reporte.valor_programado1,
-      valor_medido1: reporte.valor_medido1,
-      parametro2: reporte.parametro2,
-      valor_programado2: reporte.valor_programado2,
-      valor_medido2: reporte.valor_medido2,
-      parametro3: reporte.parametro3,
-      valor_programado3: reporte.valor_programado3,
-      valor_medido3: reporte.valor_medido3,
-      parametro4: reporte.parametro4,
-      valor_programado4: reporte.valor_programado4,
-      valor_medido4: reporte.valor_medido4,
-      observaciones: reporte.observaciones,
-      estado_final: reporte.estado_final,
-      nombre_ingeniero: reporte.nombre_ingeniero,
-      cargo_ingeniero: reporte.cargo_ingeniero,
-      nombre_recibe: reporte.nombre_recibe,
-      cargo_recibe: reporte.cargo_recibe,
+      ...reporte,
+      firma_ingeniero: firmaIngData,
+      firma_recibe: firmaRecData,
     };
-    if (!body.equipo) {
-      alert('Por favor diligencie todos los campos.');
-    } else {
+
+    try {
       const response = await request({
         link: apiUpdateReporte,
         body,
         method: 'POST',
       });
-      if (response.success) {
-        alert('Reporte actualizado exitosamente');
+      if (response && response.success) {
+        alert('¡Reporte actualizado exitosamente!');
         window.location.href = './reportes';
       } else {
-        alert(`${response.message}`);
+        alert(`${response?.message || 'Error al actualizar el reporte'}`);
       }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al actualizar reporte');
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="contenedor" style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+        Cargando datos del reporte de servicio...
+      </div>
+    );
+  }
+
   return (
-    <div className="contenedor">
+    <div className="contenedor" style={{ maxWidth: '1050px', margin: '0 auto', padding: '20px 15px' }}>
       <main>
-        <section>
+        {/* Navigation / Header Bar */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: '#1e293b',
+            padding: '16px 24px',
+            borderRadius: '12px',
+            border: '1.5px solid #334155',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+          }}
+        >
           <div>
-            <div>
-              <table className="tabla-reporte">
-                <thead>
-                  <tr>
-                    <td
-                      colSpan={1}
-                      style={{ backgroundColor: 'white', textAlign: 'center' }}
-                    >
-                      <img
-                        src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
-                        alt=""
-                        width="70%"
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px' }}>
+              <FaEdit color="#38bdf8" /> Editar Reporte de Servicio
+            </h2>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
+              Modifica la información, actividades, mediciones o firmas del reporte #{reporte?.numero_reporte}.
+            </p>
+          </div>
+          <Link
+            to="/reportes"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#334155',
+              color: '#f8fafc',
+              border: '1px solid #475569',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '13.5px',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <FaArrowLeft size={13} /> Volver a Reportes
+          </Link>
+        </div>
+
+        {/* Structured Form */}
+        <form onSubmit={UpdateReport}>
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: '2px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              marginBottom: '24px',
+            }}
+          >
+            <table className="tabla-reporte" style={{ margin: 0, border: 'none', borderRadius: 0, width: '100%' }}>
+              <thead>
+                <tr>
+                  <td
+                    colSpan={2}
+                    style={{
+                      backgroundColor: '#0f2744',
+                      padding: '16px 20px',
+                      verticalAlign: 'middle',
+                      borderBottom: '2px solid #38bdf8',
+                    }}
+                  >
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#38bdf8', letterSpacing: '0.5px' }}>
+                      EDITAR REPORTE DE SERVICIO TÉCNICO
+                    </div>
+                  </td>
+                  <td
+                    colSpan={2}
+                    style={{
+                      backgroundColor: '#0f2744',
+                      textAlign: 'right',
+                      padding: '16px 20px',
+                      verticalAlign: 'middle',
+                      borderBottom: '2px solid #38bdf8',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: '600' }}>Nº DE REPORTE: </span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#ef4444', marginLeft: '6px' }}>
+                      #{reporte?.numero_reporte}
+                    </span>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                {/* 1. Datos Institucion */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaHospital style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    1. INFORMACIÓN DE LA INSTITUCIÓN
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={2} style={{ width: '50%' }}>
+                    <strong style={{ color: '#38bdf8' }}>IPS / CLIENTE: </strong>
+                    <input
+                      name="institucion"
+                      value={reporte.institucion || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                  <td colSpan={2} style={{ width: '50%' }}>
+                    <strong style={{ color: '#38bdf8' }}>FECHA: </strong>
+                    <input
+                      name="fecha"
+                      type="date"
+                      value={reporte.fecha || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>SERVICIO: </strong>
+                    <input
+                      name="servicio"
+                      value={reporte.servicio || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>CIUDAD: </strong>
+                    <input
+                      name="ciudad"
+                      value={reporte.ciudad || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                </tr>
+
+                {/* 2. Tipo de Servicio */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaWrench style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    2. TIPO DE SERVICIO REALIZADO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <input
+                      name="tipo_servicio"
+                      value={reporte.tipo_servicio || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      placeholder="Ej. MTTO PREVENTIVO, MTTO CORRECTIVO..."
+                    />
+                  </td>
+                </tr>
+
+                {/* 3. Informacion del Equipo */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaMicrochip style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    3. INFORMACIÓN DEL EQUIPO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>EQUIPO: </strong>
+                    <input
+                      name="equipo"
+                      value={reporte.equipo || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>MARCA: </strong>
+                    <input
+                      name="marca"
+                      value={reporte.marca || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style={{ color: '#38bdf8' }}>MODELO: </strong>
+                    <input
+                      name="modelo"
+                      value={reporte.modelo || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>SERIE: </strong>
+                    <input
+                      name="serie"
+                      value={reporte.serie || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                  <td>
+                    <strong style={{ color: '#38bdf8' }}>INVENTARIO: </strong>
+                    <input
+                      name="inventario"
+                      value={reporte.inventario || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ marginTop: '4px' }}
+                    />
+                  </td>
+                </tr>
+
+                {/* 4. Problema Reportado */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaExclamationCircle style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    4. PROBLEMA REPORTADO POR EL CLIENTE
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <textarea
+                      name="problema_reportado"
+                      className="textarea-report"
+                      value={reporte.problema_reportado || ''}
+                      onChange={handleSave}
+                      rows={3}
+                    />
+                  </td>
+                </tr>
+
+                {/* 5. Descripcion del Servicio */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <textarea
+                      name="desc_servicio"
+                      className="textarea-report"
+                      value={reporte.desc_servicio || ''}
+                      onChange={handleSave}
+                      rows={4}
+                    />
+                  </td>
+                </tr>
+
+                {/* 6. Repuestos y Materiales */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaCogs style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    6. REPUESTOS, INSUMOS Y MATERIALES EMPLEADOS
+                  </th>
+                </tr>
+                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                  <td style={{ width: '15%', textAlign: 'center' }}>CANTIDAD</td>
+                  <td colSpan={2} style={{ width: '60%' }}>DESCRIPCIÓN DEL REPUESTO / INSUMO</td>
+                  <td style={{ width: '25%', textAlign: 'center' }}>VALOR UNITARIO</td>
+                </tr>
+                {[1, 2, 3, 4].map((idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`cantidad${idx}`}
+                        type="text"
+                        value={reporte[`cantidad${idx}`] || ''}
+                        onChange={handleSave}
                       />
                     </td>
-                    <td
-                      colSpan={2}
+                    <td colSpan={2}>
+                      <input
+                        className="input-report"
+                        name={`descripcion${idx}`}
+                        type="text"
+                        value={reporte[`descripcion${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input-report"
+                        name={`valor${idx}`}
+                        type="text"
+                        value={reporte[`valor${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </td>
+                  </tr>
+                ))}
+
+                {/* 7. Verificacion de Parametros */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
+                  </th>
+                </tr>
+                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                  <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
+                  <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                  <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
+                </tr>
+                {[1, 2, 3, 4].map((idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <input
+                        className="input-report"
+                        name={`parametro${idx}`}
+                        type="text"
+                        value={reporte[`parametro${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td colSpan={2}>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`valor_programado${idx}`}
+                        type="text"
+                        value={reporte[`valor_programado${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`valor_medido${idx}`}
+                        type="text"
+                        value={reporte[`valor_medido${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </td>
+                  </tr>
+                ))}
+
+                {/* 8. Observaciones */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    8. OBSERVACIONES Y RECOMENDACIONES
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <textarea
+                      name="observaciones"
+                      className="textarea-report"
+                      value={reporte.observaciones || ''}
+                      onChange={handleSave}
+                      rows={3}
+                    />
+                  </td>
+                </tr>
+
+                {/* 9. Estado Final */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaCheckCircle style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    9. ESTADO FINAL DEL EQUIPO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <input
+                      name="estado_final"
+                      value={reporte.estado_final || ''}
+                      onChange={handleSave}
+                      className="input-report"
+                    />
+                  </td>
+                </tr>
+
+                {/* 10. Firmas Digitales */}
+                <tr>
+                  <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#38bdf8', fontSize: '14px', padding: '12px' }}>
+                    <FaSignature style={{ marginRight: '6px' }} /> INGENIERO / TÉCNICO RESPONSABLE
+                  </th>
+                  <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#86efac', fontSize: '14px', padding: '12px' }}>
+                    <FaSignature style={{ marginRight: '6px' }} /> RECIBÍ A SATISFACCIÓN (CLIENTE)
+                  </th>
+                </tr>
+                <tr>
+                  {/* Firma Ingeniero */}
+                  <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
+                      FIRMA DEL INGENIERO:
+                    </div>
+                    <div
                       style={{
-                        backgroundColor: 'white',
-                        color: 'black',
-                        textAlign: 'center',
-                        fontSize: '90%',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        border: '2px dashed #0284c7',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        touchAction: 'none',
                       }}
                     >
-                      REPORTE DE SERVICIO
-                    </td>
-                    <td
+                      <SignatureCanvas
+                        canvasProps={{
+                          width: 360,
+                          height: 140,
+                          style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
+                        }}
+                        penColor="#000000"
+                        ref={firmaIngRef}
+                        maxWidth={2.2}
+                        minWidth={0.8}
+                      />
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        type="button"
+                        className="btn-limpiar-firma"
+                        onClick={() => firmaIngRef.current?.clear()}
+                      >
+                        <FaEraser /> Limpiar Firma
+                      </button>
+                    </div>
+                  </td>
+                  {/* Firma Recibe */}
+                  <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
+                      FIRMA DE QUIEN RECIBE:
+                    </div>
+                    <div
                       style={{
-                        backgroundColor: 'white',
-                        color: 'black',
-                        textAlign: 'center',
-                        fontSize: '70%',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        border: '2px dashed #10b981',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        touchAction: 'none',
                       }}
                     >
-                      Nº DE REPORTE:{' '}
-                      <label style={{ color: 'red', fontSize: '120%' }}>
-                        {reporte?.numero_reporte}
-                      </label>
-                    </td>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>IPS/CLIENTE: </label>
-                      {reporte?.institucion}
-                    </td>
-                    <td colSpan={2}>
-                      <label>FECHA: </label>
-                      <input
-                        style={{ fontSize: '14px' }}
-                        name="fecha"
-                        type="date"
-                        onChange={handleSave}
-                        defaultValue={reporte?.fecha}
+                      <SignatureCanvas
+                        canvasProps={{
+                          width: 360,
+                          height: 140,
+                          style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
+                        }}
+                        penColor="#000000"
+                        maxWidth={2.2}
+                        minWidth={0.8}
+                        ref={firmaRecref}
                       />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>SERVICIO: </label>
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        type="button"
+                        className="btn-limpiar-firma"
+                        onClick={() => firmaRecref.current?.clear()}
+                      >
+                        <FaEraser /> Limpiar Firma
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  {/* Datos Ingeniero */}
+                  <td colSpan={2} style={{ padding: '14px', backgroundColor: '#0f172a' }}>
+                    <div className="campo-firma-box" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>NOMBRE DEL INGENIERO:</label>
                       <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="servicio"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.servicio}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label>CIUDAD: </label>
-                      <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="ciudad"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.ciudad}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>TIPO DE SERVICIO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <input
-                        className="input-reportparam"
-                        name="tipo_servicio"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.tipo_servicio}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>INFORMACION DEL EQUIPO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>EQUIPO: </label>
-                      <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="equipo"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.equipo}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <label>MARCA: </label>
-                      <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="marca"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.marca}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label>MODELO: </label>
-                      <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="modelo"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.modelo}
-                      />
-                    </td>
-                    <td colSpan={2} style={{ backgroundColor: 'white' }}>
-                      <label>SERIE: </label>
-                      <input
-                        style={{ width: 'auto', height: 'auto' }}
-                        name="serie"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.serie}
-                      />
-                    </td>
-                    <td>
-                      <label>INVENTARIO: </label>
-                      {reporte?.inventario}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <textarea
-                        name="problema_reportado"
-                        onChange={handleSave}
-                        defaultValue={reporte?.problema_reportado}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4} style={{ height: '150px' }}>
-                      <textarea
-                        name="desc_servicio"
-                        onChange={handleSave}
-                        defaultValue={reporte?.desc_servicio}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>
-                      REPUESTOS, INSUMOS, MATERIALES EMPLEADOS
-                    </th>
-                  </tr>
-                  <tr>
-                    <td>CANTIDAD</td>
-                    <td colSpan={2}>DESCRIPCION</td>
-                    <td>VALOR</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.cantidad1}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.descripcion1}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor1}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.cantidad2}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.descripcion2}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor2}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.cantidad3}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.descripcion3}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor3}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="cantidad4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.cantidad4}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="descripcion4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.descripcion4}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor4}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
-                  </tr>
-                  <tr>
-                    <td>PARÁMETRO</td>
-                    <td colSpan={2}>VALOR PROGRAMADO</td>
-                    <td>VALOR MEDIDO</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.parametro1}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_programado1}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido1"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_medido1}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.parametro2}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_programado2}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido2"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_medido2}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.parametro3}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_programado3}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido3"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_medido3}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="parametro4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.parametro4}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-reportparam"
-                        name="valor_programado4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_programado4}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-reportparam"
-                        name="valor_medido4"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.valor_medido4}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>OBSERVACIONES</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <textarea
-                        name="observaciones"
-                        onChange={handleSave}
-                        defaultValue={reporte?.observaciones}
-                      ></textarea>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={4}>
-                      <input
-                        name="estado_final"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.estado_final}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th colSpan={2}>INGENIERO/TECNICO</th>
-                    <th colSpan={2}>RECIBÍ A SATISFACCION</th>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>NOMBRE: </label>
-                      <input
-                        className="input-reportparam"
+                        className="campo-firma-input"
                         name="nombre_ingeniero"
                         type="text"
+                        value={reporte.nombre_ingeniero || ''}
                         onChange={handleSave}
-                        defaultValue={reporte?.nombre_ingeniero}
                       />
-                    </td>
-                    <td colSpan={2}>
-                      <label>NOMBRE: </label>
+                    </div>
+                    <div className="campo-firma-box">
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>CARGO:</label>
                       <input
-                        className="input-reportparam"
-                        name="nombre_recibe"
-                        type="text"
-                        onChange={handleSave}
-                        defaultValue={reporte?.nombre_recibe}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <label>CARGO: </label>
-                      <input
-                        className="input-reportparam"
+                        className="campo-firma-input"
                         name="cargo_ingeniero"
                         type="text"
+                        value={reporte.cargo_ingeniero || ''}
                         onChange={handleSave}
-                        defaultValue={reporte?.cargo_ingeniero}
                       />
-                    </td>
-                    <td colSpan={2}>
-                      <label>CARGO: </label>
+                    </div>
+                  </td>
+                  {/* Datos Recibe */}
+                  <td colSpan={2} style={{ padding: '14px', backgroundColor: '#0f172a' }}>
+                    <div className="campo-firma-box" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>NOMBRE DE QUIEN RECIBE:</label>
                       <input
-                        className="input-reportparam"
+                        className="campo-firma-input"
+                        name="nombre_recibe"
+                        type="text"
+                        value={reporte.nombre_recibe || ''}
+                        onChange={handleSave}
+                      />
+                    </div>
+                    <div className="campo-firma-box">
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>CARGO:</label>
+                      <input
+                        className="campo-firma-input"
                         name="cargo_recibe"
                         type="text"
+                        value={reporte.cargo_recibe || ''}
                         onChange={handleSave}
-                        defaultValue={reporte?.cargo_recibe}
                       />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div
-                className="button-contenedor"
-                style={{ display: 'inline-block' }}
-              >
-                <input
-                  type="button"
-                  value="Guardar"
-                  className="button"
-                  onClick={UpdateReport}
-                />
-              </div>
-            </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </section>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginBottom: '40px' }}>
+            <Link
+              to="/reportes"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 22px',
+                backgroundColor: '#334155',
+                color: '#f8fafc',
+                border: '1px solid #475569',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                textDecoration: 'none',
+              }}
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 32px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                border: '1px solid #38bdf8',
+                borderRadius: '8px',
+                fontWeight: '800',
+                fontSize: '15px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 16px rgba(2, 132, 199, 0.45)',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaSave size={16} /> {submitting ? 'Guardando...' : 'Guardar Cambios del Reporte'}
+            </button>
+          </div>
+        </form>
       </main>
     </div>
   );
 }
+
 export default UpdateReporte;

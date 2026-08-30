@@ -1,31 +1,100 @@
-import { useState, useEffect, useRef } from 'react';
-import SignatureCanvas from 'react-signature-canvas';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import {
   apiCreateReporte,
   apiGetActMtto,
-  apiObtenerEquipo,
-  apiIps,
   apiSetFiles,
+  apiIps,
+  apiObtenerEquipo,
 } from '../utils/api';
 import request from '../utils/request';
-import axios from 'axios';
+import SignatureCanvas from 'react-signature-canvas';
+import {
+  FaFileAlt,
+  FaHospital,
+  FaWrench,
+  FaMicrochip,
+  FaExclamationCircle,
+  FaClipboardList,
+  FaCogs,
+  FaSlidersH,
+  FaCheckCircle,
+  FaSignature,
+  FaFileUpload,
+  FaSave,
+  FaArrowLeft,
+  FaEraser,
+} from 'react-icons/fa';
 
 function ReporteService() {
-  const [actMtos, setActMtos] = useState([]);
+  const [actMtos, setActmtos] = useState([]);
   const [actMto, setActmto] = useState('');
-  const [equipo, setEquipo] = useState([]);
+  const [equipo, setEquipo] = useState({});
   const [ips, setIps] = useState([]);
   const [ciudad, setCiudad] = useState('');
-  const [file, setFile] = useState();
+  const [file, setFile] = useState(null);
   const [numReporte] = useState(new Date().valueOf());
+  const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  function handleChange(event) {
+  const firmaIngRef = useRef({});
+  const firmaRecref = useRef({});
+
+  const [reporte, setReporte] = useState({
+    fecha: new Date().toISOString().split('T')[0],
+    ciudad: '',
+    tipo_servicio: 'MTTO PREVENTIVO',
+    equipo: '',
+    marca: '',
+    modelo: '',
+    serie: '',
+    inventario: 'NA',
+    problema_reportado: '',
+    desc_servicio: '',
+    cantidad1: '',
+    descripcion1: '',
+    valor1: '',
+    cantidad2: '',
+    descripcion2: '',
+    valor2: '',
+    cantidad3: '',
+    descripcion3: '',
+    valor3: '',
+    cantidad4: '',
+    descripcion4: '',
+    valor4: '',
+    parametro1: '',
+    valor_programado1: '',
+    valor_medido1: '',
+    parametro2: '',
+    valor_programado2: '',
+    valor_medido2: '',
+    parametro3: '',
+    valor_programado3: '',
+    valor_medido3: '',
+    parametro4: '',
+    valor_programado4: '',
+    valor_medido4: '',
+    observaciones: 'Equipo funcionando en óptimas condiciones técnicas y de seguridad.',
+    estado_final: 'EQUIPO FUNCIONANDO CORRECTAMENTE',
+    nombre_ingeniero: '',
+    cargo_ingeniero: 'INGENIERO BIOMÉDICO',
+    nombre_recibe: '',
+    cargo_recibe: '',
+  });
+
+  function handleFileChange(event) {
     setFile(event.target.files[0]);
   }
 
-  function handleSubmit(event) {
+  function handleUploadFile(event) {
     event.preventDefault();
-
+    if (!file) {
+      alert('Por favor selecciona un archivo primero');
+      return;
+    }
+    setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('numReporte', numReporte);
@@ -34,784 +103,875 @@ function ReporteService() {
         'content-type': 'multipart/form-data',
       },
     };
-    axios.post(apiSetFiles, formData, config).then((response) => {
-      alert(response.data.message);
-    });
+    axios
+      .post(apiSetFiles, formData, config)
+      .then((response) => {
+        alert(response.data.message || 'Archivo adjuntado correctamente');
+      })
+      .catch((err) => {
+        console.error(err);
+        alert('Error al subir el archivo');
+      })
+      .finally(() => setUploading(false));
   }
 
-  const firmaIngRef = useRef({});
-  const firmaRecref = useRef({});
-
-  const obtenerActMtos = async (equipo) => {
-    const response = await request({
-      link: apiGetActMtto,
-      method: 'GET',
-      body: { equipo },
-    });
-    if (response.success) {
-      setActMtos(response.actmtto);
-    } else {
-      alert(`Sn conexión con el Servidor${response.message}`);
+  const obtenerActMtos = async (equipoNombre) => {
+    try {
+      const response = await request({
+        link: apiGetActMtto,
+        method: 'GET',
+        body: { equipo: equipoNombre },
+      });
+      if (response && response.success && response.actMto) {
+        setActmtos(response.actMto);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const obtenerIps = async () => {
-    const response = await request({
-      link: apiIps,
-      method: 'GET',
-    });
-    if (response.success) {
-      setIps(response.ips);
-    } else {
-      alert(`Sn conexión con el Servidor${response.message}`);
+    try {
+      const response = await request({ link: apiIps + '/getips', method: 'GET' });
+      if (response && response.success && response.ips) {
+        setIps(response.ips);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const obtenerEquipos = async (id) => {
-    const response = await request({
-      link: apiObtenerEquipo,
-      method: 'GET',
-      body: { id },
-    });
-    if (response.success) {
-      setEquipo(response.equipo);
-    } else {
-      alert(`${response.message}`);
+  const obtenerEquipo = async (id) => {
+    try {
+      const response = await request({
+        link: apiObtenerEquipo,
+        method: 'GET',
+        body: { id },
+      });
+      if (response && response.success && response.equipo) {
+        const eq = response.equipo;
+        setEquipo(eq);
+        setReporte((prev) => ({
+          ...prev,
+          equipo: eq.equipo,
+          marca: eq.marca,
+          modelo: eq.modelo,
+          serie: eq.serie,
+          inventario: eq.inventario || 'NA',
+          servicio: eq.servicio,
+          institucion: eq.institucion,
+        }));
+        obtenerActMtos(eq.equipo);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  useEffect(function () {
+  useEffect(() => {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');
-    let equipo = queryParameters.get('equipo');
-    if (!idEquipo) {
-      alert('Por favor Seleccione un equipo en la pestaña de Inventario');
+    if (idEquipo) {
+      obtenerEquipo(idEquipo);
     }
-    obtenerActMtos(equipo);
-    obtenerEquipos(idEquipo);
     obtenerIps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [reporte, setReporte] = useState({
-    numero_reporte: '',
-    institucion: '',
-    fecha: '',
-    servicio: '',
-    ciudad: '',
-    tipo_servicio: '',
-    equipo: '',
-    marca: '',
-    modelo: '',
-    serie: '',
-    inventario: 'NA',
-    problema_reportado: '',
-    desc_servicio: '',
-    cantidad1: 'NA',
-    descripcion1: 'NA',
-    valor1: 'NA',
-    cantidad2: 'NA',
-    descripcion2: 'NA',
-    valor2: 'NA',
-    cantidad3: 'NA',
-    descripcion3: 'NA',
-    valor3: 'NA',
-    cantidad4: 'NA',
-    descripcion4: 'NA',
-    valor4: 'NA',
-    parametro1: 'NA',
-    valor_programado1: 'NA',
-    valor_medido1: 'NA',
-    parametro2: 'NA',
-    valor_programado2: 'NA',
-    valor_medido2: 'NA',
-    parametro3: 'NA',
-    valor_programado3: 'NA',
-    valor_medido3: 'NA',
-    parametro4: 'NA',
-    valor_programado4: 'NA',
-    valor_medido4: 'NA',
-    observaciones: '',
-    estado_final: '',
-    firma_ingeniero: '',
-    nombre_ingeniero: '',
-    cargo_ingeniero: '',
-    firma_recibe: '',
-    nombre_recibe: '',
-    cargo_recibe: '',
-  });
-
   const handleSave = (e) => {
-    setReporte(function (prev) {
-      return { ...prev, [e.target.name]: e.target.value };
-    });
+    const { name, value } = e.target;
+    setReporte((prev) => ({ ...prev, [name]: value }));
   };
 
-  const CreateReport = async () => {
+  const CreateReport = async (e) => {
+    if (e) e.preventDefault();
+    if (!equipo?.equipo && !reporte.equipo) {
+      alert('Por favor verifique los datos del equipo');
+      return;
+    }
+
+    const firmaIngData =
+      firmaIngRef.current && !firmaIngRef.current.isEmpty()
+        ? firmaIngRef.current.toData()
+        : null;
+
+    const firmaRecData =
+      firmaRecref.current && !firmaRecref.current.isEmpty()
+        ? firmaRecref.current.toData()
+        : null;
+
+    setSubmitting(true);
     const body = {
       numero_reporte: numReporte,
-      institucion: equipo.institucion,
+      institucion: equipo.institucion || reporte.institucion,
       fecha: reporte.fecha,
-      servicio: equipo.servicio,
-      ciudad: ciudad,
+      servicio: equipo.servicio || reporte.servicio,
+      ciudad: ciudad || reporte.ciudad,
       tipo_servicio: reporte.tipo_servicio,
-      equipo: equipo.equipo,
-      marca: equipo.marca,
-      modelo: equipo.modelo,
-      serie: equipo.serie,
-      inventario: equipo.inventario,
-      problema_reportado: reporte.problema_reportado,
+      equipo: equipo.equipo || reporte.equipo,
+      marca: equipo.marca || reporte.marca,
+      modelo: equipo.modelo || reporte.modelo,
+      serie: equipo.serie || reporte.serie,
+      inventario: equipo.inventario || reporte.inventario || 'NA',
+      problema_reportado: reporte.problema_reportado || 'Mantenimiento preventivo programado.',
       desc_servicio: actMto || reporte.desc_servicio,
-      cantidad1: reporte.cantidad1,
-      descripcion1: reporte.descripcion1,
-      valor1: reporte.valor1,
-      cantidad2: reporte.cantidad2,
-      descripcion2: reporte.descripcion2,
-      valor2: reporte.valor2,
-      cantidad3: reporte.cantidad3,
-      descripcion3: reporte.descripcion3,
-      valor3: reporte.valor3,
-      cantidad4: reporte.cantidad4,
-      descripcion4: reporte.descripcion4,
-      valor4: reporte.valor4,
-      parametro1: reporte.parametro1,
-      valor_programado1: reporte.valor_programado1,
-      valor_medido1: reporte.valor_medido1,
-      parametro2: reporte.parametro2,
-      valor_programado2: reporte.valor_programado2,
-      valor_medido2: reporte.valor_medido2,
-      parametro3: reporte.parametro3,
-      valor_programado3: reporte.valor_programado3,
-      valor_medido3: reporte.valor_medido3,
-      parametro4: reporte.parametro4,
-      valor_programado4: reporte.valor_programado4,
-      valor_medido4: reporte.valor_medido4,
+      cantidad1: reporte.cantidad1 || 'NA',
+      descripcion1: reporte.descripcion1 || 'NA',
+      valor1: reporte.valor1 || 'NA',
+      cantidad2: reporte.cantidad2 || 'NA',
+      descripcion2: reporte.descripcion2 || 'NA',
+      valor2: reporte.valor2 || 'NA',
+      cantidad3: reporte.cantidad3 || 'NA',
+      descripcion3: reporte.descripcion3 || 'NA',
+      valor3: reporte.valor3 || 'NA',
+      cantidad4: reporte.cantidad4 || 'NA',
+      descripcion4: reporte.descripcion4 || 'NA',
+      valor4: reporte.valor4 || 'NA',
+      parametro1: reporte.parametro1 || 'NA',
+      valor_programado1: reporte.valor_programado1 || 'NA',
+      valor_medido1: reporte.valor_medido1 || 'NA',
+      parametro2: reporte.parametro2 || 'NA',
+      valor_programado2: reporte.valor_programado2 || 'NA',
+      valor_medido2: reporte.valor_medido2 || 'NA',
+      parametro3: reporte.parametro3 || 'NA',
+      valor_programado3: reporte.valor_programado3 || 'NA',
+      valor_medido3: reporte.valor_medido3 || 'NA',
+      parametro4: reporte.parametro4 || 'NA',
+      valor_programado4: reporte.valor_programado4 || 'NA',
+      valor_medido4: reporte.valor_medido4 || 'NA',
       observaciones: reporte.observaciones,
       estado_final: reporte.estado_final,
-      firma_ingeniero: firmaIngRef.current && !firmaIngRef.current.isEmpty() ? firmaIngRef.current.toData() : null,
+      firma_ingeniero: firmaIngData,
       nombre_ingeniero: reporte.nombre_ingeniero,
       cargo_ingeniero: reporte.cargo_ingeniero,
-      firma_recibe: firmaRecref.current && !firmaRecref.current.isEmpty() ? firmaRecref.current.toData() : null,
+      firma_recibe: firmaRecData,
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
-    if (!body.equipo) {
-      alert('Por favor diligencie todos los campos.');
-    } else {
+
+    try {
       const response = await request({
         link: apiCreateReporte,
         body,
         method: 'POST',
       });
-      if (response.success) {
-        alert('Reporte creado exitosamente');
-        window.location.href = './inventarioua';
+      if (response && response.success) {
+        alert('¡Reporte de servicio creado exitosamente!');
+        window.location.href = './reportes';
       } else {
-        alert(
-          `${response.message}Verifique que todos los campos estén diligenciados`,
-        );
+        alert(`${response?.message || 'Verifique que todos los campos requeridos estén diligenciados'}`);
       }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al crear el reporte');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <main className="contenedor">
-      <div className="contenedor">
-        {' '}
-        <table className="tabla-reporte">
-          <thead>
-            <tr>
-              <td colSpan={1}></td>
-              <td
-                colSpan={2}
-                style={{
-                  backgroundColor: '#3b3838ff',
-                  color: 'white',
-                  textAlign: 'center',
-                  fontSize: '90%',
-                }}
-              >
-                REPORTE DE SERVICIO
-              </td>
-              <td
-                style={{
-                  backgroundColor: '#3b3838ff',
-                  color: 'white',
-                  textAlign: 'center',
-                  fontSize: '70%',
-                }}
-              >
-                Nº DE REPORTE:{' '}
-                <label
-                  style={{
-                    backgroundColor: '#3b3838ff',
-                    color: 'white',
-                    fontSize: '120%',
-                  }}
-                >
-                  {numReporte}
-                </label>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th colSpan={4}>INFORMACION DE LA INSTITUCIÓN</th>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <label>IPS/CLIENTE: </label>
-                {equipo?.institucion}
-              </td>
-              <td colSpan={2}>
-                <label>FECHA: </label>
-                <input
-                  style={{
-                    fontSize: '14px',
-                    backgroundColor: 'black',
-                    color: 'white',
-                  }}
-                  name="fecha"
-                  type="date"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <label>SERVICIO: </label>
-                {equipo?.servicio}
-              </td>
-              <td colSpan={2}>
-                <label>CIUDAD: </label>
-                <select
-                  className="select"
-                  aria-label="select example"
-                  onChange={function (e) {
-                    setCiudad(e.target.value);
-                  }}
-                >
-                  <option value={''}>Seleccione</option>
-                  {ips.map(function (value, index) {
-                    return (
-                      <option key={index} value={value.ciudad}>
-                        {value.ciudad}
-                      </option>
-                    );
-                  })}
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>TIPO DE SERVICIO</th>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  name="tipo_servicio"
-                  type="radio"
-                  value="MTTO PREVENTIVO"
-                  onChange={handleSave}
-                ></input>
-                <label>MTTO PREVENTIVO</label>
-              </td>
-              <td>
-                <input
-                  name="tipo_servicio"
-                  type="radio"
-                  value="MTTO CORRECTIVO"
-                  onChange={handleSave}
-                ></input>
-                <label>MTTO CORRECTIVO</label>
-              </td>
-              <td>
-                <input
-                  name="tipo_servicio"
-                  type="radio"
-                  value="INSTALACION"
-                  onChange={handleSave}
-                ></input>
-                <label> INSTALACIÓN</label>
-              </td>
-              <td>
-                <input
-                  name="tipo_servicio"
-                  type="radio"
-                  value="OTRO"
-                  onChange={handleSave}
-                ></input>
-                <label> OTRO </label>
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>INFORMACION DEL EQUIPO</th>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <label>EQUIPO: </label>
-                {equipo?.equipo}
-              </td>
-              <td colSpan={2}>
-                <label>MARCA: </label>
-                {equipo?.marca}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label>MODELO: </label>
-                {equipo?.modelo}
-              </td>
-              <td colSpan={2}>
-                <label>SERIE: </label>
-                {equipo?.serie}
-              </td>
-              <td>
-                <label>INVENTARIO: </label>
-                {equipo?.inventario}
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>PROBLEMA REPORTADO POR EL CLIENTE</th>
-            </tr>
-            <tr>
-              <td colSpan={4}>
-                <textarea
-                  name="problema_reportado"
-                  onChange={handleSave}
-                ></textarea>
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>DESCRIPCION DEL SERVICIO</th>
-            </tr>
-            <tr>
-              <td colSpan={4}>
-                <select
-                  className="select"
-                  aria-label="select example"
-                  onChange={function (e) {
-                    setActmto(e.target.value);
-                  }}
-                >
-                  <option value={''}>
-                    Seleccione si es un Mantenimiento Preventivo
-                  </option>
-                  {actMtos.map(function (value, index) {
-                    return (
-                      <option key={index} value={value.actividades}>
-                        {value.equipo}
-                      </option>
-                    );
-                  })}
-                </select>
-                <textarea
-                  name="desc_servicio"
-                  onChange={handleSave}
-                  defaultValue={actMto}
-                ></textarea>
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>REPUESTOS, INSUMOS, MATERIALES EMPLEADOS</th>
-            </tr>
-            <tr>
-              <td>CANTIDAD</td>
-              <td colSpan={2}>DESCRIPCION</td>
-              <td>VALOR UNITARIO</td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="cantidad1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="descripcion1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="cantidad2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="descripcion2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="cantidad3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="descripcion3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="cantidad4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="descripcion4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>VERIFICACION DE PARAMETROS</th>
-            </tr>
-            <tr>
-              <td>PARÁMETRO</td>
-              <td colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
-              <td>VALOR MEDIDO</td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="parametro1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="valor_programado1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor_medido1"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="parametro2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="valor_programado2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor_medido2"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="parametro3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="valor_programado3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor_medido3"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="parametro4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td colSpan={2}>
-                <input
-                  className="input-reportparam"
-                  name="valor_programado4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-              <td>
-                <input
-                  className="input-reportparam"
-                  name="valor_medido4"
-                  type="text"
-                  onChange={handleSave}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>OBSERVACIONES</th>
-            </tr>
-            <tr>
-              <td colSpan={4}>
-                <textarea name="observaciones" onChange={handleSave}></textarea>
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={4}>ESTADO FINAL DEL EQUIPO</th>
-            </tr>
-            <tr>
-              <td>
-                <input
-                  name="estado_final"
-                  type="radio"
-                  value="EQUIPO FUNCIONANDO CORRECTAMENTE"
-                  onChange={handleSave}
-                />
-                FUNCIONANDO CORRECTAMENTE
-              </td>
-              <td>
-                <input
-                  name="estado_final"
-                  type="radio"
-                  value="EQUIPO EN ESPERA DE REPUESTOS "
-                  onChange={handleSave}
-                />
-                EN ESPERA DE REPUESTO
-              </td>
-              <td>
-                <input
-                  name="estado_final"
-                  type="radio"
-                  value="EQUIPO FUERA DE SERVICIO"
-                  onChange={handleSave}
-                />
-                FUERA DE SERVICIO
-              </td>
-              <td>
-                <input
-                  name="estado_final"
-                  type="radio"
-                  value="EQUIPO PARA BAJA"
-                  onChange={handleSave}
-                />
-                EQUIPO PARA BAJA
-              </td>
-            </tr>
-            <tr>
-              <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#38bdf8' }}>INGENIERO / TÉCNICO RESPONSABLE</th>
-              <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#86efac' }}>RECIBÍ A SATISFACCIÓN (CLIENTE)</th>
-            </tr>
-            <tr>
-              <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
-                <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
-                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '2px dashed #0284c7', overflow: 'hidden', display: 'inline-block', touchAction: 'none' }}>
-                  <SignatureCanvas
-                    canvasProps={{
-                      width: 350,
-                      height: 140,
-                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
-                    }}
-                    penColor="#000000"
-                    ref={firmaIngRef}
-                    maxWidth={2.2}
-                    minWidth={0.8}
-                  />
-                </div>
-                <div style={{ marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    className="btn-limpiar-firma"
-                    onClick={() => firmaIngRef.current?.clear()}
-                  >
-                    Limpiar Firma
-                  </button>
-                </div>
-              </td>
-              <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
-                <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
-                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '2px dashed #10b981', overflow: 'hidden', display: 'inline-block', touchAction: 'none' }}>
-                  <SignatureCanvas
-                    canvasProps={{
-                      width: 350,
-                      height: 140,
-                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
-                    }}
-                    penColor="#000000"
-                    maxWidth={2.2}
-                    minWidth={0.8}
-                    ref={firmaRecref}
-                  />
-                </div>
-                <div style={{ marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    className="btn-limpiar-firma"
-                    onClick={() => firmaRecref.current?.clear()}
-                  >
-                    Limpiar Firma
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2} style={{ padding: '12px' }}>
-                <div className="campo-firma-box">
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>NOMBRE DEL INGENIERO:</label>
-                  <input
-                    className="campo-firma-input"
-                    name="nombre_ingeniero"
-                    type="text"
-                    placeholder="Ej. Ing. Carlos Pérez"
-                    onChange={handleSave}
-                  />
-                </div>
-              </td>
-              <td colSpan={2} style={{ padding: '12px' }}>
-                <div className="campo-firma-box">
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>NOMBRE DE QUIEN RECIBE:</label>
-                  <input
-                    className="campo-firma-input"
-                    name="nombre_recibe"
-                    type="text"
-                    placeholder="Ej. Dra. María González"
-                    onChange={handleSave}
-                  />
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2} style={{ padding: '12px' }}>
-                <div className="campo-firma-box">
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>CARGO:</label>
-                  <input
-                    className="campo-firma-input"
-                    name="cargo_ingeniero"
-                    type="text"
-                    placeholder="Ej. Ingeniero Biomédico"
-                    onChange={handleSave}
-                  />
-                </div>
-              </td>
-              <td colSpan={2} style={{ padding: '12px' }}>
-                <div className="campo-firma-box">
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>CARGO:</label>
-                  <input
-                    className="campo-firma-input"
-                    name="cargo_recibe"
-                    type="text"
-                    placeholder="Ej. Jefe de Área / Coordinador"
-                    onChange={handleSave}
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-          <tr>
-            <td colSpan={1}>
-              <h3>Adjuntar archivo</h3>
-              <form onSubmit={handleSubmit}>
-                <input type="file" onChange={handleChange} />
-                <button type="submit">Cargar Archivo</button>
-              </form>
-            </td>
-          </tr>
-        </table>
-        <div className="button-contenedor">
-          <input
-            type="button"
-            value="Crear"
-            className="button"
-            onClick={CreateReport}
-          />
+    <div className="contenedor" style={{ maxWidth: '1050px', margin: '0 auto', padding: '20px 15px' }}>
+      <main>
+        {/* Navigation / Header Bar */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: '#1e293b',
+            padding: '16px 24px',
+            borderRadius: '12px',
+            border: '1.5px solid #334155',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div>
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px' }}>
+              <FaFileAlt color="#38bdf8" /> Diligenciar Reporte de Servicio
+            </h2>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
+              Diligencia los datos técnicos, actividades y firmas del servicio técnico realizado.
+            </p>
+          </div>
+          <Link
+            to="/inventarioua"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#334155',
+              color: '#f8fafc',
+              border: '1px solid #475569',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '13.5px',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <FaArrowLeft size={13} /> Volver al Inventario
+          </Link>
         </div>
-      </div>
-    </main>
+
+        {/* Structured Form Container */}
+        <form onSubmit={CreateReport}>
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: '2px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              marginBottom: '24px',
+            }}
+          >
+            <table className="tabla-reporte" style={{ margin: 0, border: 'none', borderRadius: 0, width: '100%' }}>
+              {/* Document Header Row */}
+              <thead>
+                <tr>
+                  <td
+                    colSpan={2}
+                    style={{
+                      backgroundColor: '#0f2744',
+                      padding: '16px 20px',
+                      verticalAlign: 'middle',
+                      borderBottom: '2px solid #38bdf8',
+                    }}
+                  >
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#38bdf8', letterSpacing: '0.5px' }}>
+                      REPORTE DE SERVICIO TÉCNICO
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '2px' }}>
+                      Gestión y Mantenimiento Biomédico GEMTTO
+                    </div>
+                  </td>
+                  <td
+                    colSpan={2}
+                    style={{
+                      backgroundColor: '#0f2744',
+                      textAlign: 'right',
+                      padding: '16px 20px',
+                      verticalAlign: 'middle',
+                      borderBottom: '2px solid #38bdf8',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: '600' }}>Nº DE REPORTE: </span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#ef4444', marginLeft: '6px' }}>
+                      #{numReporte}
+                    </span>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                {/* 1. Datos Institucion */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaHospital style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    1. INFORMACIÓN DE LA INSTITUCIÓN
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={2} style={{ width: '50%' }}>
+                    <strong style={{ color: '#38bdf8' }}>IPS / CLIENTE: </strong>
+                    <span style={{ color: '#f8fafc', fontWeight: '700', fontSize: '15px' }}>
+                      {equipo?.institucion || 'No especificada'}
+                    </span>
+                  </td>
+                  <td colSpan={2} style={{ width: '50%' }}>
+                    <strong style={{ color: '#38bdf8', marginRight: '8px' }}>FECHA DEL SERVICIO:</strong>
+                    <input
+                      name="fecha"
+                      type="date"
+                      value={reporte.fecha}
+                      onChange={handleSave}
+                      className="input-report"
+                      style={{ maxWidth: '200px', display: 'inline-block' }}
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>SERVICIO / ÁREA: </strong>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.servicio || '-'}</span>
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8', marginRight: '8px' }}>CIUDAD:</strong>
+                    <select
+                      className="input-report"
+                      style={{ maxWidth: '240px', display: 'inline-block' }}
+                      value={ciudad}
+                      onChange={(e) => {
+                        setCiudad(e.target.value);
+                        setReporte((prev) => ({ ...prev, ciudad: e.target.value }));
+                      }}
+                      required
+                    >
+                      <option value="">-- Seleccione Ciudad --</option>
+                      {ips.map((value, index) => (
+                        <option key={index} value={value.ciudad}>
+                          {value.ciudad} ({value.nombre || value.ips})
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+
+                {/* 2. Tipo de Servicio */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaWrench style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    2. TIPO DE SERVICIO REALIZADO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px 20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                      {['MTTO PREVENTIVO', 'MTTO CORRECTIVO', 'INSTALACION', 'OTRO'].map((tipo) => (
+                        <label
+                          key={tipo}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            backgroundColor: reporte.tipo_servicio === tipo ? '#1e3a8a' : '#0f172a',
+                            border: reporte.tipo_servicio === tipo ? '1.5px solid #38bdf8' : '1px solid #334155',
+                            padding: '10px 14px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            color: '#f8fafc',
+                            fontWeight: '600',
+                            fontSize: '13.5px',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <input
+                            name="tipo_servicio"
+                            type="radio"
+                            value={tipo}
+                            checked={reporte.tipo_servicio === tipo}
+                            onChange={handleSave}
+                            style={{ transform: 'scale(1.2)' }}
+                          />
+                          {tipo}
+                        </label>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+
+                {/* 3. Informacion del Equipo */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaMicrochip style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    3. INFORMACIÓN DEL EQUIPO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>EQUIPO: </strong>
+                    <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{equipo?.equipo || '-'}</span>
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>MARCA: </strong>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.marca || '-'}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style={{ color: '#38bdf8' }}>MODELO: </strong>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.modelo || '-'}</span>
+                  </td>
+                  <td colSpan={2}>
+                    <strong style={{ color: '#38bdf8' }}>SERIE: </strong>
+                    <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>
+                      {equipo?.serie || '-'}
+                    </span>
+                  </td>
+                  <td>
+                    <strong style={{ color: '#38bdf8' }}>INVENTARIO: </strong>
+                    <span style={{ color: '#f8fafc' }}>{equipo?.inventario || 'NA'}</span>
+                  </td>
+                </tr>
+
+                {/* 4. Problema Reportado */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaExclamationCircle style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    4. PROBLEMA REPORTADO POR EL CLIENTE
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <textarea
+                      name="problema_reportado"
+                      className="textarea-report"
+                      placeholder="Describa el motivo del servicio o problema reportado por la institución..."
+                      value={reporte.problema_reportado}
+                      onChange={handleSave}
+                      rows={3}
+                    />
+                  </td>
+                </tr>
+
+                {/* 5. Descripcion del Servicio */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    5. DESCRIPCIÓN DEL SERVICIO REALIZADO / PROTOCOLO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    {actMtos.length > 0 && (
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                          📋 CARGAR PROTOCOLO PREVENTIVO PREDEFINIDO:
+                        </label>
+                        <select
+                          className="input-report"
+                          style={{ width: '100%', marginBottom: '8px' }}
+                          onChange={(e) => {
+                            setActmto(e.target.value);
+                            setReporte((prev) => ({ ...prev, desc_servicio: e.target.value }));
+                          }}
+                        >
+                          <option value="">-- Seleccionar protocolo estándar para {equipo?.equipo} --</option>
+                          {actMtos.map((value, index) => (
+                            <option key={index} value={value.actividades}>
+                              {value.equipo} - Ver protocolo
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <textarea
+                      name="desc_servicio"
+                      className="textarea-report"
+                      placeholder="Detalle paso a paso las actividades, pruebas técnicas, limpieza y verificación efectuadas..."
+                      value={actMto || reporte.desc_servicio}
+                      onChange={(e) => {
+                        setActmto(e.target.value);
+                        handleSave(e);
+                      }}
+                      rows={4}
+                      required
+                    />
+                  </td>
+                </tr>
+
+                {/* 6. Repuestos y Materiales */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaCogs style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    6. REPUESTOS, INSUMOS Y MATERIALES EMPLEADOS
+                  </th>
+                </tr>
+                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                  <td style={{ width: '15%', textAlign: 'center' }}>CANTIDAD</td>
+                  <td colSpan={2} style={{ width: '60%' }}>DESCRIPCIÓN DEL REPUESTO / INSUMO</td>
+                  <td style={{ width: '25%', textAlign: 'center' }}>VALOR UNITARIO</td>
+                </tr>
+                {[1, 2, 3, 4].map((idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`cantidad${idx}`}
+                        type="text"
+                        placeholder="Ej. 1"
+                        value={reporte[`cantidad${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td colSpan={2}>
+                      <input
+                        className="input-report"
+                        name={`descripcion${idx}`}
+                        type="text"
+                        placeholder={`Descripción repuesto o insumo ${idx}`}
+                        value={reporte[`descripcion${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input-report"
+                        name={`valor${idx}`}
+                        type="text"
+                        placeholder="Ej. $0"
+                        value={reporte[`valor${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                  </tr>
+                ))}
+
+                {/* 7. Verificacion de Parametros */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
+                  </th>
+                </tr>
+                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                  <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
+                  <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                  <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
+                </tr>
+                {[1, 2, 3, 4].map((idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <input
+                        className="input-report"
+                        name={`parametro${idx}`}
+                        type="text"
+                        placeholder={`Ej. Voltaje, Presión, SpO2...`}
+                        value={reporte[`parametro${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td colSpan={2}>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`valor_programado${idx}`}
+                        type="text"
+                        placeholder="Ej. 120V ± 5%"
+                        value={reporte[`valor_programado${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input-report"
+                        style={{ textAlign: 'center' }}
+                        name={`valor_medido${idx}`}
+                        type="text"
+                        placeholder="Ej. 119.5V"
+                        value={reporte[`valor_medido${idx}`]}
+                        onChange={handleSave}
+                      />
+                    </td>
+                  </tr>
+                ))}
+
+                {/* 8. Observaciones */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaClipboardList style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    8. OBSERVACIONES Y RECOMENDACIONES
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px' }}>
+                    <textarea
+                      name="observaciones"
+                      className="textarea-report"
+                      placeholder="Observaciones de seguridad, estado operativo o recomendaciones para el personal asistencial..."
+                      value={reporte.observaciones}
+                      onChange={handleSave}
+                      rows={3}
+                    />
+                  </td>
+                </tr>
+
+                {/* 9. Estado Final */}
+                <tr>
+                  <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
+                    <FaCheckCircle style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    9. ESTADO FINAL DEL EQUIPO
+                  </th>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '14px 20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                      {[
+                        { val: 'EQUIPO FUNCIONANDO CORRECTAMENTE', label: '🟢 FUNCIONANDO CORRECTAMENTE' },
+                        { val: 'EQUIPO EN ESPERA DE REPUESTOS ', label: '🟡 EN ESPERA DE REPUESTOS' },
+                        { val: 'EQUIPO FUERA DE SERVICIO', label: '🔴 FUERA DE SERVICIO' },
+                        { val: 'EQUIPO PARA BAJA', label: '⚫ EQUIPO PARA BAJA' },
+                      ].map((st) => (
+                        <label
+                          key={st.val}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            backgroundColor: reporte.estado_final === st.val ? '#1e3a8a' : '#0f172a',
+                            border: reporte.estado_final === st.val ? '1.5px solid #38bdf8' : '1px solid #334155',
+                            padding: '10px 14px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            color: '#f8fafc',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <input
+                            name="estado_final"
+                            type="radio"
+                            value={st.val}
+                            checked={reporte.estado_final === st.val}
+                            onChange={handleSave}
+                            style={{ transform: 'scale(1.2)' }}
+                          />
+                          {st.label}
+                        </label>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+
+                {/* 10. Firmas Digitales y Responsables */}
+                <tr>
+                  <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#38bdf8', fontSize: '14px', padding: '12px' }}>
+                    <FaSignature style={{ marginRight: '6px' }} /> INGENIERO / TÉCNICO RESPONSABLE
+                  </th>
+                  <th colSpan={2} style={{ textAlign: 'center', backgroundColor: '#0f3b60', color: '#86efac', fontSize: '14px', padding: '12px' }}>
+                    <FaSignature style={{ marginRight: '6px' }} /> RECIBÍ A SATISFACCIÓN (CLIENTE)
+                  </th>
+                </tr>
+                <tr>
+                  {/* Firma Ingeniero */}
+                  <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
+                      DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        border: '2px dashed #0284c7',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        touchAction: 'none',
+                      }}
+                    >
+                      <SignatureCanvas
+                        canvasProps={{
+                          width: 360,
+                          height: 140,
+                          style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
+                        }}
+                        penColor="#000000"
+                        ref={firmaIngRef}
+                        maxWidth={2.2}
+                        minWidth={0.8}
+                      />
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        type="button"
+                        className="btn-limpiar-firma"
+                        onClick={() => firmaIngRef.current?.clear()}
+                      >
+                        <FaEraser /> Limpiar Firma
+                      </button>
+                    </div>
+                  </td>
+                  {/* Firma Recibe */}
+                  <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
+                      DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        border: '2px dashed #10b981',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        touchAction: 'none',
+                      }}
+                    >
+                      <SignatureCanvas
+                        canvasProps={{
+                          width: 360,
+                          height: 140,
+                          style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
+                        }}
+                        penColor="#000000"
+                        maxWidth={2.2}
+                        minWidth={0.8}
+                        ref={firmaRecref}
+                      />
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        type="button"
+                        className="btn-limpiar-firma"
+                        onClick={() => firmaRecref.current?.clear()}
+                      >
+                        <FaEraser /> Limpiar Firma
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  {/* Datos Ingeniero */}
+                  <td colSpan={2} style={{ padding: '14px', backgroundColor: '#0f172a' }}>
+                    <div className="campo-firma-box" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>NOMBRE DEL INGENIERO:</label>
+                      <input
+                        className="campo-firma-input"
+                        name="nombre_ingeniero"
+                        type="text"
+                        placeholder="Ej. Ing. Carlos Pérez"
+                        value={reporte.nombre_ingeniero}
+                        onChange={handleSave}
+                      />
+                    </div>
+                    <div className="campo-firma-box">
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>CARGO:</label>
+                      <input
+                        className="campo-firma-input"
+                        name="cargo_ingeniero"
+                        type="text"
+                        placeholder="Ej. Ingeniero Biomédico"
+                        value={reporte.cargo_ingeniero}
+                        onChange={handleSave}
+                      />
+                    </div>
+                  </td>
+                  {/* Datos Recibe */}
+                  <td colSpan={2} style={{ padding: '14px', backgroundColor: '#0f172a' }}>
+                    <div className="campo-firma-box" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>NOMBRE DE QUIEN RECIBE:</label>
+                      <input
+                        className="campo-firma-input"
+                        name="nombre_recibe"
+                        type="text"
+                        placeholder="Ej. Dra. María González"
+                        value={reporte.nombre_recibe}
+                        onChange={handleSave}
+                      />
+                    </div>
+                    <div className="campo-firma-box">
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#86efac' }}>CARGO:</label>
+                      <input
+                        className="campo-firma-input"
+                        name="cargo_recibe"
+                        type="text"
+                        placeholder="Ej. Coordinador de Área"
+                        value={reporte.cargo_recibe}
+                        onChange={handleSave}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Soportes y Anexos Upload Box */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              padding: '18px 24px',
+              borderRadius: '12px',
+              border: '1.5px solid #334155',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '14px',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaFileUpload color="#38bdf8" /> Adjuntar Soporte Fotográfico o Documento (Opcional)
+              </div>
+              <div style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '2px' }}>
+                Formatos permitidos: PDF, JPG, PNG vinculados al reporte #{numReporte}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                style={{
+                  color: '#cbd5e1',
+                  fontSize: '13px',
+                  backgroundColor: '#0f172a',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid #334155',
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleUploadFile}
+                disabled={uploading || !file}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#334155',
+                  color: '#f8fafc',
+                  border: '1px solid #475569',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: uploading || !file ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {uploading ? 'Subiendo...' : 'Subir Anexo'}
+              </button>
+            </div>
+          </div>
+
+          {/* Final Submit Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginBottom: '40px' }}>
+            <Link
+              to="/inventarioua"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 22px',
+                backgroundColor: '#334155',
+                color: '#f8fafc',
+                border: '1px solid #475569',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                textDecoration: 'none',
+              }}
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 32px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                border: '1px solid #38bdf8',
+                borderRadius: '8px',
+                fontWeight: '800',
+                fontSize: '15px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 16px rgba(2, 132, 199, 0.45)',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaSave size={16} /> {submitting ? 'Creando Reporte...' : 'Crear y Guardar Reporte de Servicio'}
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
   );
 }
+
 export default ReporteService;

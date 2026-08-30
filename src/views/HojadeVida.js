@@ -393,25 +393,15 @@ function HojaDeVida() {
                 CANTIDAD
               </td>
             </tr>
-            {ficha?.accesorio1 ? (
-              <>
-                <tr>
-                  <td colSpan={3}>{ficha?.accesorio1}</td>
-                  <td style={{ textAlign: 'center' }}>{ficha?.cantidad1 || 1}</td>
-                </tr>
-                {ficha?.accesorio2 && (
-                  <tr>
-                    <td colSpan={3}>{ficha?.accesorio2}</td>
-                    <td style={{ textAlign: 'center' }}>{ficha?.cantidad2 || 1}</td>
+            {Array.from({ length: 10 }, (_, i) => i + 1).some((i) => ficha?.[`accesorio${i}`]) ? (
+              Array.from({ length: 10 }, (_, i) => i + 1)
+                .filter((i) => ficha?.[`accesorio${i}`])
+                .map((i) => (
+                  <tr key={i}>
+                    <td colSpan={3} style={{ fontWeight: '500' }}>{ficha[`accesorio${i}`]}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{ficha[`cantidad${i}`] || '1'}</td>
                   </tr>
-                )}
-                {ficha?.accesorio3 && (
-                  <tr>
-                    <td colSpan={3}>{ficha?.accesorio3}</td>
-                    <td style={{ textAlign: 'center' }}>{ficha?.cantidad3 || 1}</td>
-                  </tr>
-                )}
-              </>
+                ))
             ) : (
               <tr>
                 <td colSpan={3} style={{ color: '#64748b', fontStyle: 'italic' }}>Sin accesorios adicionales</td>

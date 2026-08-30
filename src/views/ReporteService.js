@@ -127,7 +127,7 @@ function ReporteService() {
         const sorted = response.actmtto.sort((a, b) => (a.equipo || '').localeCompare(b.equipo || ''));
         setAllActMtos(sorted);
 
-        // If it's preventivo and matches equipment, load default
+        // Preload protocol if matching
         if (equipoNombre) {
           const match = sorted.find(
             (a) => a.equipo?.trim().toUpperCase() === equipoNombre.trim().toUpperCase()
@@ -248,17 +248,21 @@ function ReporteService() {
     }
   };
 
-  const handleCargarActividad = (selectedItem) => {
-    if (!selectedItem) return;
-    setActmto(selectedItem.actividades);
-    setReporte((prev) => ({
-      ...prev,
-      desc_servicio: selectedItem.actividades,
-      parametro1: selectedItem.parametro1 || prev.parametro1,
-      parametro2: selectedItem.parametro2 || prev.parametro2,
-      parametro3: selectedItem.parametro3 || prev.parametro3,
-      parametro4: selectedItem.parametro4 || prev.parametro4,
-    }));
+  const handleCargarProtocoloDirecto = () => {
+    if (actividadesFiltradas.length > 0) {
+      const selectedItem = actividadesFiltradas[0];
+      setActmto(selectedItem.actividades);
+      setReporte((prev) => ({
+        ...prev,
+        desc_servicio: selectedItem.actividades,
+        parametro1: prev.parametro1 || selectedItem.parametro1 || '',
+        parametro2: prev.parametro2 || selectedItem.parametro2 || '',
+        parametro3: prev.parametro3 || selectedItem.parametro3 || '',
+        parametro4: prev.parametro4 || selectedItem.parametro4 || '',
+      }));
+    } else {
+      alert(`No se encontró un protocolo de mantenimiento predefinido para "${equipo?.equipo || reporte.equipo}". Puedes escribirlo manualmente.`);
+    }
   };
 
   const CreateReport = async (e) => {
@@ -605,12 +609,12 @@ function ReporteService() {
                 </tr>
                 <tr>
                   <td colSpan={4} style={{ padding: '16px' }}>
-                    {/* Activity Filter / Action Toolbar */}
+                    {/* Action Bar: Cargar Protocolo / Escribir Manualmente */}
                     <div
                       style={{
                         marginBottom: '14px',
                         backgroundColor: '#0f172a',
-                        padding: '12px 16px',
+                        padding: '12px 18px',
                         borderRadius: '8px',
                         border: '1px solid #334155',
                         display: 'flex',
@@ -620,50 +624,32 @@ function ReporteService() {
                         flexWrap: 'wrap',
                       }}
                     >
-                      <div style={{ flex: '1 1 300px' }}>
-                        <label style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '700', display: 'block', marginBottom: '6px' }}>
-                          📋 PROTOCOLO DE ACTIVIDADES PARA ESTE EQUIPO:
-                        </label>
-                        <select
-                          className="input-report"
-                          style={{ width: '100%', fontSize: '13px' }}
-                          onChange={(e) => {
-                            const found = allActMtos.find((a) => a.equipo === e.target.value);
-                            if (found) handleCargarActividad(found);
-                          }}
-                        >
-                          <option value="">-- Seleccionar actividad de mantenimiento --</option>
-                          {actividadesFiltradas.map((item, index) => (
-                            <option key={index} value={item.equipo}>
-                              {item.equipo}
-                            </option>
-                          ))}
-                        </select>
+                      <div style={{ color: '#cbd5e1', fontSize: '13.5px' }}>
+                        Protocolo asociado: <strong style={{ color: '#38bdf8' }}>{equipo?.equipo || reporte.equipo || 'Equipo'}</strong>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                        {actividadesFiltradas.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => handleCargarActividad(actividadesFiltradas[0])}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '9px 14px',
-                              backgroundColor: '#0369a1',
-                              color: '#ffffff',
-                              border: '1px solid #38bdf8',
-                              borderRadius: '6px',
-                              fontSize: '12.5px',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            <FaBolt color="#fde047" /> Cargar Protocolo
-                          </button>
-                        )}
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={handleCargarProtocoloDirecto}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '9px 18px',
+                            backgroundColor: '#0284c7',
+                            color: '#ffffff',
+                            border: '1px solid #38bdf8',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(2, 132, 199, 0.4)',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <FaBolt color="#fde047" /> Cargar Protocolo
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -674,15 +660,14 @@ function ReporteService() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: '9px 14px',
+                            padding: '9px 16px',
                             backgroundColor: '#334155',
                             color: '#f8fafc',
                             border: '1px solid #475569',
                             borderRadius: '6px',
-                            fontSize: '12.5px',
+                            fontSize: '13px',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            whiteSpace: 'nowrap',
                           }}
                         >
                           <FaPen /> Escribir Manualmente

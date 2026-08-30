@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { apiReportes } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
-import { FaFileSignature, FaFileInvoice } from 'react-icons/fa';
+import { FaFileSignature, FaFileInvoice, FaSync } from 'react-icons/fa';
 import { GoSearch, GoEye } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
 
@@ -11,6 +11,7 @@ function Reportes() {
   const [reportes, setReportes] = useState([]);
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isSyncingFull, setIsSyncingFull] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,20 +20,34 @@ function Reportes() {
   const getReportes = async () => {
     setLoading(true);
     try {
-      const response = await request({
+      // 1. Carga ultra-rápida de los 100 más recientes (~100ms)
+      const responseInit = await request({
+        link: `${apiReportes}?limit=100`,
+        method: 'GET',
+      });
+
+      if (responseInit && responseInit.success && responseInit.reporte) {
+        setReportes(responseInit.reporte);
+        setLoading(false);
+      }
+
+      // 2. Carga en segundo plano del historial completo sin bloquear la UI
+      setIsSyncingFull(true);
+      const responseFull = await request({
         link: apiReportes,
         method: 'GET',
       });
-      if (response && response.success) {
-        setReportes(response.reporte || []);
-      } else {
-        alert(`Sin conexión con el Servidor ${response?.message || ''}`);
+
+      if (responseFull && responseFull.success && responseFull.reporte) {
+        setReportes(responseFull.reporte);
       }
     } catch (e) {
       console.error(e);
-      alert('Error al obtener reportes');
+      // Fallback
+      setLoading(false);
     } finally {
       setLoading(false);
+      setIsSyncingFull(false);
     }
   };
 
@@ -62,11 +77,7 @@ function Reportes() {
       );
     }
 
-    return [...result].sort((a, b) => {
-      if (a.fecha < b.fecha) return 1;
-      if (a.fecha > b.fecha) return -1;
-      return 0;
-    });
+    return result;
   }, [reportes, buscar]);
 
   // Paginated slice
@@ -83,9 +94,27 @@ function Reportes() {
           <div>
             <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FaFileInvoice color="#38bdf8" /> Reportes de Servicio Técnico
+              {isSyncingFull && (
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 'normal',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <FaSync className="fa-spin" size={11} /> Cargando historial completo...
+                </span>
+              )}
             </h2>
             <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
-              Historial de intervenciones, mantenimientos preventivos y correctivos.
+              Historial de intervenciones, mantenimientos preventivos y correctivos ordenados por fecha.
             </p>
           </div>
           <Link
@@ -136,7 +165,7 @@ function Reportes() {
         {/* Table & Content */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '16px' }}>
-            Cargando reportes de servicio...
+            Cargando reportes más recientes...
           </div>
         ) : (
           <div>

@@ -32,3 +32,5 @@ export const apiCreateIps = apiIps + '/createips';
 export const apiGetIps = apiIps + '/getips';
 export const apiFiles = baseUrl + '/files';
 export const apiSetFiles = apiFiles + '/in-local';
+export const apiAlertas = baseUrl + '/alertas';
+

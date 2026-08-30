@@ -50,6 +50,15 @@ function Navbar() {
               </li>
               <li>
                 <Link
+                  to="/alertas"
+                  className="nav-link"
+                  style={{ color: '#ffd166', fontWeight: 'bold' }}
+                >
+                  🚦 Alertas Mtto
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/inventarioua"
                   className="nav-link"
                   style={{ color: 'white' }}
@@ -57,6 +66,7 @@ function Navbar() {
                   Inventario
                 </Link>
               </li>
+
               <li>
                 <Link
                   to="/reportes"

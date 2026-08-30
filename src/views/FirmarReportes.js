@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { apiReportes, apiFirmarReportes } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
@@ -6,15 +6,67 @@ import Pagination from '../components/Pagination';
 import { FaFileSignature, FaEraser, FaCheckCircle } from 'react-icons/fa';
 import { GoSearch } from 'react-icons/go';
 
+function SignaturePadBox({ canvasRef, borderColor = '#0284c7' }) {
+  const containerRef = useRef(null);
+  const [dimensions, setDimensions] = useState({ width: 350, height: 140 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.offsetWidth || 350;
+        setDimensions({ width: w, height: 140 });
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        border: `2px dashed ${borderColor}`,
+        overflow: 'hidden',
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        boxSizing: 'border-box',
+      }}
+    >
+      <SignatureCanvas
+        ref={canvasRef}
+        penColor="#000000"
+        canvasProps={{
+          width: dimensions.width,
+          height: dimensions.height,
+          style: {
+            display: 'block',
+            width: `${dimensions.width}px`,
+            height: `${dimensions.height}px`,
+            touchAction: 'none',
+            cursor: 'crosshair',
+            backgroundColor: '#ffffff',
+          },
+        }}
+        maxWidth={2.2}
+        minWidth={0.8}
+      />
+    </div>
+  );
+}
+
 function FirmarReportes() {
   const [reportes, setReportes] = useState([]);
   const [reporteFirma, setReporteFirma] = useState([]);
-  const [firmaIng, setFirmaIng] = useState('');
-  const [firmaRecibe, setFirmaRecibe] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const firmaIngRef = useRef({});
-  const firmaRecref = useRef({});
+
+  const firmaIngRef = useRef(null);
+  const firmaRecref = useRef(null);
 
   // Pagination & Search
   const [buscar, setBuscar] = useState('');
@@ -69,14 +121,6 @@ function FirmarReportes() {
     }
   };
 
-  const saveFirmaIng = (signature) => {
-    setFirmaIng(signature);
-  };
-
-  const saveFirmaRecibe = (signature) => {
-    setFirmaRecibe(signature);
-  };
-
   const handleSave = (e) => {
     setReporte((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -91,13 +135,21 @@ function FirmarReportes() {
       return;
     }
 
+    const firmaIngData = firmaIngRef.current && !firmaIngRef.current.isEmpty()
+      ? firmaIngRef.current.toData()
+      : null;
+
+    const firmaRecData = firmaRecref.current && !firmaRecref.current.isEmpty()
+      ? firmaRecref.current.toData()
+      : null;
+
     setSubmitting(true);
     const body = {
       _id: reporteFirma,
-      firma_ingeniero: firmaIng,
+      firma_ingeniero: firmaIngData,
       nombre_ingeniero: reporte.nombre_ingeniero,
       cargo_ingeniero: reporte.cargo_ingeniero,
-      firma_recibe: firmaRecibe,
+      firma_recibe: firmaRecData,
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
@@ -151,7 +203,7 @@ function FirmarReportes() {
             <FaFileSignature color="#38bdf8" /> Panel de Firma Digital de Reportes
           </h2>
           <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
-            Dibuja la firma en el panel blanco, completa los datos del responsable y selecciona los reportes a firmar.
+            Firma fluida y de respuesta inmediata tanto en pantallas táctiles como con mouse.
           </p>
         </div>
 
@@ -185,34 +237,17 @@ function FirmarReportes() {
               👤 INGENIERO / TÉCNICO RESPONSABLE
             </div>
 
-            {/* Signature Canvas White Pad */}
+            {/* Signature Pad: Responsive and Lag-Free */}
             <div>
               <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                DIBUJE SU FIRMA AQUÍ:
+                DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
               </label>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #0284c7' }}>
-                <SignatureCanvas
-                  canvasProps={{
-                    width: 320,
-                    height: 120,
-                    style: { display: 'block', margin: '0 auto', maxWidth: '100%', cursor: 'crosshair', backgroundColor: '#ffffff' },
-                  }}
-                  penColor="#000000"
-                  maxWidth={2}
-                  ref={firmaIngRef}
-                  onEnd={() => {
-                    saveFirmaIng(firmaIngRef.current.toData());
-                  }}
-                />
-              </div>
+              <SignaturePadBox canvasRef={firmaIngRef} borderColor="#0284c7" />
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
                 <button
                   type="button"
                   className="btn-limpiar-firma"
-                  onClick={() => {
-                    firmaIngRef.current.clear();
-                    saveFirmaIng(null);
-                  }}
+                  onClick={() => firmaIngRef.current?.clear()}
                 >
                   <FaEraser /> Limpiar Firma
                 </button>
@@ -266,34 +301,17 @@ function FirmarReportes() {
               ✍️ RECIBÍ A CONFORMIDAD (CLIENTE / IPS)
             </div>
 
-            {/* Signature Canvas White Pad */}
+            {/* Signature Pad: Responsive and Lag-Free */}
             <div>
               <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                DIBUJE SU FIRMA AQUÍ:
+                DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
               </label>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #10b981' }}>
-                <SignatureCanvas
-                  canvasProps={{
-                    width: 320,
-                    height: 120,
-                    style: { display: 'block', margin: '0 auto', maxWidth: '100%', cursor: 'crosshair', backgroundColor: '#ffffff' },
-                  }}
-                  penColor="#000000"
-                  maxWidth={2}
-                  ref={firmaRecref}
-                  onEnd={() => {
-                    saveFirmaRecibe(firmaRecref.current.toData());
-                  }}
-                />
-              </div>
+              <SignaturePadBox canvasRef={firmaRecref} borderColor="#10b981" />
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
                 <button
                   type="button"
                   className="btn-limpiar-firma"
-                  onClick={() => {
-                    firmaRecref.current.clear();
-                    saveFirmaRecibe(null);
-                  }}
+                  onClick={() => firmaRecref.current?.clear()}
                 >
                   <FaEraser /> Limpiar Firma
                 </button>
@@ -309,7 +327,7 @@ function FirmarReportes() {
                 className="campo-firma-input"
                 name="nombre_recibe"
                 type="text"
-                placeholder="Ej. Dr. María González"
+                placeholder="Ej. Dra. María González"
                 value={reporte.nombre_recibe}
                 onChange={handleSave}
               />
@@ -324,7 +342,7 @@ function FirmarReportes() {
                 className="campo-firma-input"
                 name="cargo_recibe"
                 type="text"
-                placeholder="Ej. Jefe de Enfermería / Coordinador"
+                placeholder="Ej. Jefe de Área / Coordinador"
                 value={reporte.cargo_recibe}
                 onChange={handleSave}
               />

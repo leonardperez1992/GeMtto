@@ -16,8 +16,6 @@ function ReporteService() {
   const [equipo, setEquipo] = useState([]);
   const [ips, setIps] = useState([]);
   const [ciudad, setCiudad] = useState('');
-  const [firmaIng, setFirmaIng] = useState('');
-  const [firmaRecibe, setFirmaRecibe] = useState('');
   const [file, setFile] = useState();
   const [numReporte] = useState(new Date().valueOf());
 
@@ -43,14 +41,6 @@ function ReporteService() {
 
   const firmaIngRef = useRef({});
   const firmaRecref = useRef({});
-
-  const saveFirmaIng = (signature) => {
-    setFirmaIng(signature);
-  };
-
-  const saveFirmaRecibe = (signature) => {
-    setFirmaRecibe(signature);
-  };
 
   const obtenerActMtos = async (equipo) => {
     const response = await request({
@@ -197,10 +187,10 @@ function ReporteService() {
       valor_medido4: reporte.valor_medido4,
       observaciones: reporte.observaciones,
       estado_final: reporte.estado_final,
-      firma_ingeniero: firmaIng,
+      firma_ingeniero: firmaIngRef.current && !firmaIngRef.current.isEmpty() ? firmaIngRef.current.toData() : null,
       nombre_ingeniero: reporte.nombre_ingeniero,
       cargo_ingeniero: reporte.cargo_ingeniero,
-      firma_recibe: firmaRecibe,
+      firma_recibe: firmaRecref.current && !firmaRecref.current.isEmpty() ? firmaRecref.current.toData() : null,
       nombre_recibe: reporte.nombre_recibe,
       cargo_recibe: reporte.cargo_recibe,
     };
@@ -700,25 +690,24 @@ function ReporteService() {
             <tr>
               <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
                 <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
-                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #0284c7', display: 'inline-block' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '2px dashed #0284c7', overflow: 'hidden', display: 'inline-block', touchAction: 'none' }}>
                   <SignatureCanvas
-                    canvasProps={{ width: 340, height: 130, style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff' } }}
+                    canvasProps={{
+                      width: 350,
+                      height: 140,
+                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
+                    }}
                     penColor="#000000"
                     ref={firmaIngRef}
-                    maxWidth={2}
-                    onEnd={() => {
-                      saveFirmaIng(firmaIngRef.current.toData());
-                    }}
+                    maxWidth={2.2}
+                    minWidth={0.8}
                   />
                 </div>
                 <div style={{ marginTop: '8px' }}>
                   <button
                     type="button"
                     className="btn-limpiar-firma"
-                    onClick={() => {
-                      firmaIngRef.current.clear();
-                      saveFirmaIng(null);
-                    }}
+                    onClick={() => firmaIngRef.current?.clear()}
                   >
                     Limpiar Firma
                   </button>
@@ -726,29 +715,24 @@ function ReporteService() {
               </td>
               <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle' }}>
                 <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>DIBUJE SU FIRMA:</div>
-                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '4px', border: '2px dashed #10b981', display: 'inline-block' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '2px dashed #10b981', overflow: 'hidden', display: 'inline-block', touchAction: 'none' }}>
                   <SignatureCanvas
                     canvasProps={{
-                      width: 340,
-                      height: 130,
-                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff' },
+                      width: 350,
+                      height: 140,
+                      style: { display: 'block', margin: '0 auto', cursor: 'crosshair', backgroundColor: '#ffffff', touchAction: 'none' },
                     }}
                     penColor="#000000"
-                    maxWidth={2}
+                    maxWidth={2.2}
+                    minWidth={0.8}
                     ref={firmaRecref}
-                    onEnd={() => {
-                      saveFirmaRecibe(firmaRecref.current.toData());
-                    }}
                   />
                 </div>
                 <div style={{ marginTop: '8px' }}>
                   <button
                     type="button"
                     className="btn-limpiar-firma"
-                    onClick={() => {
-                      firmaRecref.current.clear();
-                      saveFirmaRecibe(null);
-                    }}
+                    onClick={() => firmaRecref.current?.clear()}
                   >
                     Limpiar Firma
                   </button>

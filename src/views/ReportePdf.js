@@ -405,30 +405,30 @@ function ReportePdf() {
             </tr>
             <tr>
               {/* Firma Ingeniero */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '6px' }}>
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px 10px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '1px', overflow: 'hidden' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden', width: '100%', maxWidth: '340px' }}>
                     <SignatureCanvas
                       ref={imgIng}
                       canvasProps={{
-                        width: 300,
-                        height: 75,
-                        style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
+                        width: 360,
+                        height: 140,
+                        style: { display: 'block', margin: '0 auto', width: '100%', height: 'auto', maxHeight: '110px', backgroundColor: '#ffffff' },
                       }}
                     />
                   </div>
                 </div>
               </td>
               {/* Firma Recibe */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '6px' }}>
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px 10px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '1px', overflow: 'hidden' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden', width: '100%', maxWidth: '340px' }}>
                     <SignatureCanvas
                       ref={imgRec}
                       canvasProps={{
-                        width: 300,
-                        height: 75,
-                        style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
+                        width: 360,
+                        height: 140,
+                        style: { display: 'block', margin: '0 auto', width: '100%', height: 'auto', maxHeight: '110px', backgroundColor: '#ffffff' },
                       }}
                     />
                   </div>

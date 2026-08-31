@@ -59,10 +59,10 @@ function Login() {
         {/* Logo & Header */}
         <div style={{ marginBottom: '28px' }}>
           <img
-            src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
+            src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
             alt="Logo GEMTTO"
             style={{
-              maxHeight: '60px',
+              maxHeight: '65px',
               maxWidth: '220px',
               objectFit: 'contain',
               marginBottom: '14px',

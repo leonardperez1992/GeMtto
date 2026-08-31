@@ -96,11 +96,11 @@ function Registro() {
         {/* Logo & Header */}
         <div style={{ marginBottom: '24px' }}>
           <img
-            src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
+            src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
             alt="Logo GEMTTO"
             style={{
-              maxHeight: '55px',
-              maxWidth: '200px',
+              maxHeight: '60px',
+              maxWidth: '220px',
               objectFit: 'contain',
               marginBottom: '12px',
               filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',

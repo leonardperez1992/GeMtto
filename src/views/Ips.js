@@ -134,46 +134,28 @@ function Ips() {
               <table className="tabla-reportes" style={{ margin: 0, width: '100%' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '50px', textAlign: 'center' }}>LOGO</th>
                     <th>INSTITUCIÓN / IPS</th>
                     <th>NIT</th>
                     <th>CIUDAD / MUNICIPIO</th>
-                    <th style={{ textAlign: 'center', width: '100px' }}>ESTADO</th>
+                    <th style={{ textAlign: 'center', width: '110px' }}>ESTADO</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredIps.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron instituciones registradas con el criterio de búsqueda.
                       </td>
                     </tr>
                   ) : (
                     filteredIps.map((item, idx) => {
-                      const hasLogo = item.logo && ((Array.isArray(item.logo) && item.logo.length > 0) || typeof item.logo === 'string');
-                      const logoSrc = hasLogo ? (Array.isArray(item.logo) ? item.logo[0]?.data_url || item.logo[0] : item.logo) : null;
-
                       return (
                         <tr key={item._id || idx}>
-                          <td style={{ textAlign: 'center' }}>
-                            {logoSrc ? (
-                              <img
-                                src={logoSrc}
-                                alt={item.ips}
-                                style={{
-                                  maxHeight: '32px',
-                                  maxWidth: '45px',
-                                  objectFit: 'contain',
-                                  borderRadius: '4px',
-                                  verticalAlign: 'middle',
-                                }}
-                              />
-                            ) : (
-                              <FaHospital size={20} color="#38bdf8" />
-                            )}
-                          </td>
                           <td>
-                            <strong style={{ color: '#f8fafc', fontSize: '13px' }}>{item?.ips}</strong>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                              <FaHospital color="#38bdf8" size={15} />
+                              <strong style={{ color: '#f8fafc', fontSize: '13px' }}>{item?.ips}</strong>
+                            </span>
                           </td>
                           <td style={{ color: '#cbd5e1', fontFamily: 'monospace' }}>
                             {item?.nit ? (

@@ -17,7 +17,6 @@ import {
 
 function AlertasMtto() {
   const [alertas, setAlertas] = useState([]);
-  const [resumen, setResumen] = useState({ total: 0, vencidos: 0, proximos: 0, al_dia: 0, sin_registro: 0 });
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
@@ -41,7 +40,6 @@ function AlertasMtto() {
       });
       if (response && response.success) {
         setAlertas(response.alertas || []);
-        setResumen(response.resumen || { total: 0, vencidos: 0, proximos: 0, al_dia: 0, sin_registro: 0 });
       } else {
         alert('Error al cargar alertas de mantenimiento');
       }
@@ -56,7 +54,7 @@ function AlertasMtto() {
   const fetchIps = async () => {
     try {
       const response = await request({
-        link: apiIps + '/getips',
+        link: apiIps,
         method: 'GET',
       });
       if (response && response.success && response.ips) {
@@ -72,6 +70,29 @@ function AlertasMtto() {
     fetchIps();
   }, []);
 
+  // Compute unique list of IPS from both registered IPS and loaded equipment alerts
+  const uniqueIpsList = useMemo(() => {
+    const fromAlertas = alertas.map((a) => (a.institucion ? a.institucion.trim() : '')).filter(Boolean);
+    const fromApi = listaIps.map((i) => (i.ips ? i.ips.trim() : i.nombre ? i.nombre.trim() : '')).filter(Boolean);
+    return Array.from(new Set([...fromAlertas, ...fromApi])).sort((a, b) => a.localeCompare(b));
+  }, [alertas, listaIps]);
+
+  // Compute counts based on selected IPS
+  const countsByIps = useMemo(() => {
+    const base =
+      filtroIps === 'TODAS'
+        ? alertas
+        : alertas.filter((a) => (a.institucion || '').trim().toUpperCase() === filtroIps.trim().toUpperCase());
+
+    return {
+      total: base.length,
+      vencidos: base.filter((a) => a.estado === 'VENCIDO').length,
+      proximos: base.filter((a) => a.estado === 'PROXIMO').length,
+      al_dia: base.filter((a) => a.estado === 'AL_DIA').length,
+      sin_registro: base.filter((a) => a.estado === 'SIN_REGISTRO').length,
+    };
+  }, [alertas, filtroIps]);
+
   // Filter and search logic
   const filteredAlertas = useMemo(() => {
     return alertas.filter((item) => {
@@ -79,9 +100,13 @@ function AlertasMtto() {
       if (filtroEstado !== 'TODOS' && item.estado !== filtroEstado) {
         return false;
       }
-      // Filter by IPS
-      if (filtroIps !== 'TODAS' && item.institucion !== filtroIps) {
-        return false;
+      // Filter by IPS (case insensitive matching)
+      if (filtroIps !== 'TODAS') {
+        const itemInst = (item.institucion || '').trim().toUpperCase();
+        const filterInst = filtroIps.trim().toUpperCase();
+        if (itemInst !== filterInst) {
+          return false;
+        }
       }
       // Filter by Search Query
       if (buscar.trim() !== '') {
@@ -134,7 +159,7 @@ function AlertasMtto() {
       return;
     }
 
-    const confirmMsg = `¿Estás seguro de que deseas eliminar definitivamente los ${selectedEquipos.length} equipo(s) seleccionados (dados de baja) del inventario?\n\nEsta acción eliminará estos equipos y no se puede deshacer.`;
+    const confirmMsg = `¿Estás seguro de que deseas eliminar definitivamente los ${selectedEquipos.length} equipo(s) seleccionados del inventario?\n\nEsta acción eliminará estos equipos y no se puede deshacer.`;
     if (window.confirm(confirmMsg)) {
       setDeleting(true);
       try {
@@ -148,7 +173,7 @@ function AlertasMtto() {
           setSelectedEquipos([]);
           fetchAlertas();
         } else {
-          alert(`${response?.message || 'Error al eliminar equipos'}`);
+          alert(response?.message || 'Error al eliminar equipos seleccionados');
         }
       } catch (err) {
         console.error(err);
@@ -157,6 +182,16 @@ function AlertasMtto() {
         setDeleting(false);
       }
     }
+  };
+
+  // Format date helper
+  const formatearFecha = (fechaStr) => {
+    if (!fechaStr) return 'Sin Registro';
+    const partes = fechaStr.split('-');
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return fechaStr;
   };
 
   // Badge render helper
@@ -169,17 +204,17 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(239, 68, 68, 0.2)',
-              color: '#fca5a5',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              padding: '5px 10px',
+              padding: '4px 10px',
               borderRadius: '20px',
+              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
               fontWeight: '700',
               fontSize: '12px',
               whiteSpace: 'nowrap',
             }}
           >
-            <FaExclamationTriangle size={12} color="#fca5a5" />
+            <FaExclamationTriangle size={12} color="#f87171" />
             VENCIDO ({Math.abs(item.dias_restantes)} d)
           </span>
         );
@@ -190,17 +225,17 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(245, 158, 11, 0.2)',
-              color: '#fde047',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              padding: '5px 10px',
+              padding: '4px 10px',
               borderRadius: '20px',
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              color: '#fbbf24',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
               fontWeight: '700',
               fontSize: '12px',
               whiteSpace: 'nowrap',
             }}
           >
-            <FaClock size={12} color="#fde047" />
+            <FaClock size={12} color="#fbbf24" />
             PRÓXIMO ({item.dias_restantes} d)
           </span>
         );
@@ -211,20 +246,21 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(34, 197, 94, 0.2)',
-              color: '#86efac',
-              border: '1px solid rgba(34, 197, 94, 0.4)',
-              padding: '5px 10px',
+              padding: '4px 10px',
               borderRadius: '20px',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              color: '#34d399',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
               fontWeight: '700',
               fontSize: '12px',
               whiteSpace: 'nowrap',
             }}
           >
-            <FaCheckCircle size={12} color="#86efac" />
+            <FaCheckCircle size={12} color="#34d399" />
             AL DÍA ({item.dias_restantes} d)
           </span>
         );
+      case 'SIN_REGISTRO':
       default:
         return (
           <span
@@ -232,11 +268,11 @@ function AlertasMtto() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(100, 116, 139, 0.2)',
-              color: '#cbd5e1',
-              border: '1px solid rgba(100, 116, 139, 0.4)',
-              padding: '5px 10px',
+              padding: '4px 10px',
               borderRadius: '20px',
+              backgroundColor: 'rgba(148, 163, 184, 0.15)',
+              color: '#cbd5e1',
+              border: '1px solid rgba(148, 163, 184, 0.3)',
               fontWeight: '600',
               fontSize: '12px',
               whiteSpace: 'nowrap',
@@ -259,7 +295,7 @@ function AlertasMtto() {
               <FaShieldAlt color="#38bdf8" /> Semáforo y Alertas de Mantenimiento
             </h2>
             <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
-              Auditoría y control preventivo. Selecciona equipos dados de baja para eliminarlos fácilmente.
+              Auditoría y control preventivo. Filtra por IPS o selecciona equipos dados de baja para eliminarlos fácilmente.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -300,25 +336,24 @@ function AlertasMtto() {
                 border: '1px solid #38bdf8',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontWeight: '700',
+                fontWeight: '600',
                 fontSize: '14px',
-                boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
+                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)',
                 transition: 'all 0.2s',
               }}
             >
-              <FaSync className={loading ? 'fa-spin' : ''} color="#ffffff" />
-              Actualizar
+              <FaSync className={loading ? 'fa-spin' : ''} /> Actualizar Alertas
             </button>
           </div>
         </div>
 
-        {/* KPI Cards */}
+        {/* Status Counter Cards */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
-            gap: '14px',
-            marginBottom: '20px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '24px',
           }}
         >
           {/* Card: Total */}
@@ -334,9 +369,11 @@ function AlertasMtto() {
               transition: 'all 0.2s',
             }}
           >
-            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', letterSpacing: '0.5px' }}>TOTAL EQUIPOS</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#38bdf8', marginTop: '4px' }}>
-              {resumen.total}
+            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {filtroIps === 'TODAS' ? 'TOTAL EQUIPOS' : `TOTAL (${filtroIps})`}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc', marginTop: '4px' }}>
+              {countsByIps.total}
             </div>
           </div>
 
@@ -357,7 +394,7 @@ function AlertasMtto() {
               <FaExclamationTriangle color="#fca5a5" /> VENCIDOS
             </div>
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#ef4444', marginTop: '4px' }}>
-              {resumen.vencidos}
+              {countsByIps.vencidos}
             </div>
           </div>
 
@@ -378,7 +415,7 @@ function AlertasMtto() {
               <FaClock color="#fde047" /> PRÓXIMOS (30 DÍAS)
             </div>
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
-              {resumen.proximos}
+              {countsByIps.proximos}
             </div>
           </div>
 
@@ -399,7 +436,7 @@ function AlertasMtto() {
               <FaCheckCircle color="#86efac" /> AL DÍA
             </div>
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
-              {resumen.al_dia}
+              {countsByIps.al_dia}
             </div>
           </div>
 
@@ -420,7 +457,7 @@ function AlertasMtto() {
               <FaQuestionCircle color="#cbd5e1" /> SIN REGISTRO
             </div>
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#94a3b8', marginTop: '4px' }}>
-              {resumen.sin_registro}
+              {countsByIps.sin_registro}
             </div>
           </div>
         </div>
@@ -465,13 +502,13 @@ function AlertasMtto() {
                 backgroundColor: '#0f172a',
                 color: '#f8fafc',
                 cursor: 'pointer',
-                maxWidth: '220px',
+                maxWidth: '240px',
               }}
             >
               <option value="TODAS">-- Todas las IPS --</option>
-              {listaIps.map((ipsItem, idx) => (
-                <option key={idx} value={ipsItem.nombre || ipsItem.institucion}>
-                  {ipsItem.nombre || ipsItem.institucion}
+              {uniqueIpsList.map((ipsName, idx) => (
+                <option key={idx} value={ipsName}>
+                  {ipsName}
                 </option>
               ))}
             </select>
@@ -495,160 +532,184 @@ function AlertasMtto() {
                 cursor: 'pointer',
               }}
             >
-              <option value="TODOS">Todos los estados</option>
+              <option value="TODOS">Todos los Estados</option>
               <option value="VENCIDO">🔴 Vencidos</option>
-              <option value="PROXIMO">🟡 Próximos a vencer</option>
-              <option value="AL_DIA">🟢 Al día</option>
-              <option value="SIN_REGISTRO">⚪ Sin registro</option>
+              <option value="PROXIMO">🟡 Próximos a Vencer (30d)</option>
+              <option value="AL_DIA">🟢 Al Día</option>
+              <option value="SIN_REGISTRO">⚪ Sin Registro de Mtto</option>
             </select>
           </div>
         </div>
 
-        {/* Table & Results */}
+        {/* Table Content */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', fontSize: '16px', color: '#94a3b8' }}>
-            Calculando alertas de mantenimiento preventivo...
+          <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', fontSize: '16px' }}>
+            <FaSync className="fa-spin" style={{ marginRight: '8px' }} /> Analizando fechas y cronogramas de mantenimiento...
+          </div>
+        ) : filteredAlertas.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #334155', marginTop: '20px' }}>
+            <FaCheckCircle size={40} color="#34d399" style={{ marginBottom: '12px' }} />
+            <h3 style={{ margin: 0, color: '#f8fafc' }}>No se encontraron alertas para este filtro</h3>
+            <p style={{ margin: '8px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
+              Intenta cambiar los términos de búsqueda, la IPS o el estado seleccionado.
+            </p>
           </div>
         ) : (
-          <div>
-            <div className="table-responsive-card">
-              <table className="table">
+          <>
+            <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #334155', marginTop: '20px' }}>
+              <table className="tabla-reportes" style={{ margin: 0, width: '100%' }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'center', width: '50px' }}>
+                    <th style={{ width: '40px', textAlign: 'center' }}>
                       <input
                         type="checkbox"
-                        style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
                         onChange={handleSelectAll}
-                        checked={filteredAlertas.length > 0 && selectedEquipos.length === filteredAlertas.length}
-                        title="Seleccionar todos los equipos filtrados"
+                        checked={
+                          paginatedAlertas.length > 0 &&
+                          paginatedAlertas.every((a) => selectedEquipos.includes(a._id))
+                        }
+                        style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
                       />
                     </th>
                     <th>ESTADO</th>
                     <th>EQUIPO</th>
-                    <th>MARCA / MODELO</th>
                     <th>SERIE</th>
-                    <th>INSTITUCIÓN</th>
+                    <th>MARCA / MODELO</th>
+                    <th>IPS / INSTITUCIÓN</th>
                     <th>SERVICIO / UBICACIÓN</th>
-                    <th>PERIODICIDAD</th>
                     <th>ÚLTIMO MTTO</th>
                     <th>PRÓXIMO MTTO</th>
                     <th style={{ textAlign: 'center' }}>ACCIONES</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedAlertas.length === 0 ? (
-                    <tr>
-                      <td colSpan="11" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
-                        No se encontraron equipos con los filtros seleccionados.
+                  {paginatedAlertas.map((item) => (
+                    <tr
+                      key={item._id}
+                      style={{
+                        backgroundColor: selectedEquipos.includes(item._id)
+                          ? 'rgba(239, 68, 68, 0.15)'
+                          : item.estado === 'VENCIDO'
+                          ? 'rgba(239, 68, 68, 0.05)'
+                          : item.estado === 'PROXIMO'
+                          ? 'rgba(245, 158, 11, 0.05)'
+                          : undefined,
+                      }}
+                    >
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedEquipos.includes(item._id)}
+                          onChange={() => handleCheckboxChange(item._id)}
+                          style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
+                        />
                       </td>
-                    </tr>
-                  ) : (
-                    paginatedAlertas.map((item) => {
-                      const isSelected = selectedEquipos.includes(item._id);
-                      return (
-                        <tr
-                          key={item._id}
+                      <td>{renderBadge(item)}</td>
+                      <td>
+                        <strong style={{ color: '#f8fafc' }}>{item.equipo}</strong>
+                        {item.inventario && item.inventario !== 'NA' && (
+                          <div style={{ fontSize: '11.5px', color: '#94a3b8' }}>Inv: {item.inventario}</div>
+                        )}
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>
+                          {item.serie}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ color: '#e2e8f0' }}>{item.marca || '-'}</div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.modelo || '-'}</div>
+                      </td>
+                      <td>
+                        <span style={{ color: '#38bdf8', fontWeight: '600' }}>{item.institucion || '-'}</span>
+                      </td>
+                      <td>
+                        <div style={{ color: '#e2e8f0' }}>{item.servicio || '-'}</div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.ubicacion || '-'}</div>
+                      </td>
+                      <td>
+                        <div style={{ color: item.ultimo_mtto_fecha ? '#e2e8f0' : '#64748b' }}>
+                          {formatearFecha(item.ultimo_mtto_fecha)}
+                        </div>
+                        {item.frecuencia && (
+                          <div style={{ fontSize: '11px', color: '#38bdf8' }}>
+                            Frec: {item.frecuencia}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div
                           style={{
-                            backgroundColor: isSelected ? 'rgba(239, 68, 68, 0.12)' : 'inherit',
+                            fontWeight: '700',
+                            color:
+                              item.estado === 'VENCIDO'
+                                ? '#ef4444'
+                                : item.estado === 'PROXIMO'
+                                ? '#f59e0b'
+                                : item.estado === 'AL_DIA'
+                                ? '#10b981'
+                                : '#94a3b8',
                           }}
                         >
-                          <td style={{ textAlign: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleCheckboxChange(item._id)}
-                              style={{ transform: 'scale(1.25)', cursor: 'pointer' }}
-                              title="Seleccionar para dar de baja / eliminar"
-                            />
-                          </td>
-                          <td>{renderBadge(item)}</td>
-                          <td>
-                            <strong style={{ color: '#f8fafc' }}>{item.equipo}</strong>
-                            {item.riesgo && (
-                              <div style={{ fontSize: '11px', color: '#38bdf8' }}>Riesgo: {item.riesgo}</div>
-                            )}
-                          </td>
-                          <td>
-                            <div style={{ color: '#cbd5e1' }}>{item.marca}</div>
-                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.modelo}</div>
-                          </td>
-                          <td>
-                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
-                              {item.serie}
-                            </span>
-                          </td>
-                          <td style={{ color: '#e2e8f0' }}>{item.institucion}</td>
-                          <td>
-                            <div style={{ color: '#cbd5e1' }}>{item.servicio}</div>
-                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.ubicacion}</div>
-                          </td>
-                          <td>
-                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8' }}>
-                              {item.periodicidad}
-                            </span>
-                          </td>
-                          <td>
-                            {item.ultimo_mantenimiento ? (
-                              <div>
-                                <div style={{ color: '#cbd5e1' }}>{item.ultimo_mantenimiento}</div>
-                                {item.ultimo_reporte_num && (
-                                  <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '600' }}>
-                                    Rep. #{item.ultimo_reporte_num}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span style={{ color: '#64748b', fontSize: '12px' }}>Sin registro</span>
-                            )}
-                          </td>
-                          <td>
-                            {item.proximo_mantenimiento ? (
-                              <strong style={{ color: item.estado === 'VENCIDO' ? '#ef4444' : item.estado === 'PROXIMO' ? '#f59e0b' : '#10b981' }}>
-                                {item.proximo_mantenimiento}
-                              </strong>
-                            ) : (
-                              <span style={{ color: '#64748b', fontSize: '12px' }}>No programado</span>
-                            )}
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
-                              {/* Boton Mtto */}
-                              <Link
-                                to={`/reporteService?id=${item._id}&equipo=${encodeURIComponent(item.equipo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&servicio=${encodeURIComponent(item.servicio || '')}&marca=${encodeURIComponent(item.marca || '')}&modelo=${encodeURIComponent(item.modelo || '')}`}
-                                title="Hacer Mantenimiento"
-                                className="action-btn action-btn-primary"
-                              >
-                                <HiOutlineDocumentPlus size={16} color="#ffffff" />
-                              </Link>
-                              {/* Boton Ver Hoja */}
-                              <Link
-                                to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                                title="Ver Hoja de Vida"
-                                className="action-btn action-btn-view"
-                              >
-                                <GoEye size={16} color="#38bdf8" />
-                              </Link>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
+                          {formatearFecha(item.proximo_mtto_fecha)}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '6px' }}>
+                          <Link
+                            to={`/hojadevida?id=${item._id}`}
+                            title="Ver Hoja de Vida"
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: '#0284c7',
+                              color: '#fff',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              textDecoration: 'none',
+                              fontSize: '13px',
+                            }}
+                          >
+                            <GoEye size={14} />
+                          </Link>
+                          <Link
+                            to={`/reporteService?id=${item._id}`}
+                            title="Crear Reporte de Servicio"
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: '#10b981',
+                              color: '#fff',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              textDecoration: 'none',
+                              fontSize: '13px',
+                            }}
+                          >
+                            <HiOutlineDocumentPlus size={14} />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Component */}
-            <Pagination
-              totalItems={filteredAlertas.length}
-              itemsPerPage={itemsPerPage}
-              currentPage={currentPage}
-              onPageChange={(page) => setCurrentPage(page)}
-              onItemsPerPageChange={(size) => setItemsPerPage(size)}
-              pageSizeOptions={[15, 25, 50, 100]}
-            />
-          </div>
+            {/* Pagination Controls */}
+            <div style={{ marginTop: '20px' }}>
+              <Pagination
+                totalItems={filteredAlertas.length}
+                itemsPerPage={itemsPerPage}
+                currentPage={currentPage}
+                onPageChange={(page) => setCurrentPage(page)}
+                onItemsPerPageChange={(num) => {
+                  setItemsPerPage(num);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </>
         )}
       </main>
     </div>

@@ -97,7 +97,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/actmtto" style={linkStyle('/actmtto')}>
-                <FaClipboardList size={13} /> Actas Mtto
+                <FaClipboardList size={13} /> Act. Mtto
               </Link>
             </li>
             <li>

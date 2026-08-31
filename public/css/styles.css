@@ -186,57 +186,45 @@ h1, h2, h3, h4 {
   color: #94a3b8;
 }
 
-/* ===================================================
-   TABLAS OSCURAS MODERNAS
-   =================================================== */
-
-.table-responsive-card {
-  background-color: var(--card-bg);
+.table-container {
+  width: 100%;
   border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  overflow-x: auto;
-  margin-bottom: 20px;
+  background-color: var(--card-bg);
 }
 
 .table, .tabla-actividades {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   margin: 0;
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text-main);
   background-color: var(--card-bg);
+  table-layout: auto;
 }
 
 .table thead th, .tabla-actividades thead th {
   background-color: var(--table-header);
   color: var(--table-header-text);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11.5px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 14px 16px;
+  letter-spacing: 0.3px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 2px solid #0284c7;
   white-space: nowrap;
 }
 
-.table thead th:first-child, .tabla-actividades thead th:first-child {
-  border-top-left-radius: var(--radius-md);
-}
-
-.table thead th:last-child, .tabla-actividades thead th:last-child {
-  border-top-right-radius: var(--radius-md);
-}
-
 .table tbody td, .tabla-actividades tbody td {
-  padding: 12px 16px;
+  padding: 7px 10px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--table-row-bg);
   color: #f8fafc;
   vertical-align: middle;
   transition: background-color 0.15s ease;
+  font-size: 12px;
 }
 
 .table tbody tr:hover td, .tabla-actividades tbody tr:hover td {
@@ -580,10 +568,11 @@ textarea:focus {
   border-collapse: collapse !important;
   background-color: #1e293b !important;
   color: #f8fafc !important;
-  border: 2px solid #38bdf8 !important;
+  border: 1.5px solid #38bdf8 !important;
   border-radius: 8px !important;
-  margin-bottom: 24px !important;
+  margin-bottom: 20px !important;
   box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
+  table-layout: auto !important;
 }
 
 .tabla-reporte thead th, .tabla-reportes thead th,
@@ -591,29 +580,32 @@ textarea:focus {
   background-color: #0f2744 !important;
   color: #38bdf8 !important;
   font-weight: 700 !important;
-  padding: 12px 14px !important;
-  border: 1.5px solid #334155 !important;
-  font-size: 13.5px !important;
+  padding: 8px 8px !important;
+  border: 1px solid #334155 !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
 }
 
 .tabla-reporte th, .tabla-reportes th {
   background-color: #0f2b48 !important;
   color: #38bdf8 !important;
   font-weight: 700 !important;
-  padding: 10px 14px !important;
-  border: 1.5px solid #334155 !important;
-  font-size: 13px !important;
+  padding: 8px 8px !important;
+  border: 1px solid #334155 !important;
+  font-size: 11.5px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.3px !important;
+  white-space: nowrap !important;
 }
 
 .tabla-reporte td, .tabla-reportes td {
   background-color: #1e293b !important;
   color: #f8fafc !important;
-  padding: 10px 14px !important;
-  border: 1.5px solid #334155 !important;
+  padding: 6px 8px !important;
+  border: 1px solid #334155 !important;
   vertical-align: middle !important;
-  font-size: 13.5px !important;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
 }
 
 .tabla-reporte tr:hover td {

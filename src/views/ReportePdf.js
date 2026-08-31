@@ -19,13 +19,13 @@ function ReportePdf() {
     method: 'save',
     resolution: Resolution.MEDIUM,
     page: {
-      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+      margin: { top: 6, right: 6, bottom: 6, left: 6 },
       format: 'letter',
       orientation: 'portrait',
     },
     canvas: {
       mimeType: 'image/jpeg',
-      qualityRatio: 1.0,
+      qualityRatio: 0.98,
     },
   };
 
@@ -34,13 +34,13 @@ function ReportePdf() {
     method: 'open',
     resolution: Resolution.MEDIUM,
     page: {
-      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+      margin: { top: 6, right: 6, bottom: 6, left: 6 },
       format: 'letter',
       orientation: 'portrait',
     },
     canvas: {
       mimeType: 'image/jpeg',
-      qualityRatio: 1.0,
+      qualityRatio: 0.98,
     },
   };
 
@@ -111,7 +111,7 @@ function ReportePdf() {
   }
 
   return (
-    <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+    <div className="contenedor" style={{ maxWidth: '900px', margin: '0 auto', padding: '16px' }}>
       {/* Action Toolbar */}
       <div
         style={{
@@ -119,15 +119,15 @@ function ReportePdf() {
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: '#1e293b',
-          padding: '14px 20px',
+          padding: '12px 18px',
           borderRadius: '10px',
           border: '1px solid #334155',
-          marginBottom: '20px',
+          marginBottom: '16px',
           flexWrap: 'wrap',
           gap: '12px',
         }}
       >
-        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '16px' }}>
+        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
           📄 Reporte de Servicio Nº {reporte?.numero_reporte}
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -140,14 +140,14 @@ function ReportePdf() {
               backgroundColor: '#0284c7',
               color: '#ffffff',
               border: '1px solid #38bdf8',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '13.5px',
+              padding: '7px 15px',
+              borderRadius: '6px',
+              fontWeight: '700',
+              fontSize: '13px',
               cursor: 'pointer',
             }}
           >
-            <GrDocumentPdf size={18} /> Descargar PDF
+            <GrDocumentPdf size={16} /> Descargar PDF (1 Hoja)
           </button>
           <button
             onClick={() => generatePDF(targetRef, options_2)}
@@ -158,14 +158,14 @@ function ReportePdf() {
               backgroundColor: '#334155',
               color: '#f8fafc',
               border: '1px solid #475569',
-              padding: '8px 16px',
-              borderRadius: '8px',
+              padding: '7px 15px',
+              borderRadius: '6px',
               fontWeight: '600',
-              fontSize: '13.5px',
+              fontSize: '13px',
               cursor: 'pointer',
             }}
           >
-            <SlPrinter size={18} /> Imprimir
+            <SlPrinter size={16} /> Imprimir
           </button>
           <button
             onClick={deleteReport}
@@ -176,22 +176,21 @@ function ReportePdf() {
               backgroundColor: '#7f1d1d',
               color: '#fca5a5',
               border: '1px solid #ef4444',
-              padding: '8px 14px',
-              borderRadius: '8px',
+              padding: '7px 13px',
+              borderRadius: '6px',
               fontWeight: '600',
-              fontSize: '13.5px',
+              fontSize: '13px',
               cursor: 'pointer',
             }}
           >
-            <BsTrash size={18} /> Eliminar
+            <BsTrash size={16} /> Eliminar
           </button>
         </div>
       </div>
 
-      {/* Printable Sheet (White Background, Sharp Borders) */}
+      {/* Printable Sheet Formatted for Single Page (Fondo Blanco) */}
       <div className="documento-reporte" ref={targetRef}>
         <table className="tabla-documento" style={{ tableLayout: 'fixed', width: '100%' }}>
-          {/* Column definitions for perfect 4-column 25% / 25% / 25% / 25% symmetry */}
           <colgroup>
             <col style={{ width: '25%' }} />
             <col style={{ width: '25%' }} />
@@ -202,32 +201,32 @@ function ReportePdf() {
           {/* Document Header */}
           <thead>
             <tr>
-              <td colSpan={2} style={{ padding: '12px', verticalAlign: 'middle' }}>
+              <td colSpan={2} style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
                 <img
                   src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
                   alt="Logo"
-                  style={{ maxHeight: '60px', width: 'auto', objectFit: 'contain' }}
+                  style={{ maxHeight: '42px', width: 'auto', objectFit: 'contain' }}
                 />
               </td>
               <td
                 colSpan={2}
                 style={{
                   textAlign: 'center',
-                  padding: '12px',
+                  padding: '6px 10px',
                   verticalAlign: 'middle',
                 }}
               >
-                <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.4px' }}>
                   REPORTE DE SERVICIO TÉCNICO
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: '#dc2626', marginTop: '4px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#dc2626', marginTop: '2px' }}>
                   Nº DE REPORTE: {reporte?.numero_reporte}
                 </div>
               </td>
             </tr>
           </thead>
           <tbody>
-            {/* Sección: Información Institución */}
+            {/* 1. Información Institución */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 1. INFORMACIÓN DE LA INSTITUCIÓN
@@ -250,19 +249,19 @@ function ReportePdf() {
               </td>
             </tr>
 
-            {/* Sección: Tipo de Servicio */}
+            {/* 2. Tipo de Servicio */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 2. TIPO DE SERVICIO
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ textAlign: 'center', fontWeight: '700', fontSize: '14px', color: '#0f3b60', padding: '10px' }}>
+              <td colSpan={4} style={{ textAlign: 'center', fontWeight: '700', fontSize: '12px', color: '#0f3b60', padding: '4px' }}>
                 {reporte?.tipo_servicio}
               </td>
             </tr>
 
-            {/* Sección: Información del Equipo */}
+            {/* 3. Información del Equipo */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 3. INFORMACIÓN DEL EQUIPO
@@ -285,39 +284,39 @@ function ReportePdf() {
               </td>
             </tr>
 
-            {/* Sección: Problema Reportado */}
+            {/* 4. Problema Reportado */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 4. PROBLEMA REPORTADO POR EL CLIENTE
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ minHeight: '40px', padding: '10px' }}>
+              <td colSpan={4} style={{ padding: '5px 8px' }}>
                 {reporte?.problema_reportado || 'Mantenimiento preventivo programado según cronograma.'}
               </td>
             </tr>
 
-            {/* Sección: Descripción del Servicio */}
+            {/* 5. Descripción del Servicio */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 5. DESCRIPCIÓN DEL SERVICIO REALIZADO
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ minHeight: '50px', padding: '10px', whiteSpace: 'pre-line' }}>
+              <td colSpan={4} style={{ padding: '5px 8px', whiteSpace: 'pre-line' }}>
                 {reporte?.desc_servicio}
               </td>
             </tr>
 
-            {/* Sección: Repuestos e Insumos */}
+            {/* 6. Repuestos e Insumos */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 6. REPUESTOS, INSUMOS Y MATERIALES EMPLEADOS
               </td>
             </tr>
             <tr>
-              <td className="sub-header" style={{ width: '25%' }}>CANTIDAD</td>
-              <td className="sub-header" colSpan={2} style={{ width: '50%' }}>DESCRIPCIÓN</td>
+              <td className="sub-header" style={{ width: '20%' }}>CANTIDAD</td>
+              <td className="sub-header" colSpan={2} style={{ width: '55%' }}>DESCRIPCIÓN</td>
               <td className="sub-header" style={{ width: '25%' }}>VALOR UNITARIO</td>
             </tr>
             <tr>
@@ -341,7 +340,7 @@ function ReportePdf() {
               <td style={{ textAlign: 'right' }}>{reporte?.valor4 || '-'}</td>
             </tr>
 
-            {/* Sección: Verificación de Parámetros */}
+            {/* 7. Verificación de Parámetros */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
@@ -373,14 +372,14 @@ function ReportePdf() {
               <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido4 || '-'}</td>
             </tr>
 
-            {/* Sección: Observaciones & Estado Final */}
+            {/* 8. Observaciones & Estado Final */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
                 8. OBSERVACIONES
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ padding: '10px' }}>
+              <td colSpan={4} style={{ padding: '5px 8px' }}>
                 {reporte?.observaciones || 'Equipo funcionando en óptimas condiciones técnicas y de seguridad.'}
               </td>
             </tr>
@@ -390,12 +389,12 @@ function ReportePdf() {
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '14px', color: '#15803d', padding: '10px' }}>
+              <td colSpan={4} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '12px', color: '#15803d', padding: '4px' }}>
                 {reporte?.estado_final || 'OPERATIVO'}
               </td>
             </tr>
 
-            {/* Sección: Firmas 100% Simétricas 50% / 50% Sin Cortes */}
+            {/* 10. Firmas Digitales */}
             <tr>
               <td colSpan={2} className="sub-header" style={{ textAlign: 'center' }}>
                 INGENIERO / TÉCNICO RESPONSABLE
@@ -405,36 +404,30 @@ function ReportePdf() {
               </td>
             </tr>
             <tr>
-              {/* Firma Ingeniero Centrada */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '16px 12px' }}>
+              {/* Firma Ingeniero */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '6px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
-                    Firma del Ingeniero / Técnico
-                  </div>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '1px', overflow: 'hidden' }}>
                     <SignatureCanvas
                       ref={imgIng}
                       canvasProps={{
-                        width: 360,
-                        height: 140,
+                        width: 300,
+                        height: 75,
                         style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
                       }}
                     />
                   </div>
                 </div>
               </td>
-              {/* Firma Recibe Centrada (Idéntica en tamaño) */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '16px 12px' }}>
+              {/* Firma Recibe */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '6px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: '600' }}>
-                    Firma de Quien Recibe
-                  </div>
-                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '6px', backgroundColor: '#ffffff', padding: '2px', overflow: 'hidden' }}>
+                  <div style={{ display: 'inline-block', border: '1px dashed #94a3b8', borderRadius: '4px', backgroundColor: '#ffffff', padding: '1px', overflow: 'hidden' }}>
                     <SignatureCanvas
                       ref={imgRec}
                       canvasProps={{
-                        width: 360,
-                        height: 140,
+                        width: 300,
+                        height: 75,
                         style: { display: 'block', margin: '0 auto', maxWidth: '100%', backgroundColor: '#ffffff' },
                       }}
                     />

@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { apiUpdateFicha, apiGetFichaById, apiDeleteFicha } from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
-import { TfiSave } from 'react-icons/tfi';
-import { BsTrash } from 'react-icons/bs';
+import {
+  FaFileMedical,
+  FaBolt,
+  FaPlug,
+  FaSave,
+  FaArrowLeft,
+  FaCamera,
+  FaTrash,
+  FaInfoCircle,
+} from 'react-icons/fa';
 
 function EditFichaTecnica() {
-  const [imagen, setImagen] = useState();
+  const [imagen, setImagen] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const maxNumber = 1;
+
   const [ficha, setFicha] = useState({
-    imagen: '',
+    _id: '',
     marca: '',
     modelo: '',
     clas_biomedica: '',
@@ -33,49 +46,68 @@ function EditFichaTecnica() {
     cantidad6: '',
     recomendaciones: '',
   });
-  const maxNumber = 2;
 
   const ObtenerFicha = async (id) => {
-    const response = await request({
-      link: apiGetFichaById,
-      method: 'GET',
-      body: { id },
-    });
-    if (response.success) {
-      setFicha(response.ficha);
-      setImagen(response.ficha.imagen);
-    } else {
-      alert(`Sin conexión con el Servidor ${response.message}`);
+    try {
+      const response = await request({
+        link: apiGetFichaById,
+        method: 'GET',
+        body: { id },
+      });
+      if (response && response.success && response.ficha) {
+        setFicha(response.ficha);
+        if (response.ficha.imagen) {
+          if (Array.isArray(response.ficha.imagen)) {
+            setImagen(response.ficha.imagen);
+          } else if (typeof response.ficha.imagen === 'string') {
+            setImagen([{ data_url: response.ficha.imagen }]);
+          }
+        }
+      } else {
+        alert(`${response?.message || 'Error al obtener la ficha técnica'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión con el servidor');
     }
   };
 
-  useEffect(function () {
-    let queryParameters = new URLSearchParams(window.location.search);
-    let idEquipo = queryParameters.get('id');
-    ObtenerFicha(idEquipo);
+  useEffect(() => {
+    const queryParameters = new URLSearchParams(window.location.search);
+    const idEquipo = queryParameters.get('id');
+    if (idEquipo) {
+      ObtenerFicha(idEquipo);
+    } else {
+      alert('Seleccione una ficha técnica válida');
+      window.location.href = './fichastecnicas';
+    }
   }, []);
 
   const handleSave = (e) => {
-    setFicha(function (prev) {
-      return { ...prev, [e.target.name]: e.target.value };
-    });
+    const { name, value } = e.target;
+    setFicha((prev) => ({ ...prev, [name]: value }));
   };
 
-  const onChange = (imageList, addUpdateIndex) => {
-    // data for submit
+  const onImageChange = (imageList) => {
     setImagen(imageList);
   };
-  const Create = async () => {
-    if (!ficha) {
-      alert('Por favor diligencie todos los campos.');
-    } else {
+
+  const Update = async (e) => {
+    if (e) e.preventDefault();
+    if (!ficha.marca?.trim() || !ficha.modelo?.trim()) {
+      alert('Por favor ingresa la marca y el modelo de la ficha técnica.');
+      return;
+    }
+
+    setLoading(true);
+    try {
       const response = await request({
         link: apiUpdateFicha,
         body: {
           _id: ficha._id,
           imagen: imagen,
-          marca: ficha.marca,
-          modelo: ficha.modelo,
+          marca: ficha.marca.trim().toUpperCase(),
+          modelo: ficha.modelo.trim().toUpperCase(),
           clas_biomedica: ficha.clas_biomedica,
           tecnologia: ficha.tecnologia,
           voltaje: ficha.voltaje,
@@ -100,396 +132,420 @@ function EditFichaTecnica() {
         },
         method: 'POST',
       });
-      if (response.success) {
-        alert('Archivo actualizado exitosamente');
+
+      if (response && response.success) {
+        alert('¡Ficha técnica actualizada exitosamente!');
         window.location.href = './fichastecnicas';
       } else {
-        alert(`${response.message}`);
+        alert(`${response?.message || 'Error al actualizar la ficha técnica'}`);
       }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteficha = async () => {
-    let confirmar = window.confirm('Deseas eliminar este archivo?');
+  const deleteFicha = async () => {
+    const confirmar = window.confirm(`¿Estás seguro de que deseas eliminar la ficha técnica para "${ficha.marca} - ${ficha.modelo}"?`);
     if (confirmar) {
-      const body = {
-        _id: ficha._id,
-      };
-      if (!body) {
-        alert('Por favor Seleccione un equipo');
-        window.location.href = './reportes';
-      } else {
+      setDeleting(true);
+      try {
         const response = await request({
           link: apiDeleteFicha,
-          body,
+          body: { _id: ficha._id },
           method: 'POST',
         });
-        if (response.success) {
-          alert(`${response.message}`);
+        if (response && response.success) {
+          alert('Ficha técnica eliminada exitosamente');
           window.location.href = './fichastecnicas';
         } else {
-          alert(`${response.message}`);
+          alert(`${response?.message || 'Error al eliminar la ficha técnica'}`);
         }
+      } catch (err) {
+        console.error(err);
+        alert('Error de conexión con el servidor');
+      } finally {
+        setDeleting(false);
       }
     }
   };
 
   return (
-    <div>
+    <div className="contenedor" style={{ maxWidth: '950px', margin: '0 auto', padding: '20px 15px' }}>
       <main>
-        <section>
+        {/* Navigation / Header Bar */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: '#1e293b',
+            padding: '16px 22px',
+            borderRadius: '12px',
+            border: '1.5px solid #334155',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+          }}
+        >
           <div>
-            <div>
-              <div>
-                <table className="tabla-act">
-                  <tbody>
-                    <tr>
-                      <td
-                        colSpan={4}
-                        style={{
-                          backgroundColor: 'rgb(0, 74, 116)',
-                          color: 'white',
-                        }}
-                      >
-                        1,2 INFORMACIÓN TÉCNICA
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan={4}
-                        rowSpan={3}
-                        style={{ backgroundColor: '#ecf4f6' }}
-                      >
-                        <ImageUploading
-                          value={imagen}
-                          onChange={onChange}
-                          maxNumber={maxNumber}
-                          dataURLKey="data_url"
-                        >
-                          {({
-                            imageList,
-                            onImageUpload,
-                            onImageRemoveAll,
-                            onImageUpdate,
-                            onImageRemove,
-                            isDragging,
-                            dragProps,
-                          }) => (
-                            // write your building UI
-                            <div className="upload__image-wrapper">
-                              <button
-                                style={
-                                  isDragging ? { color: 'red' } : undefined
-                                }
-                                onClick={onImageUpload}
-                                {...dragProps}
-                              >
-                                Subir imagen
-                              </button>
-                              &nbsp;
-                              <button onClick={onImageRemoveAll}>
-                                Eliminar imagen
-                              </button>
-                              {imageList.map((image, index) => (
-                                <div key={index} className="image-item">
-                                  <img
-                                    src={image['data_url']}
-                                    alt=""
-                                    width="100"
-                                  />
-                                  <div className="image-item__btn-wrapper">
-                                    <button
-                                      onClick={() => onImageUpdate(index)}
-                                    >
-                                      Actualizar
-                                    </button>
-                                    <button
-                                      onClick={() => onImageRemove(index)}
-                                    >
-                                      Eliminar
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </ImageUploading>
-                      </td>
-                    </tr>
-                    <tr></tr>
-                    <tr></tr>
-                    <tr>
-                      <th>MARCA</th>
-                      <td>
-                        <input
-                          name="marca"
-                          onChange={handleSave}
-                          defaultValue={ficha?.marca}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                      <th>MODELO</th>
-                      <td>
-                        <input
-                          name="modelo"
-                          onChange={handleSave}
-                          defaultValue={ficha?.modelo}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>TECNOLOGÍA PREDOMINANTE</th>
-                      <td>
-                        <input
-                          name="tecnologia"
-                          onChange={handleSave}
-                          defaultValue={ficha?.tecnologia}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                      <th>CLASIFICACIÓN BIOMÉDICA</th>
-                      <td>
-                        <input
-                          name="clas_biomedica"
-                          onChange={handleSave}
-                          defaultValue={ficha?.clas_biomedica}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>VOLTAJE</th>
-                      <td>
-                        <input
-                          name="voltaje"
-                          onChange={handleSave}
-                          defaultValue={ficha?.voltaje}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                      <th>AMPERAJE</th>
-                      <td>
-                        <input
-                          name="amperaje"
-                          onChange={handleSave}
-                          defaultValue={ficha?.amperaje}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>TEMPERATURA</th>
-                      <td>
-                        <input
-                          name="temperatura"
-                          onChange={handleSave}
-                          defaultValue={ficha?.temperatura}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                      <th>FRECUENCIA</th>
-                      <td>
-                        <input
-                          name="frecuencia"
-                          onChange={handleSave}
-                          defaultValue={ficha?.frecuencia}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>POTENCIA</th>
-                      <td>
-                        <input
-                          name="potencia"
-                          onChange={handleSave}
-                          defaultValue={ficha?.potencia}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                      <th>BATERÍA</th>
-                      <td>
-                        <input
-                          name="bateria"
-                          onChange={handleSave}
-                          defaultValue={ficha?.bateria}
-                          className="input-tabla-act"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan={2}
-                        style={{
-                          backgroundColor: 'rgb(0, 74, 116)',
-                          color: 'white',
-                        }}
-                      >
-                        1,3 ACCESORIOS
-                      </td>
-                      <td
-                        colSpan={2}
-                        style={{
-                          backgroundColor: 'rgb(0, 74, 116)',
-                          color: 'white',
-                        }}
-                      >
-                        CANTIDAD
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio1"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio1}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad1"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad1}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio2"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio2}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad2"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad2}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio3"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio3}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad3"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad3}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio4"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio4}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad4"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad4}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio5"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio5}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad5"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad5}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="accesorio6"
-                          onChange={handleSave}
-                          defaultValue={ficha?.accesorio6}
-                        />
-                      </td>
-                      <td colSpan={2}>
-                        <input
-                          className="input-tabla-act"
-                          name="cantidad6"
-                          onChange={handleSave}
-                          defaultValue={ficha?.cantidad6}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan={4}
-                        style={{
-                          backgroundColor: 'rgb(0, 74, 116)',
-                          color: 'white',
-                        }}
-                      >
-                        1,3 RECOMENDACIONES DE FABRICANTE
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={4} style={{ height: '200px' }}>
-                        <textarea
-                          name="recomendaciones"
-                          onChange={handleSave}
-                          defaultValue={ficha?.recomendaciones}
-                          className="input-tabla-act"
-                        ></textarea>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div style={{ display: 'inline-block' }}>
-                  <TfiSave
-                    className="icon1"
-                    title="Guardar"
-                    size={25}
-                    onClick={Create}
-                  />
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px' }}>
+              <FaFileMedical color="#38bdf8" /> Editar Ficha Técnica: {ficha.marca} {ficha.modelo}
+            </h2>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
+              Modifica las especificaciones técnicas del fabricante, foto y accesorios.
+            </p>
+          </div>
+          <Link
+            to="/fichastecnicas"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#334155',
+              color: '#f8fafc',
+              border: '1px solid #475569',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '13.5px',
+              textDecoration: 'none',
+            }}
+          >
+            <FaArrowLeft size={13} /> Volver a Fichas Técnicas
+          </Link>
+        </div>
 
-                  <BsTrash
-                    className="icon1"
-                    title="Eliminar"
-                    size={25}
-                    onClick={deleteficha}
+        {/* Form Sections */}
+        <form onSubmit={Update}>
+          {/* Bloque 1: Foto e Información General */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '20px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 16px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaCamera /> 1. FOTOGRAFÍA Y DATOS GENERALES DEL MODELO
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px', alignItems: 'start' }}>
+              {/* Uploader */}
+              <div
+                style={{
+                  backgroundColor: '#0f172a',
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: '1px dashed #38bdf8',
+                  textAlign: 'center',
+                }}
+              >
+                <ImageUploading
+                  value={imagen}
+                  onChange={onImageChange}
+                  maxNumber={maxNumber}
+                  dataURLKey="data_url"
+                >
+                  {({ imageList, onImageUpload, onImageRemoveAll, isDragging, dragProps }) => (
+                    <div>
+                      {imageList.length === 0 ? (
+                        <div
+                          onClick={onImageUpload}
+                          {...dragProps}
+                          style={{
+                            cursor: 'pointer',
+                            padding: '20px 10px',
+                            color: isDragging ? '#38bdf8' : '#94a3b8',
+                          }}
+                        >
+                          <FaCamera size={36} color="#38bdf8" style={{ marginBottom: '8px' }} />
+                          <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#f8fafc' }}>
+                            Haz clic para subir foto del equipo
+                          </div>
+                          <div style={{ fontSize: '12px', marginTop: '4px' }}>PNG, JPG o JPEG</div>
+                        </div>
+                      ) : (
+                        <div>
+                          {imageList.map((img, idx) => (
+                            <div key={idx}>
+                              <img
+                                src={img['data_url']}
+                                alt="Foto equipo"
+                                style={{
+                                  maxHeight: '140px',
+                                  maxWidth: '100%',
+                                  objectFit: 'contain',
+                                  borderRadius: '8px',
+                                  border: '1px solid #334155',
+                                  marginBottom: '8px',
+                                }}
+                              />
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={onImageRemoveAll}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    backgroundColor: '#7f1d1d',
+                                    color: '#fca5a5',
+                                    border: '1px solid #ef4444',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <FaTrash size={12} /> Eliminar Foto
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </ImageUploading>
+              </div>
+
+              {/* General Fields */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>
+                    MARCA DEL EQUIPO:
+                  </label>
+                  <input
+                    className="input-report"
+                    name="marca"
+                    type="text"
+                    value={ficha.marca || ''}
+                    onChange={handleSave}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>
+                    MODELO:
+                  </label>
+                  <input
+                    className="input-report"
+                    name="modelo"
+                    type="text"
+                    value={ficha.modelo || ''}
+                    onChange={handleSave}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>
+                    CLASIFICACIÓN BIOMÉDICA:
+                  </label>
+                  <input
+                    className="input-report"
+                    name="clas_biomedica"
+                    type="text"
+                    value={ficha.clas_biomedica || ''}
+                    onChange={handleSave}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>
+                    TECNOLOGÍA PREDOMINANTE:
+                  </label>
+                  <input
+                    className="input-report"
+                    name="tecnologia"
+                    type="text"
+                    value={ficha.tecnologia || ''}
+                    onChange={handleSave}
                   />
                 </div>
               </div>
             </div>
           </div>
-        </section>
+
+          {/* Bloque 2: Especificaciones Eléctricas */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '20px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 16px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaBolt /> 2. ESPECIFICACIONES ELÉCTRICAS Y OPERATIVAS
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>VOLTAJE:</label>
+                <input className="input-report" name="voltaje" type="text" value={ficha.voltaje || ''} onChange={handleSave} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>AMPERAJE:</label>
+                <input className="input-report" name="amperaje" type="text" value={ficha.amperaje || ''} onChange={handleSave} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>POTENCIA:</label>
+                <input className="input-report" name="potencia" type="text" value={ficha.potencia || ''} onChange={handleSave} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>TEMPERATURA:</label>
+                <input className="input-report" name="temperatura" type="text" value={ficha.temperatura || ''} onChange={handleSave} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>FRECUENCIA:</label>
+                <input className="input-report" name="frecuencia" type="text" value={ficha.frecuencia || ''} onChange={handleSave} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>BATERÍA:</label>
+                <input className="input-report" name="bateria" type="text" value={ficha.bateria || ''} onChange={handleSave} />
+              </div>
+            </div>
+          </div>
+
+          {/* Bloque 3: Accesorios */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '20px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 16px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaPlug /> 3. ACCESORIOS Y CANTIDADES
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[1, 2, 3, 4, 5, 6].map((idx) => (
+                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '10px' }}>
+                  <input
+                    className="input-report"
+                    name={`accesorio${idx}`}
+                    type="text"
+                    placeholder={`Accesorio ${idx}`}
+                    value={ficha[`accesorio${idx}`] || ''}
+                    onChange={handleSave}
+                  />
+                  <input
+                    className="input-report"
+                    name={`cantidad${idx}`}
+                    type="text"
+                    placeholder="Cantidad"
+                    value={ficha[`cantidad${idx}`] || ''}
+                    onChange={handleSave}
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bloque 4: Recomendaciones */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '24px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 14px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaInfoCircle /> 4. RECOMENDACIONES DEL FABRICANTE
+            </h3>
+            <textarea
+              className="textarea-report"
+              name="recomendaciones"
+              rows={4}
+              value={ficha.recomendaciones || ''}
+              onChange={handleSave}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '30px' }}>
+            <button
+              type="button"
+              onClick={deleteFicha}
+              disabled={deleting}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '11px 20px',
+                backgroundColor: '#7f1d1d',
+                color: '#fca5a5',
+                border: '1.5px solid #ef4444',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '13.5px',
+                cursor: deleting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaTrash size={14} /> {deleting ? 'Eliminando...' : 'Eliminar Ficha'}
+            </button>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Link
+                to="/fichastecnicas"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '11px 20px',
+                  backgroundColor: '#334155',
+                  color: '#f8fafc',
+                  border: '1px solid #475569',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                }}
+              >
+                Cancelar
+              </Link>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '11px 28px',
+                  backgroundColor: '#0284c7',
+                  color: '#ffffff',
+                  border: '1px solid #38bdf8',
+                  borderRadius: '8px',
+                  fontWeight: '800',
+                  fontSize: '14px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)',
+                }}
+              >
+                <FaSave size={15} /> {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+          </div>
+        </form>
       </main>
     </div>
   );
 }
+
 export default EditFichaTecnica;

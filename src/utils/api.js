@@ -39,4 +39,8 @@ export const apiUploadReporteExterno = apiReportesExternos + '/upload';
 export const apiObtenerReportesExternos = apiReportesExternos + '/obtener';
 export const apiEliminarReporteExterno = apiReportesExternos + '/delete';
 export const apiVerReporteExterno = apiReportesExternos + '/archivo';
+export const apiUploadDocumentoFicha = apiFicha + '/upload-documento';
+export const apiDeleteDocumentoFicha = apiFicha + '/delete-documento';
+export const apiVerDocumentoFicha = apiFicha + '/documento';
+
 

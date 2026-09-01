@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiCrearFicha } from '../utils/api';
-import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 import {
   FaFileMedical,
@@ -12,12 +11,25 @@ import {
   FaCamera,
   FaTrash,
   FaInfoCircle,
+  FaFilePdf,
+  FaBook,
+  FaFileAlt,
+  FaShieldAlt,
+  FaBoxOpen,
+  FaWrench,
 } from 'react-icons/fa';
 
 function CreateFichaTecnica() {
   const [imagen, setImagen] = useState([]);
   const [loading, setLoading] = useState(false);
   const maxNumber = 1;
+
+  // Estados para documentos PDF del modelo
+  const [docManualUso, setDocManualUso] = useState(null);
+  const [docGuiaRapida, setDocGuiaRapida] = useState(null);
+  const [docRegistroInvima, setDocRegistroInvima] = useState(null);
+  const [docDeclaracionImportacion, setDocDeclaracionImportacion] = useState(null);
+  const [docManualServicio, setDocManualServicio] = useState(null);
 
   const [ficha, setFicha] = useState({
     marca: '',
@@ -63,36 +75,38 @@ function CreateFichaTecnica() {
 
     setLoading(true);
     try {
-      const response = await request({
-        link: apiCrearFicha,
-        body: {
-          imagen: imagen,
-          marca: ficha.marca.trim().toUpperCase(),
-          modelo: ficha.modelo.trim().toUpperCase(),
-          clas_biomedica: ficha.clas_biomedica,
-          tecnologia: ficha.tecnologia,
-          voltaje: ficha.voltaje,
-          amperaje: ficha.amperaje,
-          potencia: ficha.potencia,
-          temperatura: ficha.temperatura,
-          frecuencia: ficha.frecuencia,
-          bateria: ficha.bateria,
-          accesorio1: ficha.accesorio1,
-          cantidad1: ficha.cantidad1,
-          accesorio2: ficha.accesorio2,
-          cantidad2: ficha.cantidad2,
-          accesorio3: ficha.accesorio3,
-          cantidad3: ficha.cantidad3,
-          accesorio4: ficha.accesorio4,
-          cantidad4: ficha.cantidad4,
-          accesorio5: ficha.accesorio5,
-          cantidad5: ficha.cantidad5,
-          accesorio6: ficha.accesorio6,
-          cantidad6: ficha.cantidad6,
-          recomendaciones: ficha.recomendaciones,
-        },
+      const formData = new FormData();
+      if (imagen && imagen.length > 0) {
+        formData.append('imagen', JSON.stringify(imagen));
+      }
+      formData.append('marca', ficha.marca.trim().toUpperCase());
+      formData.append('modelo', ficha.modelo.trim().toUpperCase());
+      formData.append('clas_biomedica', ficha.clas_biomedica || '');
+      formData.append('tecnologia', ficha.tecnologia || '');
+      formData.append('voltaje', ficha.voltaje || '');
+      formData.append('amperaje', ficha.amperaje || '');
+      formData.append('potencia', ficha.potencia || '');
+      formData.append('temperatura', ficha.temperatura || '');
+      formData.append('frecuencia', ficha.frecuencia || '');
+      formData.append('bateria', ficha.bateria || '');
+      for (let i = 1; i <= 6; i++) {
+        formData.append(`accesorio${i}`, ficha[`accesorio${i}`] || '');
+        formData.append(`cantidad${i}`, ficha[`cantidad${i}`] || '');
+      }
+      formData.append('recomendaciones', ficha.recomendaciones || '');
+
+      // Adjuntar archivos PDF de documentos
+      if (docManualUso) formData.append('manual_uso', docManualUso);
+      if (docGuiaRapida) formData.append('guia_rapida', docGuiaRapida);
+      if (docRegistroInvima) formData.append('registro_invima_doc', docRegistroInvima);
+      if (docDeclaracionImportacion) formData.append('declaracion_importacion', docDeclaracionImportacion);
+      if (docManualServicio) formData.append('manual_servicio', docManualServicio);
+
+      const res = await fetch(apiCrearFicha, {
         method: 'POST',
+        body: formData,
       });
+      const response = await res.json();
 
       if (response && response.success) {
         alert('¡Ficha técnica creada exitosamente!');
@@ -417,6 +431,118 @@ function CreateFichaTecnica() {
               onChange={handleSave}
             />
           </div>
+
+          {/* Bloque 5: Documentos y Manuales Técnicos en PDF */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '24px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 6px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaFilePdf /> 5. DOCUMENTOS Y MANUALES DEL EQUIPO (PDF)
+            </h3>
+            <p style={{ margin: '0 0 16px 0', color: '#94a3b8', fontSize: '13px' }}>
+              Anexa los manuales y documentos reglamentarios en formato PDF. Al asociarse al modelo, estarán disponibles para todos los equipos de este mismo modelo.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* Manual de Uso */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaBook /> Manual de Uso / Operación
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setDocManualUso(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {docManualUso && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#4ade80' }}>
+                    Seleccionado: {docManualUso.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Guía Rápida */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaFileAlt /> Guía Rápida de Manejo
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setDocGuiaRapida(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {docGuiaRapida && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#4ade80' }}>
+                    Seleccionado: {docGuiaRapida.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Registro INVIMA */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaShieldAlt /> Registro Sanitario INVIMA
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setDocRegistroInvima(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {docRegistroInvima && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#4ade80' }}>
+                    Seleccionado: {docRegistroInvima.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Declaración de Importación */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaBoxOpen /> Declaración de Importación
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setDocDeclaracionImportacion(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {docDeclaracionImportacion && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#4ade80' }}>
+                    Seleccionado: {docDeclaracionImportacion.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Manual de Servicio */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaWrench /> Manual de Servicio y Mantenimiento
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setDocManualServicio(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {docManualServicio && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#4ade80' }}>
+                    Seleccionado: {docManualServicio.name}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '30px' }}>

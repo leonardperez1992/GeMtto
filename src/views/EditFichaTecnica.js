@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { apiUpdateFicha, apiGetFichaById, apiDeleteFicha } from '../utils/api';
+import {
+  apiUpdateFicha,
+  apiGetFichaById,
+  apiDeleteFicha,
+  apiVerDocumentoFicha,
+  apiDeleteDocumentoFicha,
+} from '../utils/api';
 import request from '../utils/request';
 import ImageUploading from 'react-images-uploading';
 import {
@@ -12,13 +18,29 @@ import {
   FaCamera,
   FaTrash,
   FaInfoCircle,
+  FaFilePdf,
+  FaBook,
+  FaFileAlt,
+  FaShieldAlt,
+  FaBoxOpen,
+  FaWrench,
+  FaCheckCircle,
+  FaExclamationCircle,
 } from 'react-icons/fa';
+import { GoEye } from 'react-icons/go';
 
 function EditFichaTecnica() {
   const [imagen, setImagen] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const maxNumber = 1;
+
+  // Estados para nuevos documentos a subir
+  const [newDocManualUso, setNewDocManualUso] = useState(null);
+  const [newDocGuiaRapida, setNewDocGuiaRapida] = useState(null);
+  const [newDocRegistroInvima, setNewDocRegistroInvima] = useState(null);
+  const [newDocDeclaracionImportacion, setNewDocDeclaracionImportacion] = useState(null);
+  const [newDocManualServicio, setNewDocManualServicio] = useState(null);
 
   const [ficha, setFicha] = useState({
     _id: '',
@@ -45,6 +67,11 @@ function EditFichaTecnica() {
     accesorio6: '',
     cantidad6: '',
     recomendaciones: '',
+    manual_uso: null,
+    guia_rapida: null,
+    registro_invima_doc: null,
+    declaracion_importacion: null,
+    manual_servicio: null,
   });
 
   const ObtenerFicha = async (id) => {
@@ -92,6 +119,28 @@ function EditFichaTecnica() {
     setImagen(imageList);
   };
 
+  const eliminarDocumento = async (tipo_documento) => {
+    const confirmar = window.confirm(`¿Estás seguro de que deseas eliminar este documento de la ficha técnica?`);
+    if (!confirmar) return;
+
+    try {
+      const response = await request({
+        link: apiDeleteDocumentoFicha,
+        body: { id: ficha._id, tipo_documento },
+        method: 'POST',
+      });
+      if (response && response.success) {
+        alert('Documento eliminado correctamente');
+        setFicha((prev) => ({ ...prev, [tipo_documento]: null }));
+      } else {
+        alert(response?.message || 'Error al eliminar el documento');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al conectar con el servidor');
+    }
+  };
+
   const Update = async (e) => {
     if (e) e.preventDefault();
     if (!ficha.marca?.trim() || !ficha.modelo?.trim()) {
@@ -101,37 +150,39 @@ function EditFichaTecnica() {
 
     setLoading(true);
     try {
-      const response = await request({
-        link: apiUpdateFicha,
-        body: {
-          _id: ficha._id,
-          imagen: imagen,
-          marca: ficha.marca.trim().toUpperCase(),
-          modelo: ficha.modelo.trim().toUpperCase(),
-          clas_biomedica: ficha.clas_biomedica,
-          tecnologia: ficha.tecnologia,
-          voltaje: ficha.voltaje,
-          amperaje: ficha.amperaje,
-          potencia: ficha.potencia,
-          temperatura: ficha.temperatura,
-          frecuencia: ficha.frecuencia,
-          bateria: ficha.bateria,
-          accesorio1: ficha.accesorio1,
-          cantidad1: ficha.cantidad1,
-          accesorio2: ficha.accesorio2,
-          cantidad2: ficha.cantidad2,
-          accesorio3: ficha.accesorio3,
-          cantidad3: ficha.cantidad3,
-          accesorio4: ficha.accesorio4,
-          cantidad4: ficha.cantidad4,
-          accesorio5: ficha.accesorio5,
-          cantidad5: ficha.cantidad5,
-          accesorio6: ficha.accesorio6,
-          cantidad6: ficha.cantidad6,
-          recomendaciones: ficha.recomendaciones,
-        },
+      const formData = new FormData();
+      formData.append('_id', ficha._id);
+      if (imagen && imagen.length > 0) {
+        formData.append('imagen', JSON.stringify(imagen));
+      }
+      formData.append('marca', ficha.marca.trim().toUpperCase());
+      formData.append('modelo', ficha.modelo.trim().toUpperCase());
+      formData.append('clas_biomedica', ficha.clas_biomedica || '');
+      formData.append('tecnologia', ficha.tecnologia || '');
+      formData.append('voltaje', ficha.voltaje || '');
+      formData.append('amperaje', ficha.amperaje || '');
+      formData.append('potencia', ficha.potencia || '');
+      formData.append('temperatura', ficha.temperatura || '');
+      formData.append('frecuencia', ficha.frecuencia || '');
+      formData.append('bateria', ficha.bateria || '');
+      for (let i = 1; i <= 6; i++) {
+        formData.append(`accesorio${i}`, ficha[`accesorio${i}`] || '');
+        formData.append(`cantidad${i}`, ficha[`cantidad${i}`] || '');
+      }
+      formData.append('recomendaciones', ficha.recomendaciones || '');
+
+      // Adjuntar nuevos archivos PDF si fueron seleccionados
+      if (newDocManualUso) formData.append('manual_uso', newDocManualUso);
+      if (newDocGuiaRapida) formData.append('guia_rapida', newDocGuiaRapida);
+      if (newDocRegistroInvima) formData.append('registro_invima_doc', newDocRegistroInvima);
+      if (newDocDeclaracionImportacion) formData.append('declaracion_importacion', newDocDeclaracionImportacion);
+      if (newDocManualServicio) formData.append('manual_servicio', newDocManualServicio);
+
+      const res = await fetch(apiUpdateFicha, {
         method: 'POST',
+        body: formData,
       });
+      const response = await res.json();
 
       if (response && response.success) {
         alert('¡Ficha técnica actualizada exitosamente!');
@@ -171,6 +222,7 @@ function EditFichaTecnica() {
       }
     }
   };
+
 
   return (
     <div className="contenedor" style={{ maxWidth: '950px', margin: '0 auto', padding: '20px 15px' }}>
@@ -476,6 +528,378 @@ function EditFichaTecnica() {
               onChange={handleSave}
             />
           </div>
+
+          {/* Bloque 5: Documentos y Manuales Técnicos en PDF */}
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1.5px solid #38bdf8',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+              padding: '24px',
+              marginBottom: '24px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 6px 0', color: '#38bdf8', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaFilePdf /> 5. DOCUMENTOS Y MANUALES DEL EQUIPO (PDF)
+            </h3>
+            <p style={{ margin: '0 0 16px 0', color: '#94a3b8', fontSize: '13px' }}>
+              Gestiona los manuales y documentos reglamentarios del modelo. Los documentos adjuntos aplican a todas las hojas de vida de los equipos con este modelo.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* 1. Manual de Uso */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaBook /> Manual de Uso / Operación
+                </label>
+                {ficha.manual_uso ? (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
+                      <FaCheckCircle /> <span>{ficha.manual_uso.nombre_original || 'Manual de uso adjunto'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`${apiVerDocumentoFicha}/${ficha.manual_uso.nombre_archivo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        <GoEye /> Ver
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => eliminarDocumento('manual_uso')}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <FaTrash size={11} /> Eliminar
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>Reemplazar archivo:</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px', marginBottom: '8px' }}>
+                    <FaExclamationCircle /> <span>No adjuntado</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setNewDocManualUso(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {newDocManualUso && (
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#38bdf8' }}>
+                    Nuevo archivo: {newDocManualUso.name}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Guía Rápida */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaFileAlt /> Guía Rápida de Manejo
+                </label>
+                {ficha.guia_rapida ? (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
+                      <FaCheckCircle /> <span>{ficha.guia_rapida.nombre_original || 'Guía rápida adjunta'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`${apiVerDocumentoFicha}/${ficha.guia_rapida.nombre_archivo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        <GoEye /> Ver
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => eliminarDocumento('guia_rapida')}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <FaTrash size={11} /> Eliminar
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>Reemplazar archivo:</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px', marginBottom: '8px' }}>
+                    <FaExclamationCircle /> <span>No adjuntado</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setNewDocGuiaRapida(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {newDocGuiaRapida && (
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#38bdf8' }}>
+                    Nuevo archivo: {newDocGuiaRapida.name}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Registro INVIMA */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaShieldAlt /> Registro Sanitario INVIMA
+                </label>
+                {ficha.registro_invima_doc ? (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
+                      <FaCheckCircle /> <span>{ficha.registro_invima_doc.nombre_original || 'Registro INVIMA adjunto'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`${apiVerDocumentoFicha}/${ficha.registro_invima_doc.nombre_archivo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        <GoEye /> Ver
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => eliminarDocumento('registro_invima_doc')}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <FaTrash size={11} /> Eliminar
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>Reemplazar archivo:</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px', marginBottom: '8px' }}>
+                    <FaExclamationCircle /> <span>No adjuntado</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setNewDocRegistroInvima(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {newDocRegistroInvima && (
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#38bdf8' }}>
+                    Nuevo archivo: {newDocRegistroInvima.name}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Declaración de Importación */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaBoxOpen /> Declaración de Importación
+                </label>
+                {ficha.declaracion_importacion ? (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
+                      <FaCheckCircle /> <span>{ficha.declaracion_importacion.nombre_original || 'Declaración de importación adjunta'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`${apiVerDocumentoFicha}/${ficha.declaracion_importacion.nombre_archivo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        <GoEye /> Ver
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => eliminarDocumento('declaracion_importacion')}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <FaTrash size={11} /> Eliminar
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>Reemplazar archivo:</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px', marginBottom: '8px' }}>
+                    <FaExclamationCircle /> <span>No adjuntado</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setNewDocDeclaracionImportacion(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {newDocDeclaracionImportacion && (
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#38bdf8' }}>
+                    Nuevo archivo: {newDocDeclaracionImportacion.name}
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Manual de Servicio */}
+              <div style={{ backgroundColor: '#0f172a', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FaWrench /> Manual de Servicio y Mantenimiento
+                </label>
+                {ficha.manual_servicio ? (
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
+                      <FaCheckCircle /> <span>{ficha.manual_servicio.nombre_original || 'Manual de servicio adjunto'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`${apiVerDocumentoFicha}/${ficha.manual_servicio.nombre_archivo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        <GoEye /> Ver
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => eliminarDocumento('manual_servicio')}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <FaTrash size={11} /> Eliminar
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>Reemplazar archivo:</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px', marginBottom: '8px' }}>
+                    <FaExclamationCircle /> <span>No adjuntado</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setNewDocManualServicio(e.target.files[0] || null)}
+                  style={{ color: '#cbd5e1', fontSize: '12px', width: '100%' }}
+                />
+                {newDocManualServicio && (
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#38bdf8' }}>
+                    Nuevo archivo: {newDocManualServicio.name}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '30px' }}>

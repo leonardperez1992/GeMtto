@@ -24,6 +24,7 @@ import {
 } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
 import QrModal from '../components/QrModal';
+import PrintHojaVidaModal from '../components/PrintHojaVidaModal';
 
 function HojaDeVidaUser() {
   const [equipo, setEquipo] = useState(null);
@@ -35,6 +36,16 @@ function HojaDeVidaUser() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ficha'); // 'ficha' | 'historial' | 'documentos'
   const [modalQrOpen, setModalQrOpen] = useState(false);
+  const [modalPrintOpen, setModalPrintOpen] = useState(false);
+  const [printMode, setPrintMode] = useState('all'); // 'all' | 'current'
+
+  const handleTriggerPrint = (mode = 'all') => {
+    setPrintMode(mode);
+    setModalPrintOpen(false);
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  };
 
   const obtenerEquipos = async (id) => {
     const response = await request({
@@ -163,30 +174,7 @@ function HojaDeVidaUser() {
   });
 
   return (
-    <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
-      {/* Estilos para pestañas, impresión y salto de página */}
-      <style>{`
-        @media screen {
-          .ocultar-en-pantalla {
-            display: none !important;
-          }
-        }
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-          .hoja-pagina {
-            display: block !important;
-          }
-          .pagina-2, .pagina-3 {
-            page-break-before: always !important;
-            break-before: page !important;
-            margin-top: 0 !important;
-            padding-top: 10px !important;
-          }
-        }
-      `}</style>
-
+    <div className={`contenedor vista-hoja-vida-wrapper ${printMode === 'all' ? 'imprimir-todas-las-hojas' : 'imprimir-solo-activa'}`} style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
       {/* Top Action Toolbar */}
       <div
         className="no-print toolbar-hoja-vida"
@@ -238,7 +226,7 @@ function HojaDeVidaUser() {
             <FaQrcode /> Código QR
           </button>
           <button
-            onClick={() => window.print()}
+            onClick={() => setModalPrintOpen(true)}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -426,6 +414,7 @@ function HojaDeVidaUser() {
                     <img
                       src={imagen}
                       alt={equipo?.equipo}
+                      className="foto-equipo-hoja-vida"
                       style={{
                         maxHeight: '190px',
                         maxWidth: '90%',
@@ -631,7 +620,7 @@ function HojaDeVidaUser() {
               <th style={{ width: '20%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
               <th style={{ width: '24%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
               <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
-              <th style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER</th>
+              <th className="no-print columna-acciones-print" style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER</th>
             </tr>
             {todosLosReportes.length === 0 ? (
               <tr>
@@ -654,7 +643,7 @@ function HojaDeVidaUser() {
                     </strong>
                   </td>
                   <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
-                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <td className="no-print columna-acciones-print" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {rep.esExterno ? (
                       <a
                         href={`${apiVerReporteExterno}/${rep._id}`}
@@ -763,7 +752,7 @@ function HojaDeVidaUser() {
               <th style={{ width: '28%', padding: '8px', textAlign: 'left' }}>DOCUMENTO</th>
               <th style={{ width: '38%', padding: '8px', textAlign: 'left' }}>DETALLE / NOMBRE DE ARCHIVO</th>
               <th style={{ width: '14%', padding: '8px', textAlign: 'center' }}>ESTADO</th>
-              <th style={{ width: '14%', padding: '8px', textAlign: 'center' }}>ACCIONES</th>
+              <th className="no-print columna-acciones-print" style={{ width: '14%', padding: '8px', textAlign: 'center' }}>ACCIONES</th>
             </tr>
 
             {/* 1. Manual de Uso */}
@@ -784,7 +773,7 @@ function HojaDeVidaUser() {
                   <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>No adjunto</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="no-print columna-acciones-print" style={{ textAlign: 'center' }}>
                 {ficha?.manual_uso?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.manual_uso.nombre_archivo}`}
@@ -830,7 +819,7 @@ function HojaDeVidaUser() {
                   <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>No adjunto</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="no-print columna-acciones-print" style={{ textAlign: 'center' }}>
                 {ficha?.guia_rapida?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.guia_rapida.nombre_archivo}`}
@@ -876,7 +865,7 @@ function HojaDeVidaUser() {
                   <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>No adjunto</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="no-print columna-acciones-print" style={{ textAlign: 'center' }}>
                 {ficha?.registro_invima_doc?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.registro_invima_doc.nombre_archivo}`}
@@ -922,7 +911,7 @@ function HojaDeVidaUser() {
                   <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>No adjunto</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="no-print columna-acciones-print" style={{ textAlign: 'center' }}>
                 {ficha?.declaracion_importacion?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.declaracion_importacion.nombre_archivo}`}
@@ -968,7 +957,7 @@ function HojaDeVidaUser() {
                   <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>No adjunto</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="no-print columna-acciones-print" style={{ textAlign: 'center' }}>
                 {ficha?.manual_servicio?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.manual_servicio.nombre_archivo}`}
@@ -1020,6 +1009,15 @@ function HojaDeVidaUser() {
         isOpen={modalQrOpen}
         onClose={() => setModalQrOpen(false)}
         equipo={equipo}
+      />
+
+      {/* Modal para Opciones de Impresión de la Hoja de Vida */}
+      <PrintHojaVidaModal
+        isOpen={modalPrintOpen}
+        onClose={() => setModalPrintOpen(false)}
+        equipo={equipo}
+        activeTab={activeTab}
+        onPrint={handleTriggerPrint}
       />
     </div>
   );

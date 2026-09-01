@@ -61,7 +61,7 @@ function Navbar() {
   };
 
   return (
-    <header style={{ width: '100%' }}>
+    <header className="no-print" style={{ width: '100%' }}>
       <nav className="navbar">
         {/* Logo */}
         <Link to={user?.rol === 'admin' ? '/inventarioua' : '/inventariouser'} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>

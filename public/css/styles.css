@@ -734,3 +734,177 @@ textarea:focus {
   border-color: #0ea5e9 !important;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
 }
+
+/* ===================================================
+   REGLAS DE VISIBILIDAD EN PANTALLA VS IMPRESIÓN
+   =================================================== */
+
+@media screen {
+  .ocultar-en-pantalla {
+    display: none !important;
+  }
+}
+
+/* ===================================================
+   REGLAS PROFESIONALES DE IMPRESIÓN (PRINT / PDF)
+   =================================================== */
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 8mm 8mm 8mm 8mm;
+  }
+
+  /* Reset global de fondos y estructura */
+  html, body, #root, .app, .main-content, .container, .contenedor {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ocultar barra de navegación, botones y elementos web */
+  header,
+  nav,
+  .navbar,
+  .nav-list,
+  .toolbar-hoja-vida,
+  .pestañas-hoja-vida,
+  .hint-scroll-movil,
+  .no-print,
+  button,
+  .btn,
+  .btn-no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Control de visualización según modo de impresión */
+  .imprimir-todas-las-hojas .hoja-pagina {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .imprimir-solo-activa .ocultar-en-pantalla {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Formato de la hoja para impresión */
+  .documento-hoja-vida {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .documento-hoja-vida:last-of-type,
+  .documento-hoja-vida:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Salto de página forzado e independiente para Página 2 y Página 3 */
+  .pagina-2,
+  .pagina-3 {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Tabla del documento oficial */
+  .tabla-documento {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1.5px solid #0f3b60 !important;
+    margin: 0 !important;
+    font-size: 10.5px !important;
+    page-break-inside: auto;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-documento thead {
+    display: table-header-group !important;
+  }
+
+  .tabla-documento tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .tabla-documento th {
+    background-color: #0f3b60 !important;
+    color: #ffffff !important;
+    border: 1px solid #0f3b60 !important;
+    padding: 3.5px 5px !important;
+    font-size: 10px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-documento td {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #64748b !important;
+    padding: 3.5px 5px !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-documento .seccion-titulo {
+    background-color: #0f3b60 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 10.5px !important;
+    padding: 4px 6px !important;
+    border: 1px solid #0f3b60 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-documento .sub-header {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    padding: 3px 5px !important;
+    font-size: 9.5px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ajustar imágenes y logos para encajar en 1 página */
+  .tabla-documento img {
+    max-height: 130px !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  /* Ocultar columnas de acciones interactivas en papel impreso */
+  .columna-acciones-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+

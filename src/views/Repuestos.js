@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { apiReportes, apiIps } from '../utils/api';
+import { apiReportes, apiReportesRepuestos, apiIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import ExportJsonExcel from 'js-export-excel';
@@ -30,20 +30,29 @@ function Repuestos() {
   // Función para determinar si un reporte tiene repuestos instalados
   const tieneRepuestos = (item) => {
     if (!item) return false;
-    return Boolean(
-      (item.descripcion1 && item.descripcion1.trim() !== '') ||
-      (item.cantidad1 && item.cantidad1.trim() !== '') ||
-      (item.valor1 && item.valor1.trim() !== '') ||
-      (item.descripcion2 && item.descripcion2.trim() !== '') ||
-      (item.cantidad2 && item.cantidad2.trim() !== '') ||
-      (item.valor2 && item.valor2.trim() !== '') ||
-      (item.descripcion3 && item.descripcion3.trim() !== '') ||
-      (item.cantidad3 && item.cantidad3.trim() !== '') ||
-      (item.valor3 && item.valor3.trim() !== '') ||
-      (item.descripcion4 && item.descripcion4.trim() !== '') ||
-      (item.cantidad4 && item.cantidad4.trim() !== '') ||
-      (item.valor4 && item.valor4.trim() !== '')
-    );
+    for (let i = 1; i <= 4; i++) {
+      const desc = item[`descripcion${i}`];
+      const cant = item[`cantidad${i}`];
+      const val = item[`valor${i}`];
+      if (
+        desc &&
+        String(desc).trim() !== '' &&
+        String(desc).trim().toUpperCase() !== 'NA' &&
+        String(desc).trim().toUpperCase() !== 'N/A' &&
+        String(desc).trim().toUpperCase() !== 'NINGUNO' &&
+        String(desc).trim().toUpperCase() !== 'NO APLICA'
+      ) {
+        return true;
+      }
+      if (cant && String(cant).trim() !== '' && String(cant).trim() !== '0') {
+        return true;
+      }
+      if (val && String(val).trim() !== '' && String(val).trim() !== '0') {
+        return true;
+      }
+    }
+    if (Array.isArray(item.repuestos) && item.repuestos.length > 0) return true;
+    return false;
   };
 
   // Función para extraer la lista de repuestos válidos de un reporte
@@ -62,18 +71,38 @@ function Repuestos() {
         });
       }
     }
+    if (lista.length === 0 && Array.isArray(item.repuestos)) {
+      item.repuestos.forEach((r, idx) => {
+        lista.push({
+          index: idx + 1,
+          descripcion: r.descripcion || r.nombre || 'Repuesto',
+          cantidad: r.cantidad || '1',
+          valor: r.valor || '',
+        });
+      });
+    }
     return lista;
   };
 
   const getReportes = async () => {
     setLoading(true);
     try {
-      const response = await request({
-        link: apiReportes,
+      // 1. Intentar llamar al endpoint optimizado de repuestos
+      let response = await request({
+        link: apiReportesRepuestos,
         method: 'GET',
       });
+
+      // 2. Si no responde o el backend aún no se ha reiniciado con el nuevo endpoint, consultar apiReportes completo
+      if (!response || !response.success || !response.reporte) {
+        response = await request({
+          link: `${apiReportes}?full=true`,
+          method: 'GET',
+        });
+      }
+
       if (response && response.success && response.reporte) {
-        // Filtrar inmediatamente para almacenar únicamente los reportes que tienen repuestos
+        // Filtrar para almacenar únicamente los reportes que tienen repuestos
         const conRepuestos = response.reporte.filter(tieneRepuestos);
         setReportes(conRepuestos);
       } else {

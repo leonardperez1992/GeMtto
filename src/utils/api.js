@@ -22,6 +22,7 @@ export const apiGetByIDActMtto = apiActMtto + '/getByIDactmtto';
 export const apiSetActMtto = apiActMtto + '/setactmtto';
 export const apiDeleteActMtto = apiActMtto + '/deleteact';
 export const apiReportes = baseUrl + '/reportes';
+export const apiReportesRepuestos = apiReportes + '/repuestos';
 export const apiObtenerReporte = apiReportes + '/obtenerreporte';
 export const apiObtenerReportes = apiReportes + '/obtenerreportes';
 export const apiCreateReporte = apiReportes + '/createreporte';

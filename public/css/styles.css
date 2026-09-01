@@ -749,6 +749,39 @@ textarea:focus {
   }
 }
 
+.th-mes-vertical {
+  width: 28px !important;
+  min-width: 26px !important;
+  max-width: 30px !important;
+  padding: 6px 1px !important;
+  text-align: center !important;
+  vertical-align: bottom !important;
+  height: 50px !important;
+}
+
+.th-mes-vertical span {
+  writing-mode: vertical-rl;
+  -webkit-writing-mode: vertical-rl;
+  -ms-writing-mode: tb-rl;
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  white-space: nowrap;
+  display: inline-block;
+  margin: 0 auto;
+  font-weight: 800;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.td-mes-matriz {
+  width: 28px !important;
+  min-width: 26px !important;
+  max-width: 30px !important;
+  text-align: center !important;
+  padding: 5px 1px !important;
+}
+
 /* ===================================================
    REGLAS PROFESIONALES DE IMPRESIÓN (PRINT / PDF)
    =================================================== */
@@ -846,6 +879,25 @@ textarea:focus {
     print-color-adjust: exact !important;
   }
 
+  .tabla-cronograma-completa .th-mes-vertical {
+    width: 22px !important;
+    max-width: 24px !important;
+    height: 44px !important;
+    vertical-align: bottom !important;
+    text-align: center !important;
+    padding: 2px 1px !important;
+    border-left: 1px solid #0f3b60 !important;
+  }
+
+  .tabla-cronograma-completa .th-mes-vertical span {
+    writing-mode: vertical-rl !important;
+    transform: rotate(180deg) !important;
+    display: inline-block !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+  }
+
   .tabla-cronograma-completa td {
     background-color: #ffffff !important;
     color: #000000 !important;
@@ -855,6 +907,14 @@ textarea:focus {
     line-height: 1.15 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  .tabla-cronograma-completa .td-mes-matriz {
+    width: 22px !important;
+    max-width: 24px !important;
+    text-align: center !important;
+    padding: 2px 0 !important;
+    border-left: 1px solid #94a3b8 !important;
   }
 
   /* Formato de la hoja de vida para impresión */

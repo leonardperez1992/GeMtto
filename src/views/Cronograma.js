@@ -671,34 +671,60 @@ function Cronograma() {
             <thead>
               <tr style={{ backgroundColor: '#0f3b60', color: '#ffffff', textAlign: 'left', fontSize: '12px' }}>
                 <th style={{ width: '3%', padding: '10px 8px', textAlign: 'center' }}>#</th>
-                <th style={{ width: '16%', padding: '10px 8px' }}>EQUIPO</th>
-                <th style={{ width: '10%', padding: '10px 8px' }}>MARCA</th>
-                <th style={{ width: '10%', padding: '10px 8px' }}>MODELO</th>
-                <th style={{ width: '10%', padding: '10px 8px' }}>SERIE</th>
-                <th style={{ width: '12%', padding: '10px 8px' }}>SERVICIO</th>
-                <th style={{ width: '10%', padding: '10px 8px', textAlign: 'center' }}>PERIODICIDAD</th>
-                <th style={{ width: '13%', padding: '10px 8px' }}>MESES DE MTTO</th>
-                {/* 12 Meses Matriz */}
+                <th style={{ width: '20%', padding: '10px 8px' }}>EQUIPO</th>
+                <th style={{ width: '12%', padding: '10px 8px' }}>MARCA</th>
+                <th style={{ width: '12%', padding: '10px 8px' }}>MODELO</th>
+                <th style={{ width: '12%', padding: '10px 8px' }}>SERIE</th>
+                <th style={{ width: '14%', padding: '10px 8px' }}>SERVICIO</th>
+                <th style={{ width: '11%', padding: '10px 8px', textAlign: 'center' }}>PERIODICIDAD</th>
+                {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
                 {MESES_ABREV.map((abrev) => (
-                  <th key={abrev} style={{ width: '2.2%', padding: '8px 2px', textAlign: 'center', fontSize: '10.5px' }}>
-                    {abrev}
+                  <th
+                    key={abrev}
+                    className="th-mes-vertical"
+                    style={{
+                      width: '28px',
+                      minWidth: '26px',
+                      maxWidth: '30px',
+                      padding: '6px 1px',
+                      textAlign: 'center',
+                      verticalAlign: 'bottom',
+                      height: '50px',
+                      borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        writingMode: 'vertical-rl',
+                        transform: 'rotate(180deg)',
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
+                        margin: '0 auto',
+                        fontWeight: '800',
+                        fontSize: '10.5px',
+                        letterSpacing: '1px',
+                        lineHeight: '1',
+                      }}
+                    >
+                      {abrev}
+                    </span>
                   </th>
                 ))}
-                <th style={{ width: '12%', padding: '10px 8px' }}>RESPONSABLE</th>
+                <th style={{ width: '14%', padding: '10px 8px' }}>RESPONSABLE</th>
                 <th className="no-print" style={{ width: '4%', padding: '10px 8px', textAlign: 'center' }}>VER</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={22} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
+                  <td colSpan={21} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
                     <FaCalendarAlt size={28} style={{ animation: 'spin 2s linear infinite', marginBottom: '10px' }} />
                     <div>Cargando cronograma de mantenimiento...</div>
                   </td>
                 </tr>
               ) : filteredEquipos.length === 0 ? (
                 <tr>
-                  <td colSpan={22} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  <td colSpan={21} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
                     No se encontraron equipos biomédicos para los criterios de búsqueda y filtros seleccionados.
                   </td>
                 </tr>
@@ -765,24 +791,21 @@ function Cronograma() {
                         </span>
                       </td>
 
-                      {/* 8. Meses en que corresponde mantenimiento (sin día) */}
-                      <td>
-                        <strong style={{ color: '#38bdf8', fontSize: '12px' }}>
-                          {eq._cronoNombres}
-                        </strong>
-                      </td>
-
-                      {/* 9. Matriz de 12 Meses */}
+                      {/* 8. Matriz de 12 Meses */}
                       {MESES_DEL_ANIO.map((nombreMes, mIdx) => {
                         const isScheduled = eq._cronoMeses.includes(nombreMes);
                         return (
                           <td
                             key={nombreMes}
+                            className="td-mes-matriz"
                             style={{
                               textAlign: 'center',
-                              padding: '6px 2px',
+                              padding: '5px 1px',
                               backgroundColor: isScheduled ? 'rgba(2, 132, 199, 0.25)' : 'transparent',
                               borderLeft: '1px solid #334155',
+                              width: '28px',
+                              minWidth: '26px',
+                              maxWidth: '30px',
                             }}
                           >
                             {isScheduled ? (
@@ -792,7 +815,7 @@ function Cronograma() {
                                   backgroundColor: '#0284c7',
                                   color: '#ffffff',
                                   fontWeight: '900',
-                                  fontSize: '10.5px',
+                                  fontSize: '10px',
                                   width: '18px',
                                   height: '18px',
                                   lineHeight: '18px',
@@ -810,12 +833,12 @@ function Cronograma() {
                         );
                       })}
 
-                      {/* 10. Responsable */}
+                      {/* 9. Responsable */}
                       <td style={{ color: '#cbd5e1', fontSize: '12px' }}>
                         {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
                       </td>
 
-                      {/* 11. Acciones (Ver Hoja de Vida) */}
+                      {/* 10. Acciones (Ver Hoja de Vida) */}
                       <td className="no-print" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         <Link
                           to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}` : `/hojadevida?id=${eq._id}`}

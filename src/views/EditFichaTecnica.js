@@ -553,7 +553,7 @@ function EditFichaTecnica() {
                 <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <FaBook /> Manual de Uso / Operación
                 </label>
-                {ficha.manual_uso ? (
+                {ficha.manual_uso?.nombre_archivo ? (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
                       <FaCheckCircle /> <span>{ficha.manual_uso.nombre_original || 'Manual de uso adjunto'}</span>
@@ -623,7 +623,7 @@ function EditFichaTecnica() {
                 <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <FaFileAlt /> Guía Rápida de Manejo
                 </label>
-                {ficha.guia_rapida ? (
+                {ficha.guia_rapida?.nombre_archivo ? (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
                       <FaCheckCircle /> <span>{ficha.guia_rapida.nombre_original || 'Guía rápida adjunta'}</span>
@@ -693,7 +693,7 @@ function EditFichaTecnica() {
                 <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <FaShieldAlt /> Registro Sanitario INVIMA
                 </label>
-                {ficha.registro_invima_doc ? (
+                {ficha.registro_invima_doc?.nombre_archivo ? (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
                       <FaCheckCircle /> <span>{ficha.registro_invima_doc.nombre_original || 'Registro INVIMA adjunto'}</span>
@@ -763,7 +763,7 @@ function EditFichaTecnica() {
                 <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <FaBoxOpen /> Declaración de Importación
                 </label>
-                {ficha.declaracion_importacion ? (
+                {ficha.declaracion_importacion?.nombre_archivo ? (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
                       <FaCheckCircle /> <span>{ficha.declaracion_importacion.nombre_original || 'Declaración de importación adjunta'}</span>
@@ -833,7 +833,7 @@ function EditFichaTecnica() {
                 <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <FaWrench /> Manual de Servicio y Mantenimiento
                 </label>
-                {ficha.manual_servicio ? (
+                {ficha.manual_servicio?.nombre_archivo ? (
                   <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', marginBottom: '6px' }}>
                       <FaCheckCircle /> <span>{ficha.manual_servicio.nombre_original || 'Manual de servicio adjunto'}</span>

@@ -774,9 +774,9 @@ function HojaDeVidaUser() {
                   <FaBook color="#0284c7" /> Manual de Uso / Operación
                 </div>
               </td>
-              <td>{ficha?.manual_uso ? ficha.manual_uso.nombre_original : 'Manual de operación y usuario del fabricante'}</td>
+              <td>{ficha?.manual_uso?.nombre_archivo ? (ficha.manual_uso.nombre_original || 'Manual de Uso adjunto') : 'Sin manual de uso adjunto'}</td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.manual_uso ? (
+                {ficha?.manual_uso?.nombre_archivo ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                     <FaCheckCircle /> Adjunto
                   </span>
@@ -785,7 +785,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.manual_uso ? (
+                {ficha?.manual_uso?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.manual_uso.nombre_archivo}`}
                     target="_blank"
@@ -820,9 +820,9 @@ function HojaDeVidaUser() {
                   <FaFileAlt color="#0284c7" /> Guía Rápida de Manejo
                 </div>
               </td>
-              <td>{ficha?.guia_rapida ? ficha.guia_rapida.nombre_original : 'Guía rápida de pasos e instrucciones operativas'}</td>
+              <td>{ficha?.guia_rapida?.nombre_archivo ? (ficha.guia_rapida.nombre_original || 'Guía rápida adjunta') : 'Sin guía rápida adjunta'}</td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.guia_rapida ? (
+                {ficha?.guia_rapida?.nombre_archivo ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                     <FaCheckCircle /> Adjunto
                   </span>
@@ -831,7 +831,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.guia_rapida ? (
+                {ficha?.guia_rapida?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.guia_rapida.nombre_archivo}`}
                     target="_blank"
@@ -866,9 +866,9 @@ function HojaDeVidaUser() {
                   <FaShieldAlt color="#0284c7" /> Registro Sanitario INVIMA
                 </div>
               </td>
-              <td>{ficha?.registro_invima_doc ? ficha.registro_invima_doc.nombre_original : `Registro sanitario del equipo (${equipo?.registro_invima || 'INVIMA'})`}</td>
+              <td>{ficha?.registro_invima_doc?.nombre_archivo ? (ficha.registro_invima_doc.nombre_original || 'Registro sanitario adjunto') : `Sin documento adjunto (${equipo?.registro_invima || 'No disponible'})`}</td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.registro_invima_doc ? (
+                {ficha?.registro_invima_doc?.nombre_archivo ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                     <FaCheckCircle /> Adjunto
                   </span>
@@ -877,7 +877,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.registro_invima_doc ? (
+                {ficha?.registro_invima_doc?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.registro_invima_doc.nombre_archivo}`}
                     target="_blank"
@@ -912,9 +912,9 @@ function HojaDeVidaUser() {
                   <FaBoxOpen color="#0284c7" /> Declaración de Importación
                 </div>
               </td>
-              <td>{ficha?.declaracion_importacion ? ficha.declaracion_importacion.nombre_original : 'Declaración de importación o manifiesto de aduana'}</td>
+              <td>{ficha?.declaracion_importacion?.nombre_archivo ? (ficha.declaracion_importacion.nombre_original || 'Declaración de importación adjunta') : 'Sin declaración de importación adjunta'}</td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.declaracion_importacion ? (
+                {ficha?.declaracion_importacion?.nombre_archivo ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                     <FaCheckCircle /> Adjunto
                   </span>
@@ -923,7 +923,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.declaracion_importacion ? (
+                {ficha?.declaracion_importacion?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.declaracion_importacion.nombre_archivo}`}
                     target="_blank"
@@ -958,9 +958,9 @@ function HojaDeVidaUser() {
                   <FaWrench color="#0284c7" /> Manual de Servicio y Mtto.
                 </div>
               </td>
-              <td>{ficha?.manual_servicio ? ficha.manual_servicio.nombre_original : 'Manual técnico de servicio, calibración y mantenimiento'}</td>
+              <td>{ficha?.manual_servicio?.nombre_archivo ? (ficha.manual_servicio.nombre_original || 'Manual de servicio adjunto') : 'Sin manual de servicio adjunto'}</td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.manual_servicio ? (
+                {ficha?.manual_servicio?.nombre_archivo ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                     <FaCheckCircle /> Adjunto
                   </span>
@@ -969,7 +969,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td style={{ textAlign: 'center' }}>
-                {ficha?.manual_servicio ? (
+                {ficha?.manual_servicio?.nombre_archivo ? (
                   <a
                     href={`${apiVerDocumentoFicha}/${ficha.manual_servicio.nombre_archivo}`}
                     target="_blank"

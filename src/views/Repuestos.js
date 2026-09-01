@@ -27,61 +27,80 @@ function Repuestos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  // Función para determinar si un reporte tiene repuestos instalados
-  const tieneRepuestos = (item) => {
-    if (!item) return false;
-    for (let i = 1; i <= 4; i++) {
-      const desc = item[`descripcion${i}`];
-      const cant = item[`cantidad${i}`];
-      const val = item[`valor${i}`];
-      if (
-        desc &&
-        String(desc).trim() !== '' &&
-        String(desc).trim().toUpperCase() !== 'NA' &&
-        String(desc).trim().toUpperCase() !== 'N/A' &&
-        String(desc).trim().toUpperCase() !== 'NINGUNO' &&
-        String(desc).trim().toUpperCase() !== 'NO APLICA'
-      ) {
-        return true;
-      }
-      if (cant && String(cant).trim() !== '' && String(cant).trim() !== '0') {
-        return true;
-      }
-      if (val && String(val).trim() !== '' && String(val).trim() !== '0') {
-        return true;
-      }
-    }
-    if (Array.isArray(item.repuestos) && item.repuestos.length > 0) return true;
-    return false;
+  const descartados = [
+    '',
+    ' ',
+    'NA',
+    'N/A',
+    'N.A',
+    'N.A.',
+    'NO APLICA',
+    'NO',
+    'NINGUNO',
+    'NINGUNA',
+    'NO TIENE',
+    'NO REQUIERE',
+    'NO SE REQUIERE',
+    'NO SE REQUIEREN',
+    'NO PRESENTA',
+    'SIN REPUESTOS',
+    'SIN REPUESTO',
+    '0',
+    '-',
+    '--',
+    '---',
+    '.',
+    '..',
+    'NULL',
+    'UNDEFINED',
+    'NONE',
+  ];
+
+  const esDescripcionValida = (desc) => {
+    if (!desc) return false;
+    const d = String(desc).trim();
+    if (d.length === 0) return false;
+    if (descartados.includes(d.toUpperCase())) return false;
+    return true;
   };
 
   // Función para extraer la lista de repuestos válidos de un reporte
   const extraerRepuestos = (item) => {
+    if (!item) return [];
     const lista = [];
     for (let i = 1; i <= 4; i++) {
-      const desc = item[`descripcion${i}`]?.trim();
-      const cant = item[`cantidad${i}`]?.trim();
-      const val = item[`valor${i}`]?.trim();
-      if (desc || cant || val) {
+      const desc = item[`descripcion${i}`];
+      if (esDescripcionValida(desc)) {
+        const cant = (item[`cantidad${i}`] || '1').toString().trim();
+        const val = (item[`valor${i}`] || '').toString().trim();
         lista.push({
           index: i,
-          descripcion: desc || 'Repuesto sin descripción',
+          descripcion: String(desc).trim(),
           cantidad: cant || '1',
-          valor: val || '',
+          valor: val,
         });
       }
     }
     if (lista.length === 0 && Array.isArray(item.repuestos)) {
       item.repuestos.forEach((r, idx) => {
-        lista.push({
-          index: idx + 1,
-          descripcion: r.descripcion || r.nombre || 'Repuesto',
-          cantidad: r.cantidad || '1',
-          valor: r.valor || '',
-        });
+        const desc = r?.descripcion || r?.nombre || '';
+        if (esDescripcionValida(desc)) {
+          lista.push({
+            index: idx + 1,
+            descripcion: String(desc).trim(),
+            cantidad: (r.cantidad || '1').toString().trim(),
+            valor: (r.valor || '').toString().trim(),
+          });
+        }
       });
     }
     return lista;
+  };
+
+  // Función para determinar si un reporte tiene repuestos instalados
+  const tieneRepuestos = (item) => {
+    if (!item) return false;
+    return extraerRepuestos(item).length > 0;
   };
 
   const getReportes = async () => {

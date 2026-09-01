@@ -5,15 +5,18 @@ import {
   apiObtenerFicha,
   apiObtenerReportes,
   apiGetIps,
+  apiObtenerReportesExternos,
+  apiVerReporteExterno,
 } from '../utils/api';
 import request from '../utils/request';
-import { FaFileMedical, FaPrint, FaArrowLeft } from 'react-icons/fa';
+import { FaFileMedical, FaPrint, FaArrowLeft, FaFilePdf } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
 
 function HojaDeVidaUser() {
   const [equipo, setEquipo] = useState(null);
   const [ficha, setFicha] = useState(null);
   const [reportes, setReportes] = useState([]);
+  const [reportesExternos, setReportesExternos] = useState([]);
   const [imagen, setImagen] = useState('');
   const [ipsLogo, setIpsLogo] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,18 @@ function HojaDeVidaUser() {
     }
   };
 
+  const obtenerReportesExternos = async (serie) => {
+    if (!serie) return;
+    const response = await request({
+      link: apiObtenerReportesExternos,
+      method: 'GET',
+      body: { serie },
+    });
+    if (response && response.success) {
+      setReportesExternos(response.reportes || []);
+    }
+  };
+
   const obtenerIps = async (ips) => {
     if (!ips) return;
     const response = await request({
@@ -87,6 +102,7 @@ function HojaDeVidaUser() {
         obtenerEquipos(idEquipo),
         obtenerFicha(modelo),
         obtenerReportes(serie),
+        obtenerReportesExternos(serie),
         obtenerIps(ips),
       ]);
       setLoading(false);
@@ -384,13 +400,13 @@ function HojaDeVidaUser() {
           </tbody>
         </table>
 
-        {/* 6. Historial de Actividades y Mantenimientos */}
+        {/* 6. Historial de Actividades y Mantenimientos Internos */}
         <div style={{ marginTop: '30px' }}>
           <table className="tabla-documento">
             <thead>
               <tr>
                 <td colSpan={5} className="seccion-titulo">
-                  6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS
+                  6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS INTERNOS
                 </td>
               </tr>
               <tr>
@@ -432,6 +448,68 @@ function HojaDeVidaUser() {
                       >
                         <GoEye size={15} />
                       </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 7. Registro de Reportes y Certificados de Proveedores Externos (PDF) */}
+        <div style={{ marginTop: '30px' }}>
+          <table className="tabla-documento">
+            <thead>
+              <tr>
+                <td colSpan={6} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                  7. REPORTES Y CERTIFICADOS DE PROVEEDORES EXTERNOS (PDF)
+                </td>
+              </tr>
+              <tr>
+                <th style={{ width: '14%' }}>FECHA</th>
+                <th style={{ width: '22%' }}>PROVEEDOR / EMPRESA</th>
+                <th style={{ width: '20%' }}>TIPO DE SERVICIO</th>
+                <th style={{ width: '24%' }}>DESCRIPCIÓN / OBSERVACIONES</th>
+                <th style={{ width: '10%' }}>Nº CERT./REP.</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>ADJUNTO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportesExternos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
+                    No hay reportes ni certificados de proveedores externos anexados para esta serie.
+                  </td>
+                </tr>
+              ) : (
+                reportesExternos.map((rep) => (
+                  <tr key={rep._id}>
+                    <td>{rep.fecha}</td>
+                    <td><strong style={{ color: '#0369a1' }}>{rep.proveedor}</strong></td>
+                    <td><span style={{ fontWeight: 'bold' }}>{rep.tipo_servicio}</span></td>
+                    <td>{rep.descripcion || '-'}</td>
+                    <td>{rep.numero_reporte || '-'}</td>
+                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <a
+                        href={`${apiVerReporteExterno}/${rep._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#dc2626',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                        title={`Ver archivo: ${rep.nombre_original}`}
+                      >
+                        <FaFilePdf size={13} /> PDF
+                      </a>
                     </td>
                   </tr>
                 ))

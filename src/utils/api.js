@@ -34,4 +34,9 @@ export const apiGetIps = apiIps + '/getips';
 export const apiFiles = baseUrl + '/files';
 export const apiSetFiles = apiFiles + '/in-local';
 export const apiAlertas = baseUrl + '/alertas';
+export const apiReportesExternos = baseUrl + '/reportes-externos';
+export const apiUploadReporteExterno = apiReportesExternos + '/upload';
+export const apiObtenerReportesExternos = apiReportesExternos + '/obtener';
+export const apiEliminarReporteExterno = apiReportesExternos + '/delete';
+export const apiVerReporteExterno = apiReportesExternos + '/archivo';
 

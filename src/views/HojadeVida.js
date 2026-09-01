@@ -6,18 +6,33 @@ import {
   apiObtenerReportes,
   apiGetIps,
   apiEliminarEquipo,
+  apiUploadReporteExterno,
+  apiObtenerReportesExternos,
+  apiEliminarReporteExterno,
+  apiVerReporteExterno,
 } from '../utils/api';
 import request from '../utils/request';
-import { FaFileMedical, FaTrash, FaPrint, FaArrowLeft } from 'react-icons/fa';
+import { FaFileMedical, FaTrash, FaPrint, FaArrowLeft, FaFilePdf, FaFileUpload, FaTimes } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
 
 function HojaDeVida() {
   const [equipo, setEquipo] = useState(null);
   const [ficha, setFicha] = useState(null);
   const [reportes, setReportes] = useState([]);
+  const [reportesExternos, setReportesExternos] = useState([]);
   const [imagen, setImagen] = useState('');
   const [ipsLogo, setIpsLogo] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Estados para el modal de subir reporte externo
+  const [modalExternoOpen, setModalExternoOpen] = useState(false);
+  const [subiendoExterno, setSubiendoExterno] = useState(false);
+  const [extFile, setExtFile] = useState(null);
+  const [extProveedor, setExtProveedor] = useState('');
+  const [extFecha, setExtFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [extTipoServicio, setExtTipoServicio] = useState('Mantenimiento Preventivo');
+  const [extNumeroReporte, setExtNumeroReporte] = useState('');
+  const [extDescripcion, setExtDescripcion] = useState('');
 
   const obtenerEquipos = async (id) => {
     const response = await request({
@@ -57,6 +72,18 @@ function HojaDeVida() {
     }
   };
 
+  const obtenerReportesExternos = async (serie) => {
+    if (!serie) return;
+    const response = await request({
+      link: apiObtenerReportesExternos,
+      method: 'GET',
+      body: { serie },
+    });
+    if (response && response.success) {
+      setReportesExternos(response.reportes || []);
+    }
+  };
+
   const obtenerIps = async (ips) => {
     if (!ips) return;
     const response = await request({
@@ -87,6 +114,87 @@ function HojaDeVida() {
     }
   };
 
+  const handleUploadReporteExterno = async (e) => {
+    e.preventDefault();
+    if (!extFile) {
+      alert('Por favor selecciona un archivo en formato PDF');
+      return;
+    }
+    if (!extProveedor.trim()) {
+      alert('Por favor ingresa el nombre del proveedor o empresa externa');
+      return;
+    }
+    if (!extFecha) {
+      alert('Por favor selecciona la fecha del servicio');
+      return;
+    }
+
+    setSubiendoExterno(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', extFile);
+      formData.append('serie', equipo?.serie || '');
+      formData.append('equipo', equipo?.equipo || '');
+      formData.append('marca', equipo?.marca || '');
+      formData.append('modelo', equipo?.modelo || '');
+      formData.append('institucion', equipo?.institucion || '');
+      formData.append('servicio', equipo?.servicio || '');
+      formData.append('proveedor', extProveedor.trim());
+      formData.append('fecha', extFecha);
+      formData.append('tipo_servicio', extTipoServicio);
+      formData.append('numero_reporte', extNumeroReporte.trim());
+      formData.append('descripcion', extDescripcion.trim());
+
+      const res = await fetch(apiUploadReporteExterno, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        alert('¡Reporte de proveedor externo anexado con éxito!');
+        setModalExternoOpen(false);
+        setExtFile(null);
+        setExtProveedor('');
+        setExtNumeroReporte('');
+        setExtDescripcion('');
+        if (equipo?.serie) {
+          obtenerReportesExternos(equipo.serie);
+        }
+      } else {
+        alert(data?.message || 'Error al guardar el reporte externo');
+      }
+    } catch (err) {
+      console.error('Error al subir reporte externo:', err);
+      alert('Error de conexión al intentar subir el archivo');
+    } finally {
+      setSubiendoExterno(false);
+    }
+  };
+
+  const eliminarReporteExterno = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este reporte externo y su PDF adjunto?')) {
+      return;
+    }
+    try {
+      const response = await request({
+        link: apiEliminarReporteExterno,
+        method: 'POST',
+        body: { _id: id },
+      });
+      if (response && response.success) {
+        alert('Reporte externo eliminado correctamente');
+        if (equipo?.serie) {
+          obtenerReportesExternos(equipo.serie);
+        }
+      } else {
+        alert(response?.message || 'Error al eliminar');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al conectar con el servidor');
+    }
+  };
+
   useEffect(() => {
     let queryParameters = new URLSearchParams(window.location.search);
     let idEquipo = queryParameters.get('id');
@@ -106,6 +214,7 @@ function HojaDeVida() {
         obtenerEquipos(idEquipo),
         obtenerFicha(modelo),
         obtenerReportes(serie),
+        obtenerReportesExternos(serie),
         obtenerIps(ips),
       ]);
       setLoading(false);
@@ -153,7 +262,26 @@ function HojaDeVida() {
         >
           <FaArrowLeft /> Volver a Inventario
         </Link>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setModalExternoOpen(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#059669',
+              color: '#ffffff',
+              border: '1px solid #10b981',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '13.5px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            <FaFileUpload /> Anexar Reporte Externo
+          </button>
           <button
             onClick={() => window.print()}
             style={{
@@ -423,13 +551,13 @@ function HojaDeVida() {
           </tbody>
         </table>
 
-        {/* 6. Historial de Actividades y Mantenimientos */}
+        {/* 6. Historial de Actividades y Mantenimientos Internos */}
         <div style={{ marginTop: '30px' }}>
           <table className="tabla-documento">
             <thead>
               <tr>
                 <td colSpan={6} className="seccion-titulo">
-                  6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS
+                  6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS INTERNOS
                 </td>
               </tr>
               <tr>
@@ -480,9 +608,375 @@ function HojaDeVida() {
             </tbody>
           </table>
         </div>
+
+        {/* 7. Registro de Reportes y Certificados de Proveedores Externos (PDF) */}
+        <div style={{ marginTop: '30px' }}>
+          <table className="tabla-documento">
+            <thead>
+              <tr>
+                <td colSpan={6} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                  7. REPORTES Y CERTIFICADOS DE PROVEEDORES EXTERNOS (PDF)
+                </td>
+              </tr>
+              <tr>
+                <th style={{ width: '14%' }}>FECHA</th>
+                <th style={{ width: '22%' }}>PROVEEDOR / EMPRESA</th>
+                <th style={{ width: '20%' }}>TIPO DE SERVICIO</th>
+                <th style={{ width: '24%' }}>DESCRIPCIÓN / OBSERVACIONES</th>
+                <th style={{ width: '10%' }}>Nº CERT./REP.</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>ADJUNTO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportesExternos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
+                    No hay reportes ni certificados de proveedores externos anexados para esta serie.
+                  </td>
+                </tr>
+              ) : (
+                reportesExternos.map((rep) => (
+                  <tr key={rep._id}>
+                    <td>{rep.fecha}</td>
+                    <td><strong style={{ color: '#0369a1' }}>{rep.proveedor}</strong></td>
+                    <td><span style={{ fontWeight: 'bold' }}>{rep.tipo_servicio}</span></td>
+                    <td>{rep.descripcion || '-'}</td>
+                    <td>{rep.numero_reporte || '-'}</td>
+                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <a
+                        href={`${apiVerReporteExterno}/${rep._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#dc2626',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                        title={`Ver archivo: ${rep.nombre_original}`}
+                      >
+                        <FaFilePdf size={13} /> PDF
+                      </a>
+                      <button
+                        onClick={() => eliminarReporteExterno(rep._id)}
+                        className="no-print"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '4px 6px',
+                          marginLeft: '6px',
+                          borderRadius: '4px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fca5a5',
+                          cursor: 'pointer',
+                        }}
+                        title="Eliminar reporte externo"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Modal para Anexar Reporte Externo */}
+      {modalExternoOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            padding: '20px',
+            backdropFilter: 'blur(3px)',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              border: '1px solid #475569',
+              width: '100%',
+              maxWidth: '560px',
+              padding: '24px',
+              color: '#f8fafc',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid #334155',
+                paddingBottom: '12px',
+                marginBottom: '18px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaFileUpload color="#10b981" size={20} />
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#f8fafc' }}>
+                  Anexar Reporte / Certificado Externo
+                </h3>
+              </div>
+              <button
+                onClick={() => setModalExternoOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Equipment Badge */}
+            <div
+              style={{
+                backgroundColor: '#0f172a',
+                border: '1px solid #334155',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '6px',
+              }}
+            >
+              <div>
+                <span style={{ color: '#94a3b8' }}>Equipo:</span>{' '}
+                <strong style={{ color: '#38bdf8' }}>{equipo?.equipo}</strong>
+              </div>
+              <div>
+                <span style={{ color: '#94a3b8' }}>Serie:</span>{' '}
+                <strong style={{ color: '#38bdf8' }}>{equipo?.serie}</strong>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleUploadReporteExterno}>
+              {/* PDF File Input */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                  Archivo PDF del Proveedor <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  required
+                  onChange={(e) => setExtFile(e.target.files[0] || null)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px dashed #64748b',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
+                />
+                {extFile && (
+                  <div style={{ fontSize: '12px', color: '#10b981', marginTop: '4px' }}>
+                    ✓ Archivo seleccionado: {extFile.name} ({(extFile.size / 1024).toFixed(1)} KB)
+                  </div>
+                )}
+              </div>
+
+              {/* Provider Name */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                  Nombre de la Empresa / Proveedor <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej. GE Healthcare, Metrología del Caribe S.A.S., Philips..."
+                  value={extProveedor}
+                  onChange={(e) => setExtProveedor(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Date and Service Type */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                    Fecha del Servicio <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={extFecha}
+                    onChange={(e) => setExtFecha(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      color: '#f8fafc',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                    Tipo de Servicio <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <select
+                    value={extTipoServicio}
+                    onChange={(e) => setExtTipoServicio(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      color: '#f8fafc',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+                    <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
+                    <option value="Calibración / Metrología">Calibración / Metrología</option>
+                    <option value="Calificación y Validación">Calificación y Validación</option>
+                    <option value="Inspección Externa">Inspección Externa</option>
+                    <option value="Certificado de Garantía">Certificado de Garantía</option>
+                    <option value="Prueba de Seguridad Eléctrica">Prueba de Seguridad Eléctrica</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Number Report / Certificate */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                  Nº de Reporte / Certificado Externo
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. CERT-2026-0982 o REP-4458"
+                  value={extNumeroReporte}
+                  onChange={(e) => setExtNumeroReporte(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Description */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                  Observaciones / Descripción del Servicio
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Detalles sobre el servicio técnico realizado, certificado de calibración emitido, repuestos cambiados, etc."
+                  value={extDescripcion}
+                  onChange={(e) => setExtDescripcion(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    boxSizing: 'border-box',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setModalExternoOpen(false)}
+                  disabled={subiendoExterno}
+                  style={{
+                    padding: '9px 16px',
+                    backgroundColor: '#334155',
+                    color: '#cbd5e1',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={subiendoExterno}
+                  style={{
+                    padding: '9px 20px',
+                    backgroundColor: subiendoExterno ? '#047857' : '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '700',
+                    cursor: subiendoExterno ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  {subiendoExterno ? 'Subiendo PDF...' : 'Anexar Reporte PDF'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default HojaDeVida;
+

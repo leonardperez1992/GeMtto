@@ -41,14 +41,14 @@ function Cronograma() {
   const fetchIps = async () => {
     try {
       const response = await request({
-        link: apiIps + '/getips',
+        link: apiIps,
         method: 'GET',
       });
       if (response && response.success && response.ips) {
         setListaIps(response.ips);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error al obtener lista de IPS:', e);
     }
   };
 
@@ -81,11 +81,33 @@ function Cronograma() {
     }
   }, [user, selectedIps]);
 
+  // Lista única y combinada de IPS disponibles (desde la colección IPS + valores de institucion en inventario)
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    inventario.forEach((eq) => {
+      if (eq.institucion && typeof eq.institucion === 'string' && eq.institucion.trim()) {
+        set.add(eq.institucion.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, inventario]);
+
   // Lista única de Servicios disponibles según los equipos cargados
   const serviciosDisponibles = useMemo(() => {
     const set = new Set();
     inventario.forEach((eq) => {
-      if (selectedIps && eq.institucion !== selectedIps) return;
+      if (
+        selectedIps &&
+        (eq.institucion || '').trim().toLowerCase() !== selectedIps.trim().toLowerCase()
+      ) {
+        return;
+      }
       if (eq.servicio && eq.servicio.trim()) {
         set.add(eq.servicio.trim());
       }
@@ -110,7 +132,10 @@ function Cronograma() {
   const filteredEquipos = useMemo(() => {
     return equiposConCronograma.filter((eq) => {
       // Filtro por IPS
-      if (selectedIps && eq.institucion !== selectedIps) {
+      if (
+        selectedIps &&
+        (eq.institucion || '').trim().toLowerCase() !== selectedIps.trim().toLowerCase()
+      ) {
         return false;
       }
       // Filtro por Servicio
@@ -185,7 +210,11 @@ function Cronograma() {
   // Logo de la IPS seleccionada para la impresión oficial
   const ipsActualData = useMemo(() => {
     if (!selectedIps) return null;
-    return listaIps.find((i) => i.nombre === selectedIps) || null;
+    return (
+      listaIps.find(
+        (i) => (i.ips || i.nombre || i.institucion || '').toLowerCase() === selectedIps.toLowerCase()
+      ) || null
+    );
   }, [selectedIps, listaIps]);
 
   // Exportar a formato CSV / Excel
@@ -197,6 +226,7 @@ function Cronograma() {
 
     const headers = [
       '#',
+      'IPS / INSTITUCION',
       'EQUIPO',
       'MARCA',
       'MODELO',
@@ -204,7 +234,6 @@ function Cronograma() {
       'SERVICIO',
       'UBICACION',
       'PERIODICIDAD',
-      'MESES DE MANTENIMIENTO',
       'ENE',
       'FEB',
       'MAR',
@@ -218,7 +247,6 @@ function Cronograma() {
       'NOV',
       'DIC',
       'RESPONSABLE',
-      'INSTITUCION',
     ];
 
     const rows = filteredEquipos.map((eq, index) => {
@@ -228,6 +256,7 @@ function Cronograma() {
 
       return [
         index + 1,
+        `"${(eq.institucion || '').replace(/"/g, '""')}"`,
         `"${(eq.equipo || '').replace(/"/g, '""')}"`,
         `"${(eq.marca || '').replace(/"/g, '""')}"`,
         `"${(eq.modelo || '').replace(/"/g, '""')}"`,
@@ -235,10 +264,8 @@ function Cronograma() {
         `"${(eq.servicio || '').replace(/"/g, '""')}"`,
         `"${(eq.ubicacion || '').replace(/"/g, '""')}"`,
         `"${(eq.periodicidad || 'SEMESTRAL').replace(/"/g, '""')}"`,
-        `"${eq._cronoNombres.replace(/"/g, '""')}"`,
         ...matrizMeses.map((m) => `"${m}"`),
         `"${(eq.responsable || '').replace(/"/g, '""')}"`,
-        `"${(eq.institucion || '').replace(/"/g, '""')}"`,
       ];
     });
 
@@ -495,10 +522,10 @@ function Cronograma() {
               className="input-report"
               style={{ padding: '8px 12px', fontSize: '13px' }}
             >
-              <option value="">-- Todas las Instituciones --</option>
-              {listaIps.map((ips) => (
-                <option key={ips._id} value={ips.nombre}>
-                  {ips.nombre}
+              <option value="">-- Todas las Instituciones / IPS --</option>
+              {ipsDisponibles.map((nombreIps) => (
+                <option key={nombreIps} value={nombreIps}>
+                  {nombreIps}
                 </option>
               ))}
             </select>
@@ -670,13 +697,14 @@ function Cronograma() {
           <table className="tabla-documento tabla-cronograma-completa" style={{ width: '100%', borderCollapse: 'collapse', color: '#f8fafc' }}>
             <thead>
               <tr style={{ backgroundColor: '#0f3b60', color: '#ffffff', textAlign: 'left', fontSize: '12px' }}>
-                <th style={{ width: '3%', padding: '10px 8px', textAlign: 'center' }}>#</th>
-                <th style={{ width: '20%', padding: '10px 8px' }}>EQUIPO</th>
-                <th style={{ width: '12%', padding: '10px 8px' }}>MARCA</th>
-                <th style={{ width: '12%', padding: '10px 8px' }}>MODELO</th>
-                <th style={{ width: '12%', padding: '10px 8px' }}>SERIE</th>
-                <th style={{ width: '14%', padding: '10px 8px' }}>SERVICIO</th>
-                <th style={{ width: '11%', padding: '10px 8px', textAlign: 'center' }}>PERIODICIDAD</th>
+                <th style={{ width: '3%', padding: '10px 6px', textAlign: 'center' }}>#</th>
+                <th style={{ width: '13%', padding: '10px 6px' }}>IPS / INSTITUCIÓN</th>
+                <th style={{ width: '16%', padding: '10px 6px' }}>EQUIPO</th>
+                <th style={{ width: '9%', padding: '10px 6px' }}>MARCA</th>
+                <th style={{ width: '9%', padding: '10px 6px' }}>MODELO</th>
+                <th style={{ width: '10%', padding: '10px 6px' }}>SERIE</th>
+                <th style={{ width: '11%', padding: '10px 6px' }}>SERVICIO</th>
+                <th style={{ width: '9%', padding: '10px 6px', textAlign: 'center' }}>PERIODICIDAD</th>
                 {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
                 {MESES_ABREV.map((abrev) => (
                   <th
@@ -710,21 +738,21 @@ function Cronograma() {
                     </span>
                   </th>
                 ))}
-                <th style={{ width: '14%', padding: '10px 8px' }}>RESPONSABLE</th>
-                <th className="no-print" style={{ width: '4%', padding: '10px 8px', textAlign: 'center' }}>VER</th>
+                <th style={{ width: '12%', padding: '10px 6px' }}>RESPONSABLE</th>
+                <th className="no-print" style={{ width: '4%', padding: '10px 6px', textAlign: 'center' }}>VER</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={21} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
+                  <td colSpan={22} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
                     <FaCalendarAlt size={28} style={{ animation: 'spin 2s linear infinite', marginBottom: '10px' }} />
                     <div>Cargando cronograma de mantenimiento...</div>
                   </td>
                 </tr>
               ) : filteredEquipos.length === 0 ? (
                 <tr>
-                  <td colSpan={21} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  <td colSpan={22} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
                     No se encontraron equipos biomédicos para los criterios de búsqueda y filtros seleccionados.
                   </td>
                 </tr>
@@ -747,32 +775,37 @@ function Cronograma() {
                         {globalIndex}
                       </td>
 
-                      {/* 2. Equipo */}
+                      {/* 2. IPS */}
+                      <td style={{ color: '#38bdf8', fontWeight: '600', fontSize: '12px' }}>
+                        {eq.institucion || '-'}
+                      </td>
+
+                      {/* 3. Equipo */}
                       <td style={{ fontWeight: '700', color: '#ffffff' }}>
                         {eq.equipo}
                       </td>
 
-                      {/* 3. Marca */}
+                      {/* 4. Marca */}
                       <td style={{ color: '#cbd5e1' }}>
                         {eq.marca}
                       </td>
 
-                      {/* 4. Modelo */}
+                      {/* 5. Modelo */}
                       <td style={{ color: '#cbd5e1' }}>
                         {eq.modelo}
                       </td>
 
-                      {/* 5. Serie */}
+                      {/* 6. Serie */}
                       <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
                         {eq.serie}
                       </td>
 
-                      {/* 6. Servicio */}
+                      {/* 7. Servicio */}
                       <td style={{ color: '#e2e8f0' }}>
                         {eq.servicio}
                       </td>
 
-                      {/* 7. Periodicidad */}
+                      {/* 8. Periodicidad */}
                       <td style={{ textAlign: 'center' }}>
                         <span
                           style={{
@@ -791,7 +824,7 @@ function Cronograma() {
                         </span>
                       </td>
 
-                      {/* 8. Matriz de 12 Meses */}
+                      {/* 9. Matriz de 12 Meses */}
                       {MESES_DEL_ANIO.map((nombreMes, mIdx) => {
                         const isScheduled = eq._cronoMeses.includes(nombreMes);
                         return (
@@ -833,12 +866,12 @@ function Cronograma() {
                         );
                       })}
 
-                      {/* 9. Responsable */}
+                      {/* 10. Responsable */}
                       <td style={{ color: '#cbd5e1', fontSize: '12px' }}>
                         {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
                       </td>
 
-                      {/* 10. Acciones (Ver Hoja de Vida) */}
+                      {/* 11. Acciones (Ver Hoja de Vida) */}
                       <td className="no-print" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         <Link
                           to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}` : `/hojadevida?id=${eq._id}`}

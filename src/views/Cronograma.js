@@ -226,11 +226,11 @@ function Cronograma() {
 
     const headers = [
       '#',
-      'IPS / INSTITUCION',
       'EQUIPO',
       'MARCA',
       'MODELO',
       'SERIE',
+      'INSTITUCION',
       'SERVICIO',
       'UBICACION',
       'PERIODICIDAD',
@@ -256,11 +256,11 @@ function Cronograma() {
 
       return [
         index + 1,
-        `"${(eq.institucion || '').replace(/"/g, '""')}"`,
         `"${(eq.equipo || '').replace(/"/g, '""')}"`,
         `"${(eq.marca || '').replace(/"/g, '""')}"`,
         `"${(eq.modelo || '').replace(/"/g, '""')}"`,
         `"${(eq.serie || '').replace(/"/g, '""')}"`,
+        `"${(eq.institucion || '').replace(/"/g, '""')}"`,
         `"${(eq.servicio || '').replace(/"/g, '""')}"`,
         `"${(eq.ubicacion || '').replace(/"/g, '""')}"`,
         `"${(eq.periodicidad || 'SEMESTRAL').replace(/"/g, '""')}"`,
@@ -692,228 +692,212 @@ function Cronograma() {
       {/* ==========================================================
           TABLA PRINCIPAL DE CRONOGRAMA
           ========================================================== */}
-      <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="tabla-documento tabla-cronograma-completa" style={{ width: '100%', borderCollapse: 'collapse', color: '#f8fafc' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#0f3b60', color: '#ffffff', textAlign: 'left', fontSize: '12px' }}>
-                <th style={{ width: '3%', padding: '10px 6px', textAlign: 'center' }}>#</th>
-                <th style={{ width: '13%', padding: '10px 6px' }}>IPS / INSTITUCIÓN</th>
-                <th style={{ width: '16%', padding: '10px 6px' }}>EQUIPO</th>
-                <th style={{ width: '9%', padding: '10px 6px' }}>MARCA</th>
-                <th style={{ width: '9%', padding: '10px 6px' }}>MODELO</th>
-                <th style={{ width: '10%', padding: '10px 6px' }}>SERIE</th>
-                <th style={{ width: '11%', padding: '10px 6px' }}>SERVICIO</th>
-                <th style={{ width: '9%', padding: '10px 6px', textAlign: 'center' }}>PERIODICIDAD</th>
-                {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
-                {MESES_ABREV.map((abrev) => (
-                  <th
-                    key={abrev}
-                    className="th-mes-vertical"
+      <div className="table-responsive-card">
+        <table className="table tabla-documento tabla-cronograma-completa">
+          <thead>
+            <tr>
+              <th style={{ width: '3%', textAlign: 'center' }}>#</th>
+              <th style={{ width: '18%' }}>EQUIPO</th>
+              <th style={{ width: '10%' }}>MARCA</th>
+              <th style={{ width: '10%' }}>MODELO</th>
+              <th style={{ width: '10%' }}>SERIE</th>
+              <th style={{ width: '12%' }}>INSTITUCIÓN</th>
+              <th style={{ width: '11%' }}>SERVICIO</th>
+              <th style={{ width: '9%', textAlign: 'center' }}>PERIODICIDAD</th>
+              {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
+              {MESES_ABREV.map((abrev) => (
+                <th
+                  key={abrev}
+                  className="th-mes-vertical"
+                  style={{
+                    width: '28px',
+                    minWidth: '26px',
+                    maxWidth: '30px',
+                    padding: '6px 1px',
+                    textAlign: 'center',
+                    verticalAlign: 'bottom',
+                    height: '48px',
+                    borderLeft: '1px solid #334155',
+                  }}
+                >
+                  <span
                     style={{
-                      width: '28px',
-                      minWidth: '26px',
-                      maxWidth: '30px',
-                      padding: '6px 1px',
-                      textAlign: 'center',
-                      verticalAlign: 'bottom',
-                      height: '50px',
-                      borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                      writingMode: 'vertical-rl',
+                      transform: 'rotate(180deg)',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      margin: '0 auto',
+                      fontWeight: '800',
+                      fontSize: '10px',
+                      letterSpacing: '0.5px',
+                      lineHeight: '1',
                     }}
                   >
-                    <span
-                      style={{
-                        writingMode: 'vertical-rl',
-                        transform: 'rotate(180deg)',
-                        whiteSpace: 'nowrap',
-                        display: 'inline-block',
-                        margin: '0 auto',
-                        fontWeight: '800',
-                        fontSize: '10.5px',
-                        letterSpacing: '1px',
-                        lineHeight: '1',
-                      }}
-                    >
-                      {abrev}
-                    </span>
-                  </th>
-                ))}
-                <th style={{ width: '12%', padding: '10px 6px' }}>RESPONSABLE</th>
-                <th className="no-print" style={{ width: '4%', padding: '10px 6px', textAlign: 'center' }}>VER</th>
+                    {abrev}
+                  </span>
+                </th>
+              ))}
+              <th style={{ width: '12%' }}>RESPONSABLE</th>
+              <th className="no-print" style={{ width: '4%', textAlign: 'center' }}>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={22} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
+                  <FaCalendarAlt size={28} style={{ animation: 'spin 2s linear infinite', marginBottom: '10px' }} />
+                  <div>Cargando cronograma de mantenimiento...</div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={22} style={{ textAlign: 'center', padding: '40px', color: '#38bdf8' }}>
-                    <FaCalendarAlt size={28} style={{ animation: 'spin 2s linear infinite', marginBottom: '10px' }} />
-                    <div>Cargando cronograma de mantenimiento...</div>
-                  </td>
-                </tr>
-              ) : filteredEquipos.length === 0 ? (
-                <tr>
-                  <td colSpan={22} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
-                    No se encontraron equipos biomédicos para los criterios de búsqueda y filtros seleccionados.
-                  </td>
-                </tr>
-              ) : (
-                paginatedEquipos.map((eq, index) => {
-                  const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
-                  const badge = getPeriodicidadBadgeStyle(eq.periodicidad);
+            ) : filteredEquipos.length === 0 ? (
+              <tr>
+                <td colSpan={22} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  No se encontraron equipos biomédicos para los criterios de búsqueda y filtros seleccionados.
+                </td>
+              </tr>
+            ) : (
+              paginatedEquipos.map((eq, index) => {
+                const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
+                const badge = getPeriodicidadBadgeStyle(eq.periodicidad);
 
-                  return (
-                    <tr
-                      key={eq._id}
-                      style={{
-                        backgroundColor: index % 2 === 0 ? 'rgba(15, 23, 42, 0.6)' : 'rgba(30, 41, 59, 0.6)',
-                        borderBottom: '1px solid #334155',
-                        fontSize: '12.5px',
-                      }}
-                    >
-                      {/* 1. Consecutivo */}
-                      <td style={{ textAlign: 'center', fontWeight: '700', color: '#94a3b8' }}>
-                        {globalIndex}
-                      </td>
+                return (
+                  <tr key={eq._id}>
+                    {/* 1. Consecutivo */}
+                    <td style={{ textAlign: 'center', fontWeight: '700', color: '#94a3b8' }}>
+                      {globalIndex}
+                    </td>
 
-                      {/* 2. IPS */}
-                      <td style={{ color: '#38bdf8', fontWeight: '600', fontSize: '12px' }}>
-                        {eq.institucion || '-'}
-                      </td>
+                    {/* 2. Equipo */}
+                    <td>
+                      <strong style={{ color: '#f8fafc' }}>{eq.equipo}</strong>
+                    </td>
 
-                      {/* 3. Equipo */}
-                      <td style={{ fontWeight: '700', color: '#ffffff' }}>
-                        {eq.equipo}
-                      </td>
+                    {/* 3. Marca */}
+                    <td style={{ color: '#cbd5e1' }}>
+                      {eq.marca}
+                    </td>
 
-                      {/* 4. Marca */}
-                      <td style={{ color: '#cbd5e1' }}>
-                        {eq.marca}
-                      </td>
+                    {/* 4. Modelo */}
+                    <td style={{ color: '#94a3b8' }}>
+                      {eq.modelo}
+                    </td>
 
-                      {/* 5. Modelo */}
-                      <td style={{ color: '#cbd5e1' }}>
-                        {eq.modelo}
-                      </td>
-
-                      {/* 6. Serie */}
-                      <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8' }}>
+                    {/* 5. Serie */}
+                    <td>
+                      <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#38bdf8', fontSize: '13px' }}>
                         {eq.serie}
-                      </td>
+                      </span>
+                    </td>
 
-                      {/* 7. Servicio */}
-                      <td style={{ color: '#e2e8f0' }}>
-                        {eq.servicio}
-                      </td>
+                    {/* 6. Institución (IPS) */}
+                    <td style={{ color: '#e2e8f0' }}>
+                      {eq.institucion || '-'}
+                    </td>
 
-                      {/* 8. Periodicidad */}
-                      <td style={{ textAlign: 'center' }}>
-                        <span
+                    {/* 7. Servicio */}
+                    <td style={{ color: '#cbd5e1' }}>
+                      {eq.servicio}
+                    </td>
+
+                    {/* 8. Periodicidad */}
+                    <td style={{ textAlign: 'center' }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          backgroundColor: badge.bg,
+                          color: badge.text,
+                          border: `1px solid ${badge.border}`,
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {eq.periodicidad || 'SEMESTRAL'}
+                      </span>
+                    </td>
+
+                    {/* 9. Matriz de 12 Meses */}
+                    {MESES_DEL_ANIO.map((nombreMes, mIdx) => {
+                      const isScheduled = eq._cronoMeses.includes(nombreMes);
+                      return (
+                        <td
+                          key={nombreMes}
+                          className="td-mes-matriz"
                           style={{
-                            display: 'inline-block',
-                            backgroundColor: badge.bg,
-                            color: badge.text,
-                            border: `1px solid ${badge.border}`,
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            whiteSpace: 'nowrap',
+                            textAlign: 'center',
+                            padding: '5px 1px',
+                            backgroundColor: isScheduled ? 'rgba(2, 132, 199, 0.25)' : 'transparent',
+                            borderLeft: '1px solid #334155',
+                            width: '28px',
+                            minWidth: '26px',
+                            maxWidth: '30px',
                           }}
                         >
-                          {eq.periodicidad || 'SEMESTRAL'}
-                        </span>
-                      </td>
+                          {isScheduled ? (
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                backgroundColor: '#0284c7',
+                                color: '#ffffff',
+                                fontWeight: '900',
+                                fontSize: '10px',
+                                width: '18px',
+                                height: '18px',
+                                lineHeight: '18px',
+                                borderRadius: '50%',
+                                boxShadow: '0 0 6px rgba(56, 189, 248, 0.6)',
+                              }}
+                              title={`${nombreMes}: Mantenimiento Programado`}
+                            >
+                              P
+                            </span>
+                          ) : (
+                            <span style={{ color: '#475569', fontSize: '10px' }}>-</span>
+                          )}
+                        </td>
+                      );
+                    })}
 
-                      {/* 9. Matriz de 12 Meses */}
-                      {MESES_DEL_ANIO.map((nombreMes, mIdx) => {
-                        const isScheduled = eq._cronoMeses.includes(nombreMes);
-                        return (
-                          <td
-                            key={nombreMes}
-                            className="td-mes-matriz"
-                            style={{
-                              textAlign: 'center',
-                              padding: '5px 1px',
-                              backgroundColor: isScheduled ? 'rgba(2, 132, 199, 0.25)' : 'transparent',
-                              borderLeft: '1px solid #334155',
-                              width: '28px',
-                              minWidth: '26px',
-                              maxWidth: '30px',
-                            }}
-                          >
-                            {isScheduled ? (
-                              <span
-                                style={{
-                                  display: 'inline-block',
-                                  backgroundColor: '#0284c7',
-                                  color: '#ffffff',
-                                  fontWeight: '900',
-                                  fontSize: '10px',
-                                  width: '18px',
-                                  height: '18px',
-                                  lineHeight: '18px',
-                                  borderRadius: '50%',
-                                  boxShadow: '0 0 6px rgba(56, 189, 248, 0.6)',
-                                }}
-                                title={`${nombreMes}: Mantenimiento Programado`}
-                              >
-                                P
-                              </span>
-                            ) : (
-                              <span style={{ color: '#475569', fontSize: '10px' }}>-</span>
-                            )}
-                          </td>
-                        );
-                      })}
+                    {/* 10. Responsable */}
+                    <td style={{ color: '#cbd5e1' }}>
+                      {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
+                    </td>
 
-                      {/* 10. Responsable */}
-                      <td style={{ color: '#cbd5e1', fontSize: '12px' }}>
-                        {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
-                      </td>
-
-                      {/* 11. Acciones (Ver Hoja de Vida) */}
-                      <td className="no-print" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {/* 11. Acciones (Ver Hoja de Vida) */}
+                    <td className="no-print" style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
                         <Link
-                          to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}` : `/hojadevida?id=${eq._id}`}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 8px',
-                            backgroundColor: '#0284c7',
-                            color: '#ffffff',
-                            borderRadius: '6px',
-                            textDecoration: 'none',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                          }}
+                          to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}`}
                           title="Ver Hoja de Vida"
+                          className="action-btn action-btn-view"
                         >
-                          <GoEye size={13} />
+                          <GoEye size={15} color="#38bdf8" />
                         </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Paginación (Oculta en Impresión) */}
-        <div className="no-print" style={{ padding: '12px 18px', borderTop: '1px solid #334155' }}>
-          <Pagination
-            totalItems={filteredEquipos.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            onPageChange={(page) => setCurrentPage(page)}
-            onItemsPerPageChange={(size) => {
-              setItemsPerPage(size);
-              setCurrentPage(1);
-            }}
-            pageSizeOptions={[15, 25, 50, 100]}
-          />
-        </div>
+      {/* Paginación (Oculta en Impresión) */}
+      <div className="no-print" style={{ marginTop: '16px' }}>
+        <Pagination
+          totalItems={filteredEquipos.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onItemsPerPageChange={(size) => {
+            setItemsPerPage(size);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[15, 25, 50, 100]}
+        />
       </div>
 
       {/* ==========================================================

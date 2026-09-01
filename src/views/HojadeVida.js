@@ -231,10 +231,54 @@ function HojaDeVida() {
     );
   }
 
+  const todosLosReportes = [
+    ...reportes.map((rep) => ({
+      _id: rep._id,
+      esExterno: false,
+      fecha: rep.fecha || '',
+      tipo_servicio: rep.tipo_servicio || '-',
+      responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
+      descripcion: rep.observaciones || rep.desc_servicio || '-',
+      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
+      data: rep,
+    })),
+    ...reportesExternos.map((rep) => ({
+      _id: rep._id,
+      esExterno: true,
+      fecha: rep.fecha || '',
+      tipo_servicio: rep.tipo_servicio || '-',
+      responsable_proveedor: rep.proveedor || 'Proveedor Externo',
+      descripcion: rep.descripcion || '-',
+      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
+      nombre_original: rep.nombre_original,
+      data: rep,
+    })),
+  ].sort((a, b) => {
+    if (!a.fecha) return 1;
+    if (!b.fecha) return -1;
+    return b.fecha.localeCompare(a.fecha);
+  });
+
   return (
     <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+      {/* Estilos para impresión y salto de página */}
+      <style>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+          .pagina-2 {
+            page-break-before: always !important;
+            break-before: page !important;
+            margin-top: 0 !important;
+            padding-top: 10px !important;
+          }
+        }
+      `}</style>
+
       {/* Top Action Toolbar */}
       <div
+        className="no-print"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -321,7 +365,7 @@ function HojaDeVida() {
         </div>
       </div>
 
-      {/* Printable Sheet (Crisp White Background, Sharp Borders) */}
+      {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}
       <div className="documento-hoja-vida">
         <table className="tabla-documento">
           {/* Header */}
@@ -550,144 +594,164 @@ function HojaDeVida() {
             </tr>
           </tbody>
         </table>
+      </div>
 
-        {/* 6. Historial de Actividades y Mantenimientos Internos */}
-        <div style={{ marginTop: '30px' }}>
-          <table className="tabla-documento">
-            <thead>
+      {/* PÁGINA 2: HISTORIAL DE ACTIVIDADES Y MANTENIMIENTOS (Página independiente) */}
+      <div className="documento-hoja-vida pagina-2" style={{ marginTop: '30px' }}>
+        <table className="tabla-documento">
+          {/* Header de la Página 2 */}
+          <thead>
+            <tr>
+              <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
+                {ipsLogo ? (
+                  <img src={ipsLogo} alt="IPS Logo" style={{ maxHeight: '50px', maxWidth: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <div style={{ fontWeight: 'bold', color: '#0f3b60', fontSize: '12px' }}>{equipo?.institucion}</div>
+                )}
+              </td>
+              <td
+                colSpan={4}
+                style={{
+                  width: '50%',
+                  textAlign: 'center',
+                  padding: '10px',
+                  verticalAlign: 'middle',
+                }}
+              >
+                <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
+                  HOJA DE VIDA DE EQUIPO BIOMÉDICO
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#0369a1', marginTop: '2px' }}>
+                  HISTORIAL DE ACTIVIDADES Y MANTENIMIENTOS
+                </div>
+              </td>
+              <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
+                <img
+                  src={process.env.PUBLIC_URL + '/img/logoCobio.png'}
+                  alt="Logo"
+                  style={{ maxHeight: '50px', maxWidth: '100%', objectFit: 'contain' }}
+                />
+              </td>
+            </tr>
+            {/* Banner resumen del equipo en Página 2 */}
+            <tr>
+              <td colSpan={6} style={{ backgroundColor: '#f1f5f9', padding: '8px 12px', fontSize: '12px', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1' }}>
+                <span style={{ marginRight: '16px' }}><strong>EQUIPO:</strong> {equipo?.equipo}</span>
+                <span style={{ marginRight: '16px' }}><strong>MARCA:</strong> {equipo?.marca}</span>
+                <span style={{ marginRight: '16px' }}><strong>MODELO:</strong> {equipo?.modelo}</span>
+                <span style={{ marginRight: '16px' }}><strong>SERIE:</strong> <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{equipo?.serie}</span></span>
+                <span><strong>SERVICIO:</strong> {equipo?.servicio}</span>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            {/* 6. Historial de Actividades y Mantenimientos Unificado */}
+            <tr>
+              <td colSpan={6} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS
+              </td>
+            </tr>
+            <tr style={{ backgroundColor: '#f8fafc', fontWeight: 'bold', fontSize: '12px' }}>
+              <th style={{ width: '13%', padding: '8px', textAlign: 'left' }}>FECHA</th>
+              <th style={{ width: '18%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
+              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
+              <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DESCRIPCIÓN</th>
+              <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>Nº REP./CERT.</th>
+              <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>VER</th>
+            </tr>
+            {todosLosReportes.length === 0 ? (
               <tr>
-                <td colSpan={6} className="seccion-titulo">
-                  6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS INTERNOS
+                <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontStyle: 'italic' }}>
+                  No hay reportes ni actividades de servicio registradas para esta serie.
                 </td>
               </tr>
-              <tr>
-                <th style={{ width: '15%' }}>FECHA</th>
-                <th style={{ width: '20%' }}>TIPO DE SERVICIO</th>
-                <th style={{ width: '35%' }}>OBSERVACIONES / DESCRIPCIÓN</th>
-                <th style={{ width: '15%' }}>RESPONSABLE</th>
-                <th style={{ width: '10%' }}>Nº REP.</th>
-                <th style={{ width: '5%', textAlign: 'center' }}>VER</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportes.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
-                    No hay reportes de servicio registrados para esta serie.
+            ) : (
+              todosLosReportes.map((rep) => (
+                <tr key={rep._id}>
+                  <td style={{ fontSize: '12.5px' }}>{rep.fecha}</td>
+                  <td>
+                    <span style={{ fontWeight: 'bold', color: '#0f3b60', fontSize: '12.5px' }}>
+                      {rep.tipo_servicio}
+                    </span>
                   </td>
-                </tr>
-              ) : (
-                reportes.map((rep) => (
-                  <tr key={rep._id}>
-                    <td>{rep.fecha}</td>
-                    <td>
-                      <span style={{ fontWeight: 'bold', color: '#0f3b60' }}>{rep.tipo_servicio}</span>
-                    </td>
-                    <td>{rep.observaciones || rep.desc_servicio || '-'}</td>
-                    <td>{rep.nombre_ingeniero || '-'}</td>
-                    <td><strong style={{ color: '#0284c7' }}>#{rep.numero_reporte}</strong></td>
-                    <td style={{ textAlign: 'center' }}>
+                  <td>
+                    <strong style={{ color: rep.esExterno ? '#0369a1' : '#1e293b', fontSize: '12.5px' }}>
+                      {rep.responsable_proveedor}
+                    </strong>
+                  </td>
+                  <td style={{ fontSize: '12px' }}>{rep.descripcion}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <strong style={{ color: '#0284c7', fontSize: '12px' }}>
+                      {rep.numero_documento}
+                    </strong>
+                  </td>
+                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {rep.esExterno ? (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <a
+                          href={`${apiVerReporteExterno}/${rep._id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: '#dc2626',
+                            color: '#ffffff',
+                            textDecoration: 'none',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                          }}
+                          title={`Abrir PDF: ${rep.nombre_original}`}
+                        >
+                          <FaFilePdf size={12} /> PDF
+                        </a>
+                        <button
+                          onClick={() => eliminarReporteExterno(rep._id)}
+                          className="no-print"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '4px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: '#fee2e2',
+                            color: '#b91c1c',
+                            border: '1px solid #fca5a5',
+                            cursor: 'pointer',
+                          }}
+                          title="Eliminar reporte externo"
+                        >
+                          <FaTrash size={11} />
+                        </button>
+                      </div>
+                    ) : (
                       <Link
                         to={`/reporte?id=${rep._id}`}
-                        style={{
-                          display: 'inline-flex',
-                          padding: '4px 6px',
-                          borderRadius: '4px',
-                          backgroundColor: '#0284c7',
-                          color: '#fff',
-                          textDecoration: 'none',
-                        }}
-                        title="Ver Reporte"
-                      >
-                        <GoEye size={15} />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 7. Registro de Reportes y Certificados de Proveedores Externos (PDF) */}
-        <div style={{ marginTop: '30px' }}>
-          <table className="tabla-documento">
-            <thead>
-              <tr>
-                <td colSpan={6} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                  7. REPORTES Y CERTIFICADOS DE PROVEEDORES EXTERNOS (PDF)
-                </td>
-              </tr>
-              <tr>
-                <th style={{ width: '14%' }}>FECHA</th>
-                <th style={{ width: '22%' }}>PROVEEDOR / EMPRESA</th>
-                <th style={{ width: '20%' }}>TIPO DE SERVICIO</th>
-                <th style={{ width: '24%' }}>DESCRIPCIÓN / OBSERVACIONES</th>
-                <th style={{ width: '10%' }}>Nº CERT./REP.</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>ADJUNTO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportesExternos.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
-                    No hay reportes ni certificados de proveedores externos anexados para esta serie.
-                  </td>
-                </tr>
-              ) : (
-                reportesExternos.map((rep) => (
-                  <tr key={rep._id}>
-                    <td>{rep.fecha}</td>
-                    <td><strong style={{ color: '#0369a1' }}>{rep.proveedor}</strong></td>
-                    <td><span style={{ fontWeight: 'bold' }}>{rep.tipo_servicio}</span></td>
-                    <td>{rep.descripcion || '-'}</td>
-                    <td>{rep.numero_reporte || '-'}</td>
-                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      <a
-                        href={`${apiVerReporteExterno}/${rep._id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '4px',
                           padding: '4px 8px',
                           borderRadius: '4px',
-                          backgroundColor: '#dc2626',
+                          backgroundColor: '#0284c7',
                           color: '#ffffff',
                           textDecoration: 'none',
                           fontSize: '12px',
                           fontWeight: '600',
                         }}
-                        title={`Ver archivo: ${rep.nombre_original}`}
+                        title="Ver Reporte Interno"
                       >
-                        <FaFilePdf size={13} /> PDF
-                      </a>
-                      <button
-                        onClick={() => eliminarReporteExterno(rep._id)}
-                        className="no-print"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '4px 6px',
-                          marginLeft: '6px',
-                          borderRadius: '4px',
-                          backgroundColor: '#fee2e2',
-                          color: '#b91c1c',
-                          border: '1px solid #fca5a5',
-                          cursor: 'pointer',
-                        }}
-                        title="Eliminar reporte externo"
-                      >
-                        <FaTrash size={12} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                        <GoEye size={13} /> Ver
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Modal para Anexar Reporte Externo */}

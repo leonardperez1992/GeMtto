@@ -6,12 +6,15 @@ import Pagination from '../components/Pagination';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 import { GoEye, GoSearch } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
-import { FaPlus, FaBoxes } from 'react-icons/fa';
+import { FaPlus, FaBoxes, FaQrcode } from 'react-icons/fa';
+import QrModal from '../components/QrModal';
 
 function Inventario() {
   const [inventario, setInventario] = useState([]);
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
+  const [qrEquipo, setQrEquipo] = useState(null);
+  const [modalQrOpen, setModalQrOpen] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -213,6 +216,30 @@ function Inventario() {
                                 <GoEye size={16} color="#38bdf8" />
                               </Link>
 
+                              {/* Botón Código QR */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setQrEquipo(item);
+                                  setModalQrOpen(true);
+                                }}
+                                title="Generar / Imprimir Código QR"
+                                className="action-btn"
+                                style={{
+                                  backgroundColor: '#7c3aed',
+                                  border: '1px solid #a855f7',
+                                  color: '#ffffff',
+                                  padding: '6px 8px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <FaQrcode size={15} color="#ffffff" />
+                              </button>
+
                               {/* Botón Editar */}
                               <Link
                                 to={`/editarequipo?id=${item?._id}`}
@@ -243,6 +270,16 @@ function Inventario() {
           </div>
         )}
       </main>
+
+      {/* Modal de Código QR */}
+      <QrModal
+        isOpen={modalQrOpen}
+        onClose={() => {
+          setModalQrOpen(false);
+          setQrEquipo(null);
+        }}
+        equipo={qrEquipo}
+      />
     </div>
   );
 }

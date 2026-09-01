@@ -27,8 +27,10 @@ import {
   FaWrench,
   FaCheckCircle,
   FaExternalLinkAlt,
+  FaQrcode,
 } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
+import QrModal from '../components/QrModal';
 
 function HojaDeVida() {
   const [equipo, setEquipo] = useState(null);
@@ -39,6 +41,7 @@ function HojaDeVida() {
   const [ipsLogo, setIpsLogo] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ficha'); // 'ficha' | 'historial' | 'documentos'
+  const [modalQrOpen, setModalQrOpen] = useState(false);
 
   // Estados para el modal de subir reporte externo
   const [modalExternoOpen, setModalExternoOpen] = useState(false);
@@ -349,6 +352,25 @@ function HojaDeVida() {
             }}
           >
             <FaFileUpload /> Anexar Reporte Externo
+          </button>
+          <button
+            onClick={() => setModalQrOpen(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#7c3aed',
+              color: '#ffffff',
+              border: '1px solid #a855f7',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '13.5px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            <FaQrcode /> Código QR
           </button>
           <button
             onClick={() => window.print()}
@@ -1474,6 +1496,13 @@ function HojaDeVida() {
           </div>
         </div>
       )}
+
+      {/* Modal para Visualización, Descarga e Impresión de Código QR */}
+      <QrModal
+        isOpen={modalQrOpen}
+        onClose={() => setModalQrOpen(false)}
+        equipo={equipo}
+      />
     </div>
   );
 }

@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   apiObtenerEquipo,
   apiObtenerFicha,
@@ -11,9 +10,7 @@ import {
 } from '../utils/api';
 import request from '../utils/request';
 import {
-  FaFileMedical,
   FaPrint,
-  FaArrowLeft,
   FaBook,
   FaFileAlt,
   FaShieldAlt,
@@ -21,11 +18,13 @@ import {
   FaWrench,
   FaCheckCircle,
   FaQrcode,
+  FaHospital,
+  FaCheckDouble,
 } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
-import QrModal from '../components/QrModal';
+import { Link } from 'react-router-dom';
 
-function HojaDeVidaUser() {
+function HojaDeVidaQr() {
   const [equipo, setEquipo] = useState(null);
   const [ficha, setFicha] = useState(null);
   const [reportes, setReportes] = useState([]);
@@ -34,18 +33,6 @@ function HojaDeVidaUser() {
   const [ipsLogo, setIpsLogo] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ficha'); // 'ficha' | 'historial' | 'documentos'
-  const [modalQrOpen, setModalQrOpen] = useState(false);
-
-  const obtenerEquipos = async (id) => {
-    const response = await request({
-      link: apiObtenerEquipo,
-      method: 'GET',
-      body: { id },
-    });
-    if (response && response.success) {
-      setEquipo(response.equipo);
-    }
-  };
 
   const obtenerFicha = async (modelo) => {
     if (!modelo) return;
@@ -76,73 +63,84 @@ function HojaDeVidaUser() {
 
   const obtenerReportesExternos = async (serie) => {
     if (!serie) return;
-    const response = await request({
-      link: apiObtenerReportesExternos,
-      method: 'GET',
-      body: { serie },
-    });
-    if (response && response.success) {
-      setReportesExternos(response.reportes || []);
+    try {
+      const response = await request({
+        link: `${apiObtenerReportesExternos}?serie=${encodeURIComponent(serie)}`,
+        method: 'GET',
+      });
+      if (response && response.success) {
+        setReportesExternos(response.reportes || []);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const obtenerIps = async (ips) => {
-    if (!ips) return;
-    const response = await request({
-      link: apiGetIps,
-      method: 'GET',
-      body: { ips },
-    });
-    if (response && response.success && response.institucion?.logo?.[0]) {
-      setIpsLogo(response.institucion.logo[0].data_url);
+  const obtenerIps = async (institucion) => {
+    if (!institucion) return;
+    try {
+      const response = await request({
+        link: apiGetIps,
+        method: 'GET',
+        body: { institucion },
+      });
+      if (response && response.success && response.ips && response.ips.length > 0) {
+        const found = response.ips.find(
+          (item) => item.ips?.trim().toUpperCase() === institucion.trim().toUpperCase()
+        );
+        if (found && found.logo) {
+          setIpsLogo(found.logo);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
   useEffect(() => {
-    let queryParameters = new URLSearchParams(window.location.search);
-    let idEquipo = queryParameters.get('id');
-    let modelo = queryParameters.get('modelo');
-    let serie = queryParameters.get('serie');
-    let ips = queryParameters.get('institucion');
-
-    if (!idEquipo) {
-      alert('Por favor seleccione un equipo en la pestaña de Inventario');
-      window.location.href = './inventariouser';
-      return;
-    }
-
-    const loadData = async () => {
+    const init = async () => {
       setLoading(true);
-      await Promise.all([
-        obtenerEquipos(idEquipo),
-        obtenerFicha(modelo),
-        obtenerReportes(serie),
-        obtenerReportesExternos(serie),
-        obtenerIps(ips),
-      ]);
+      const queryParameters = new URLSearchParams(window.location.search);
+      const id = queryParameters.get('id');
+
+      if (id) {
+        try {
+          const res = await request({
+            link: apiObtenerEquipo,
+            method: 'GET',
+            body: { id },
+          });
+
+          if (res && res.success && res.equipo) {
+            setEquipo(res.equipo);
+            await Promise.all([
+              obtenerFicha(res.equipo.modelo),
+              obtenerReportes(res.equipo.serie),
+              obtenerReportesExternos(res.equipo.serie),
+              obtenerIps(res.equipo.institucion),
+            ]);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
       setLoading(false);
     };
 
-    loadData();
+    init();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="contenedor" style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-        Cargando hoja de vida del equipo...
-      </div>
-    );
-  }
-
+  // Consolidado cronológico de reportes internos y externos
   const todosLosReportes = [
     ...reportes.map((rep) => ({
       _id: rep._id,
       esExterno: false,
       fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || '-',
+      tipo_servicio: rep.tipo_servicio || 'MANTENIMIENTO',
       responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      descripcion: rep.observaciones || rep.desc_servicio || '-',
+      descripcion: rep.desc_servicio || rep.problema_reportado || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
+      nombre_original: null,
       data: rep,
     })),
     ...reportesExternos.map((rep) => ({
@@ -162,8 +160,29 @@ function HojaDeVidaUser() {
     return b.fecha.localeCompare(a.fecha);
   });
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px', color: '#38bdf8', fontSize: '16px' }}>
+        <FaQrcode size={32} style={{ animation: 'spin 2s linear infinite', marginBottom: '12px' }} />
+        <div>Cargando Hoja de Vida digital...</div>
+      </div>
+    );
+  }
+
+  if (!equipo) {
+    return (
+      <div style={{ maxWidth: '600px', margin: '60px auto', textAlign: 'center', padding: '30px', backgroundColor: '#1e293b', borderRadius: '12px', color: '#f8fafc', border: '1px solid #334155' }}>
+        <h3 style={{ color: '#ef4444' }}>Equipo no encontrado</h3>
+        <p style={{ color: '#94a3b8' }}>No se encontró información para el código QR escaneado.</p>
+        <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }}>
+          Ir al Inicio
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+    <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 15px' }}>
       {/* Estilos para pestañas, impresión y salto de página */}
       <style>{`
         @media screen {
@@ -187,7 +206,7 @@ function HojaDeVidaUser() {
         }
       `}</style>
 
-      {/* Top Action Toolbar */}
+      {/* Banner de Verificación y Barra de Acción */}
       <div
         className="no-print"
         style={{
@@ -196,66 +215,50 @@ function HojaDeVidaUser() {
           alignItems: 'center',
           backgroundColor: '#1e293b',
           padding: '14px 20px',
-          borderRadius: '10px',
-          border: '1px solid #334155',
+          borderRadius: '12px',
+          border: '1px solid #38bdf8',
           marginBottom: '16px',
           flexWrap: 'wrap',
           gap: '12px',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
         }}
       >
-        <Link
-          to="/inventariouser"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '8px', borderRadius: '8px', color: '#38bdf8' }}>
+            <FaCheckDouble size={20} />
+          </div>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: '800', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              HOJA DE VIDA DIGITAL VERIFICADA
+              <span style={{ fontSize: '11px', backgroundColor: '#15803d', color: '#ffffff', padding: '2px 8px', borderRadius: '12px' }}>
+                OFICIAL
+              </span>
+            </div>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              {equipo.institucion} • {equipo.equipo} ({equipo.serie})
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => window.print()}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            color: '#38bdf8',
-            textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '14px',
+            backgroundColor: '#0284c7',
+            color: '#ffffff',
+            border: '1px solid #38bdf8',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontWeight: '700',
+            fontSize: '13.5px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          <FaArrowLeft /> Volver a Inventario
-        </Link>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setModalQrOpen(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#7c3aed',
-              color: '#ffffff',
-              border: '1px solid #a855f7',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '13.5px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-            }}
-          >
-            <FaQrcode /> Código QR
-          </button>
-          <button
-            onClick={() => window.print()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#0284c7',
-              color: '#ffffff',
-              border: '1px solid #38bdf8',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '13.5px',
-              cursor: 'pointer',
-            }}
-          >
-            <FaPrint /> Imprimir Hoja de Vida
-          </button>
-        </div>
+          <FaPrint /> Imprimir Hoja de Vida
+        </button>
       </div>
 
       {/* Pestañas de Navegación (Tabs) */}
@@ -335,7 +338,6 @@ function HojaDeVidaUser() {
         </button>
       </div>
 
-
       {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}
       <div className={`documento-hoja-vida hoja-pagina ${activeTab !== 'ficha' ? 'ocultar-en-pantalla' : ''}`}>
         <table className="tabla-documento">
@@ -350,7 +352,7 @@ function HojaDeVidaUser() {
                 )}
               </td>
               <td
-                colSpan={2}
+                colSpan={3}
                 style={{
                   width: '50%',
                   textAlign: 'center',
@@ -358,11 +360,11 @@ function HojaDeVidaUser() {
                   verticalAlign: 'middle',
                 }}
               >
-                <div style={{ fontSize: '17px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
                   HOJA DE VIDA DE EQUIPO BIOMÉDICO
                 </div>
-                <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
-                  SISTEMA DE GESTIÓN Y MANTENIMIENTO HOSPITALARIO
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#555', marginTop: '2px' }}>
+                  GESTIÓN Y CONTROL DE TECNOLOGÍA BIOMÉDICA
                 </div>
               </td>
               <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
@@ -375,202 +377,203 @@ function HojaDeVidaUser() {
             </tr>
           </thead>
           <tbody>
-            {/* 1. Ubicación Institucional */}
+            {/* 1. Datos de Identificación */}
             <tr>
-              <td colSpan={4} className="seccion-titulo">
-                1. UBICACIÓN INSTITUCIONAL
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                1. DATOS DE IDENTIFICACIÓN DEL EQUIPO
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <span className="label-bold">IPS / CLIENTE:</span> {equipo?.institucion}
+              <td colSpan={3} style={{ verticalAlign: 'top', padding: 0 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', margin: 0 }}>
+                  <tbody>
+                    <tr>
+                      <th style={{ width: '38%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>EQUIPO:</th>
+                      <td><strong>{equipo?.equipo}</strong></td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>MARCA:</th>
+                      <td>{equipo?.marca}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>MODELO:</th>
+                      <td>{equipo?.modelo}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>SERIE:</th>
+                      <td><span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#0284c7' }}>{equipo?.serie}</span></td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>INVENTARIO / ACTIVO:</th>
+                      <td>{equipo?.inventario || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>REGISTRO SANITARIO INVIMA:</th>
+                      <td>{equipo?.registro_invima || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FECHA DE COMPRA / INSTALACIÓN:</th>
+                      <td>{equipo?.fecha_compra || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FECHA PUESTA EN SERVICIO:</th>
+                      <td>{equipo?.fecha_operacion || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VENCIMIENTO DE GARANTÍA:</th>
+                      <td>{equipo?.vencimiento_garantia || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VIDA ÚTIL ESTIMADA:</th>
+                      <td>{equipo?.vida_util ? `${equipo?.vida_util} Años` : 'N/A'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </td>
-              <td colSpan={2}>
-                <span className="label-bold">SERVICIO:</span> {equipo?.servicio}
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <span className="label-bold">UBICACIÓN / ÁREA:</span> {equipo?.ubicacion}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">RESPONSABLE:</span> {equipo?.responsable}
+              {/* Foto del Equipo */}
+              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', backgroundColor: '#f8fafc' }}>
+                {imagen ? (
+                  <img
+                    src={imagen}
+                    alt="Foto del Equipo"
+                    style={{
+                      maxHeight: '190px',
+                      maxWidth: '100%',
+                      objectFit: 'contain',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                    }}
+                  />
+                ) : (
+                  <div style={{ color: '#94a3b8', fontSize: '12px', fontStyle: 'italic', padding: '30px 10px' }}>
+                    Sin fotografía adjunta
+                  </div>
+                )}
               </td>
             </tr>
 
-            {/* 2. Identificación del Equipo */}
+            {/* 2. Ubicación Institucional */}
             <tr>
-              <td colSpan={4} className="seccion-titulo">
-                2. IDENTIFICACIÓN DEL EQUIPO
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                2. UBICACIÓN INSTITUCIONAL Y RESPONSABLE
               </td>
             </tr>
             <tr>
-              {/* Contenedor de la Foto Centrado */}
-              <td
-                colSpan={2}
-                rowSpan={7}
-                style={{
-                  textAlign: 'center',
-                  verticalAlign: 'middle',
-                  padding: '16px',
-                  backgroundColor: '#f8fafc',
-                  borderRight: '1.5px solid #1e293b',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', width: '100%' }}>
-                  {imagen ? (
-                    <img
-                      src={imagen}
-                      alt={equipo?.equipo}
-                      style={{
-                        maxHeight: '190px',
-                        maxWidth: '90%',
-                        objectFit: 'contain',
-                        borderRadius: '8px',
-                        border: '1px solid #cbd5e1',
-                        display: 'block',
-                        margin: '0 auto',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                      }}
-                    />
-                  ) : (
-                    <div style={{ textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: '10px' }}>
-                      <FaFileMedical size={42} color="#cbd5e1" style={{ display: 'block', margin: '0 auto 8px auto' }} />
-                      Sin fotografía registrada
-                    </div>
-                  )}
-                </div>
+              <th style={{ width: '20%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>INSTITUCIÓN / IPS:</th>
+              <td colSpan={2}>{equipo?.institucion}</td>
+              <th style={{ width: '20%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>SERVICIO / ÁREA:</th>
+              <td>{equipo?.servicio}</td>
+            </tr>
+            <tr>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>UBICACIÓN EXACTA:</th>
+              <td colSpan={2}>{equipo?.ubicacion || 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>RESPONSABLE DEL EQUIPO:</th>
+              <td>{equipo?.responsable || 'N/A'}</td>
+            </tr>
+
+            {/* 3. Clasificación Técnica y Biomédica */}
+            <tr>
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                3. CLASIFICACIÓN TÉCNICA Y BIOMÉDICA
               </td>
-              <td style={{ width: '22%', fontWeight: '700', backgroundColor: '#f1f5f9' }}>NOMBRE EQUIPO:</td>
-              <td style={{ width: '28%', fontWeight: 'bold', color: '#0f3b60' }}>{equipo?.equipo}</td>
             </tr>
             <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>MARCA:</td>
-              <td>{equipo?.marca}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>MODELO:</td>
-              <td>{equipo?.modelo}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>SERIE:</td>
-              <td><span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{equipo?.serie}</span></td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>CÓDIGO INVENTARIO:</td>
-              <td>{equipo?.inventario || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>REGISTRO SANITARIO:</td>
-              <td>{equipo?.registro_invima}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>CLASIFICACIÓN DE RIESGO:</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>CLASIFICACIÓN BIOMÉDICA:</th>
+              <td colSpan={2}>{ficha?.clas_biomedica || equipo?.clasificacion_biomedica || 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>CLASIFICACIÓN DE RIESGO:</th>
               <td>
-                <span style={{ fontWeight: 'bold', color: '#0369a1' }}>{equipo?.riesgo}</span>
+                <strong style={{ color: '#0284c7' }}>{equipo?.riesgo || 'CLASE IIA'}</strong>
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <span className="label-bold">FORMA DE ADQUISICIÓN:</span> {equipo?.forma_adquisicion || 'COMPRA'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">FECHA DE INSTALACIÓN:</span> {equipo?.fecha_instalacion || 'N/A'}
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>TECNOLOGÍA PREDOMINANTE:</th>
+              <td colSpan={2}>{ficha?.tecnologia || equipo?.tecnologia || 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>USO / APLICACIÓN:</th>
+              <td>{equipo?.uso || 'CLÍNICO / MÉDICO'}</td>
+            </tr>
+
+            {/* 4. Especificaciones Técnicas y Eléctricas */}
+            <tr>
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                4. ESPECIFICACIONES TÉCNICAS Y ELÉCTRICAS (MODELO)
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <span className="label-bold">FECHA DE FABRICACIÓN:</span> {equipo?.fecha_fabricacion || 'N/A'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">PERIODICIDAD DE MTTO:</span>{' '}
-                <strong style={{ color: '#0f3b60' }}>{equipo?.periodicidad || 'SEMESTRAL'}</strong>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VOLTAJE:</th>
+              <td>{ficha?.voltaje ? `${ficha?.voltaje} VAC` : 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>AMPERAJE / CORRIENTE:</th>
+              <td>{ficha?.amperaje ? `${ficha?.amperaje} A` : 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>POTENCIA:</th>
+            </tr>
+            <tr>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FRECUENCIA:</th>
+              <td>{ficha?.frecuencia ? `${ficha?.frecuencia} Hz` : 'N/A'}</td>
+              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>BATERÍA:</th>
+              <td>{ficha?.bateria || 'N/A'}</td>
+              <td style={{ backgroundColor: '#f8fafc', fontWeight: 'bold' }}>
+                {ficha?.potencia ? `${ficha?.potencia} W` : 'N/A'}
               </td>
             </tr>
 
-            {/* 3. Información Técnica */}
+            {/* 5. Accesorios y Cantidades */}
             <tr>
-              <td colSpan={4} className="seccion-titulo">
-                3. ESPECIFICACIONES TÉCNICAS
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                5. ACCESORIOS REGISTRADOS
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <span className="label-bold">CLASIFICACIÓN BIOMÉDICA:</span> {ficha?.clas_biomedica || '-'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">TECNOLOGÍA PREDOMINANTE:</span> {ficha?.tecnologia || '-'}
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <span className="label-bold">VOLTAJE:</span> {ficha?.voltaje || '-'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">AMPERAJE:</span> {ficha?.amperaje || '-'}
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <span className="label-bold">TEMPERATURA:</span> {ficha?.temperatura || '-'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">FRECUENCIA:</span> {ficha?.frecuencia || '-'}
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <span className="label-bold">POTENCIA:</span> {ficha?.potencia || '-'}
-              </td>
-              <td colSpan={2}>
-                <span className="label-bold">BATERÍA:</span> {ficha?.bateria || '-'}
+              <td colSpan={5} style={{ padding: 0 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', margin: 0 }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f1f5f9', fontSize: '11px', textAlign: 'left' }}>
+                      <th style={{ width: '35%', padding: '6px' }}>ACCESORIO 1</th>
+                      <th style={{ width: '15%', padding: '6px' }}>CANTIDAD</th>
+                      <th style={{ width: '35%', padding: '6px' }}>ACCESORIO 2</th>
+                      <th style={{ width: '15%', padding: '6px' }}>CANTIDAD</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{ficha?.accesorio1 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad1 || '-'}</td>
+                      <td>{ficha?.accesorio2 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad2 || '-'}</td>
+                    </tr>
+                    <tr>
+                      <td>{ficha?.accesorio3 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad3 || '-'}</td>
+                      <td>{ficha?.accesorio4 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad4 || '-'}</td>
+                    </tr>
+                    <tr>
+                      <td>{ficha?.accesorio5 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad5 || '-'}</td>
+                      <td>{ficha?.accesorio6 || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad6 || '-'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </td>
             </tr>
 
-            {/* 4. Accesorios */}
+            {/* 6. Recomendaciones del Fabricante */}
             <tr>
-              <td colSpan={3} className="seccion-titulo">
-                4. ACCESORIOS ASOCIADOS
-              </td>
-              <td className="seccion-titulo" style={{ textAlign: 'center', width: '20%' }}>
-                CANTIDAD
-              </td>
-            </tr>
-            {Array.from({ length: 10 }, (_, i) => i + 1).some((i) => ficha?.[`accesorio${i}`]) ? (
-              Array.from({ length: 10 }, (_, i) => i + 1)
-                .filter((i) => ficha?.[`accesorio${i}`])
-                .map((i) => (
-                  <tr key={i}>
-                    <td colSpan={3} style={{ fontWeight: '500' }}>{ficha[`accesorio${i}`]}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{ficha[`cantidad${i}`] || '1'}</td>
-                  </tr>
-                ))
-            ) : (
-              <tr>
-                <td colSpan={3} style={{ color: '#64748b', fontStyle: 'italic' }}>Sin accesorios adicionales</td>
-                <td style={{ textAlign: 'center', color: '#64748b' }}>-</td>
-              </tr>
-            )}
-
-            {/* 5. Recomendaciones */}
-            <tr>
-              <td colSpan={4} className="seccion-titulo">
-                5. RECOMENDACIONES DEL FABRICANTE
+              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                6. RECOMENDACIONES DEL FABRICANTE
               </td>
             </tr>
             <tr>
-              <td colSpan={4} style={{ padding: '12px', minHeight: '60px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
-                {ficha?.recomendaciones || 'Realizar mantenimiento preventivo periódico, limpieza con desinfectante no corrosivo y verificación de calibración periódica.'}
+              <td colSpan={5} style={{ padding: '10px 14px', fontSize: '12px', lineHeight: '1.5', color: '#334155' }}>
+                {ficha?.recomendaciones || 'Realizar mantenimiento preventivo periódico según cronograma institucional y recomendaciones del fabricante.'}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* PÁGINA 2: HISTORIAL DE ACTIVIDADES Y MANTENIMIENTOS (Página independiente) */}
+      {/* PÁGINA 2: HISTORIAL DE ACTIVIDADES Y MANTENIMIENTOS */}
       <div className={`documento-hoja-vida pagina-2 hoja-pagina ${activeTab !== 'historial' ? 'ocultar-en-pantalla' : ''}`} style={{ marginTop: '0px' }}>
         <table className="tabla-documento">
-          {/* Header de la Página 2 */}
           <thead>
             <tr>
               <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
@@ -604,7 +607,7 @@ function HojaDeVidaUser() {
                 />
               </td>
             </tr>
-            {/* Banner resumen del equipo en Página 2 */}
+            {/* Banner resumen del equipo */}
             <tr>
               <td colSpan={5} style={{ backgroundColor: '#f1f5f9', padding: '8px 12px', fontSize: '12px', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1' }}>
                 <span style={{ marginRight: '16px' }}><strong>EQUIPO:</strong> {equipo?.equipo}</span>
@@ -616,23 +619,22 @@ function HojaDeVidaUser() {
             </tr>
           </thead>
           <tbody>
-            {/* 6. Historial de Actividades y Mantenimientos Unificado */}
             <tr>
               <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS
+                6. REGISTRO HISTÓRICO DE MANTENIMIENTOS Y SERVICIOS
               </td>
             </tr>
             <tr style={{ backgroundColor: '#f8fafc', fontWeight: 'bold', fontSize: '12px' }}>
               <th style={{ width: '14%', padding: '8px', textAlign: 'left' }}>FECHA</th>
               <th style={{ width: '20%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
               <th style={{ width: '24%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
-              <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DESCRIPCIÓN</th>
-              <th style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER</th>
+              <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DETALLE</th>
+              <th style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER REPORTE</th>
             </tr>
             {todosLosReportes.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontStyle: 'italic' }}>
-                  No hay reportes ni actividades de servicio registradas para esta serie.
+                <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontStyle: 'italic' }}>
+                  No hay reportes ni actividades registradas para este equipo biomédico.
                 </td>
               </tr>
             ) : (
@@ -668,13 +670,15 @@ function HojaDeVidaUser() {
                           fontSize: '12px',
                           fontWeight: '600',
                         }}
-                        title="Ver Reporte"
+                        title="Ver Reporte Externo"
                       >
                         <GoEye size={13} /> Ver
                       </a>
                     ) : (
                       <Link
                         to={`/reporte?id=${rep._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -700,10 +704,9 @@ function HojaDeVidaUser() {
         </table>
       </div>
 
-      {/* PÁGINA 3: DOCUMENTOS Y MANUALES DEL EQUIPO (Página independiente) */}
+      {/* PÁGINA 3: DOCUMENTOS Y MANUALES DEL MODELO */}
       <div className={`documento-hoja-vida pagina-3 hoja-pagina ${activeTab !== 'documentos' ? 'ocultar-en-pantalla' : ''}`} style={{ marginTop: '0px' }}>
         <table className="tabla-documento">
-          {/* Header de la Página 3 */}
           <thead>
             <tr>
               <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
@@ -737,7 +740,6 @@ function HojaDeVidaUser() {
                 />
               </td>
             </tr>
-            {/* Banner resumen del equipo en Página 3 */}
             <tr>
               <td colSpan={5} style={{ backgroundColor: '#f1f5f9', padding: '8px 12px', fontSize: '12px', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1' }}>
                 <span style={{ marginRight: '16px' }}><strong>EQUIPO:</strong> {equipo?.equipo}</span>
@@ -770,7 +772,7 @@ function HojaDeVidaUser() {
                   <FaBook color="#0284c7" /> Manual de Uso / Operación
                 </div>
               </td>
-              <td>{ficha?.manual_uso ? ficha.manual_uso.nombre_original : 'Manual de operación y usuario del fabricante'}</td>
+              <td>{ficha?.manual_uso ? ficha.manual_uso.nombre_original : 'Manual de usuario y operación del fabricante'}</td>
               <td style={{ textAlign: 'center' }}>
                 {ficha?.manual_uso ? (
                   <span style={{ color: '#16a34a', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
@@ -1005,20 +1007,16 @@ function HojaDeVidaUser() {
             padding: '12px 18px',
             color: '#94a3b8',
             fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
           }}
         >
-          ℹ️ Los documentos corresponden al modelo <strong>{equipo?.modelo}</strong> y se encuentran homologados para este equipo biomédico.
+          <FaHospital /> Los documentos corresponden al modelo <strong>{equipo?.modelo}</strong> y se encuentran homologados para este equipo biomédico.
         </div>
       </div>
-
-      {/* Modal para Visualización, Descarga e Impresión de Código QR */}
-      <QrModal
-        isOpen={modalQrOpen}
-        onClose={() => setModalQrOpen(false)}
-        equipo={equipo}
-      />
     </div>
   );
 }
 
-export default HojaDeVidaUser;
+export default HojaDeVidaQr;

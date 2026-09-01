@@ -5,7 +5,8 @@ import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
 import { GoSearch, GoEye } from 'react-icons/go';
-import { FaBoxes } from 'react-icons/fa';
+import { FaBoxes, FaQrcode } from 'react-icons/fa';
+import QrModal from '../components/QrModal';
 
 function InventarioUser() {
   const user = useSelector((state) => state.user);
@@ -13,6 +14,8 @@ function InventarioUser() {
   const [inventario, setInventario] = useState([]);
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
+  const [qrEquipo, setQrEquipo] = useState(null);
+  const [modalQrOpen, setModalQrOpen] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -167,13 +170,39 @@ function InventarioUser() {
                           </td>
                           <td style={{ color: '#cbd5e1' }}>{item?.responsable}</td>
                           <td style={{ textAlign: 'center' }}>
-                            <Link
-                              to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                              className="action-btn action-btn-view"
-                              title="Ver Hoja de Vida"
-                            >
-                              <GoEye size={16} color="#38bdf8" /> Ver Hoja
-                            </Link>
+                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                              <Link
+                                to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
+                                className="action-btn action-btn-view"
+                                title="Ver Hoja de Vida"
+                              >
+                                <GoEye size={16} color="#38bdf8" /> Ver Hoja
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setQrEquipo(item);
+                                  setModalQrOpen(true);
+                                }}
+                                title="Generar / Imprimir Código QR"
+                                className="action-btn"
+                                style={{
+                                  backgroundColor: '#7c3aed',
+                                  border: '1px solid #a855f7',
+                                  color: '#ffffff',
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                <FaQrcode size={14} color="#ffffff" /> QR
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -195,6 +224,16 @@ function InventarioUser() {
           </div>
         )}
       </main>
+
+      {/* Modal de Código QR */}
+      <QrModal
+        isOpen={modalQrOpen}
+        onClose={() => {
+          setModalQrOpen(false);
+          setQrEquipo(null);
+        }}
+        equipo={qrEquipo}
+      />
     </div>
   );
 }

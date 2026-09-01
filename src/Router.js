@@ -28,6 +28,7 @@ import EditFichaTecnica from './views/EditFichaTecnica';
 import Ips from './views/Ips';
 import Informes from './views/Informes';
 import AlertasMtto from './views/AlertasMtto';
+import HojaDeVidaQr from './views/HojaDeVidaQr';
 
 
 const RouterContainer = () => {
@@ -59,6 +60,7 @@ const RouterContainer = () => {
           <Route path="/editarequipo" element={<EditInventary />} />
           <Route path="/hojadevida" element={<HojaDeVida />} />
           <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />
+          <Route path="/hojadevidaqr" element={<HojaDeVidaQr />} />
           <Route path="/fichastecnicas" element={<FichasTecnicas />} />
           <Route path="/crearfichatecnica" element={<CreateFichaTecnica />} />
           <Route path="/editarfichatecnica" element={<EditFichaTecnica />} />

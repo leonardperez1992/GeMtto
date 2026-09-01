@@ -210,7 +210,7 @@ function HojaDeVidaQr() {
 
       {/* Banner de Verificación y Barra de Acción */}
       <div
-        className="no-print"
+        className="no-print toolbar-hoja-vida"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -265,7 +265,7 @@ function HojaDeVidaQr() {
 
       {/* Pestañas de Navegación (Tabs) */}
       <div
-        className="no-print"
+        className="no-print pestañas-hoja-vida"
         style={{
           display: 'flex',
           gap: '8px',
@@ -338,6 +338,11 @@ function HojaDeVidaQr() {
         >
           📁 Documentos del Equipo
         </button>
+      </div>
+
+      {/* Indicador de desplazamiento en móviles */}
+      <div className="hint-scroll-movil no-print">
+        ↔️ Desliza la hoja horizontalmente para ver la tabla completa
       </div>
 
       {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO (Formato original) */}

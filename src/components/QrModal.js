@@ -58,8 +58,15 @@ function QrModal({ isOpen, onClose, equipo }) {
         backdropFilter: 'blur(4px)',
       }}
     >
-      {/* Estilos para impresión exclusiva del sticker de equipo biomédico */}
+      {/* Estilos para impresión y adaptación móvil del sticker de equipo biomédico */}
       <style>{`
+        @media screen and (max-width: 480px) {
+          .qr-sticker-printable {
+            flex-direction: column !important;
+            text-align: center !important;
+            gap: 12px !important;
+          }
+        }
         @media print {
           body * {
             visibility: hidden !important;

@@ -322,6 +322,21 @@ textarea:focus {
    RESPONSIVIDAD MÓVIL Y TABLETS
    =================================================== */
 
+.hint-scroll-movil {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  border: 1px dashed #0284c7;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 @media screen and (max-width: 768px) {
   .navbar {
     padding: 10px 14px;
@@ -343,7 +358,7 @@ textarea:focus {
   }
 
   .contenedor {
-    padding: 12px 10px;
+    padding: 10px 6px !important;
   }
 
   .table, .tabla-actividades {
@@ -352,11 +367,78 @@ textarea:focus {
 
   .table thead th, .tabla-actividades thead th,
   .table tbody td, .tabla-actividades tbody td {
-    padding: 10px 12px;
+    padding: 8px 10px;
   }
 
   .input-buscar {
     width: 100%;
+  }
+
+  /* Hoja de vida y reportes en móviles */
+  .hint-scroll-movil {
+    display: flex !important;
+  }
+
+  .documento-hoja-vida {
+    padding: 10px 6px !important;
+    margin: 8px auto !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-width: 100% !important;
+  }
+
+  .tabla-documento {
+    min-width: 580px !important;
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .tabla-documento td, .tabla-documento th {
+    padding: 5px 6px !important;
+    font-size: 10.5px !important;
+  }
+
+  .tabla-documento .seccion-titulo {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
+
+  .pestañas-hoja-vida {
+    gap: 4px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 4px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .pestañas-hoja-vida button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    border-radius: 6px 6px 0 0 !important;
+  }
+
+  .toolbar-hoja-vida {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .toolbar-hoja-vida-botones {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .toolbar-hoja-vida-botones button,
+  .toolbar-hoja-vida-botones a {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 }
 
@@ -373,6 +455,8 @@ textarea:focus {
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   border: 1px solid #cbd5e1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .documento-reporte {

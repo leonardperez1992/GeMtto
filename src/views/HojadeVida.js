@@ -305,7 +305,7 @@ function HojaDeVida() {
 
       {/* Top Action Toolbar */}
       <div
-        className="no-print"
+        className="no-print toolbar-hoja-vida"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -333,7 +333,7 @@ function HojaDeVida() {
         >
           <FaArrowLeft /> Volver a Inventario
         </Link>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="toolbar-hoja-vida-botones" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setModalExternoOpen(true)}
             style={{
@@ -413,7 +413,7 @@ function HojaDeVida() {
 
       {/* Pestañas de Navegación (Tabs) */}
       <div
-        className="no-print"
+        className="no-print pestañas-hoja-vida"
         style={{
           display: 'flex',
           gap: '8px',
@@ -486,6 +486,11 @@ function HojaDeVida() {
         >
           📁 Documentos del Equipo
         </button>
+      </div>
+
+      {/* Indicador de desplazamiento en móviles */}
+      <div className="hint-scroll-movil no-print">
+        ↔️ Desliza la hoja horizontalmente para ver la tabla completa
       </div>
 
       {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}

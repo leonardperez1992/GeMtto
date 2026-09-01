@@ -189,7 +189,7 @@ function HojaDeVidaUser() {
 
       {/* Top Action Toolbar */}
       <div
-        className="no-print"
+        className="no-print toolbar-hoja-vida"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -217,7 +217,7 @@ function HojaDeVidaUser() {
         >
           <FaArrowLeft /> Volver a Inventario
         </Link>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="toolbar-hoja-vida-botones" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setModalQrOpen(true)}
             style={{
@@ -260,7 +260,7 @@ function HojaDeVidaUser() {
 
       {/* Pestañas de Navegación (Tabs) */}
       <div
-        className="no-print"
+        className="no-print pestañas-hoja-vida"
         style={{
           display: 'flex',
           gap: '8px',
@@ -335,6 +335,10 @@ function HojaDeVidaUser() {
         </button>
       </div>
 
+      {/* Indicador de desplazamiento en móviles */}
+      <div className="hint-scroll-movil no-print">
+        ↔️ Desliza la hoja horizontalmente para ver la tabla completa
+      </div>
 
       {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}
       <div className={`documento-hoja-vida hoja-pagina ${activeTab !== 'ficha' ? 'ocultar-en-pantalla' : ''}`}>

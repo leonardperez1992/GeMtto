@@ -29,7 +29,7 @@ import Ips from './views/Ips';
 import Informes from './views/Informes';
 import AlertasMtto from './views/AlertasMtto';
 import HojaDeVidaQr from './views/HojaDeVidaQr';
-
+import Cronograma from './views/Cronograma';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -57,6 +57,8 @@ const RouterContainer = () => {
           <Route path="/registro" element={<Registro />} />
           <Route path="/inventarioua" element={<Inventario />} />
           <Route path="/inventariouser" element={<InventarioUser />} />
+          <Route path="/cronograma" element={<Cronograma />} />
+          <Route path="/cronogramauser" element={<Cronograma />} />
           <Route path="/editarequipo" element={<EditInventary />} />
           <Route path="/hojadevida" element={<HojaDeVida />} />
           <Route path="/hojadevidausuario" element={<HojaDeVidaUser />} />

@@ -10,7 +10,8 @@ import {
   FaFileInvoice, 
   FaCogs, 
   FaHospital, 
-  FaSignOutAlt 
+  FaSignOutAlt,
+  FaCalendarAlt 
 } from 'react-icons/fa';
 
 function Navbar() {
@@ -32,15 +33,16 @@ function Navbar() {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '7px 13px',
+        padding: '7px 12px',
         borderRadius: '8px',
         fontSize: '13.5px',
-        fontWeight: 'bold',
+        fontWeight: active ? '700' : '600',
         textDecoration: 'none',
-        backgroundColor: active ? '#f59e0b' : 'rgba(245, 158, 11, 0.25)',
-        color: active ? '#000000' : '#fef3c7',
-        border: '1px solid rgba(245, 158, 11, 0.5)',
-        transition: 'all 0.2s',
+        transition: 'all 0.15s ease',
+        backgroundColor: active ? '#dc2626' : 'rgba(239, 68, 68, 0.2)',
+        color: '#ffffff',
+        border: '1px solid #ef4444',
+        boxShadow: active ? '0 0 12px rgba(239, 68, 68, 0.5)' : 'none',
       };
     }
 
@@ -51,12 +53,13 @@ function Navbar() {
       padding: '7px 12px',
       borderRadius: '8px',
       fontSize: '13.5px',
-      fontWeight: active ? '600' : '500',
+      fontWeight: active ? '700' : '500',
       textDecoration: 'none',
-      backgroundColor: active ? 'rgba(255, 255, 255, 0.22)' : 'transparent',
-      color: active ? '#ffffff' : 'rgba(255, 255, 255, 0.85)',
-      border: active ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid transparent',
-      transition: 'all 0.2s',
+      transition: 'all 0.15s ease',
+      backgroundColor: active ? '#0284c7' : 'transparent',
+      color: active ? '#ffffff' : '#cbd5e1',
+      border: active ? '1px solid #38bdf8' : '1px solid transparent',
+      boxShadow: active ? '0 0 10px rgba(56, 189, 248, 0.35)' : 'none',
     };
   };
 
@@ -83,6 +86,11 @@ function Navbar() {
             <li>
               <Link to="/inventarioua" style={linkStyle('/inventarioua')}>
                 <FaBoxes size={13} /> Inventario
+              </Link>
+            </li>
+            <li>
+              <Link to="/cronograma" style={linkStyle('/cronograma')}>
+                <FaCalendarAlt size={13} /> Cronograma
               </Link>
             </li>
             <li>
@@ -144,6 +152,11 @@ function Navbar() {
             <li>
               <Link to="/inventariouser" style={linkStyle('/inventariouser')}>
                 <FaBoxes size={13} /> Inventario
+              </Link>
+            </li>
+            <li>
+              <Link to="/cronogramauser" style={linkStyle('/cronogramauser')}>
+                <FaCalendarAlt size={13} /> Cronograma
               </Link>
             </li>
             <li className="nav-item-logout">

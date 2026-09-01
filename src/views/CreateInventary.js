@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { apiCreateInventario, apiIps } from '../utils/api';
 import request from '../utils/request';
 import { FaPlusCircle, FaSave, FaArrowLeft, FaHospital, FaMicrochip, FaCalendarAlt } from 'react-icons/fa';
+import MesesSelector from '../components/MesesSelector';
+import { calcularMesesSugeridos } from '../utils/cronogramaHelper';
 
 function CreateInventary() {
   const [ipss, setIpss] = useState([]);
@@ -23,6 +25,7 @@ function CreateInventary() {
     fecha_instalacion: '',
     fecha_fabricacion: '',
     periodicidad: '',
+    meses_mantenimiento: [],
   });
 
   const obtenerIps = async () => {
@@ -42,7 +45,14 @@ function CreateInventary() {
 
   const handleSave = (e) => {
     const { name, value } = e.target;
-    setInventary((prev) => ({ ...prev, [name]: value }));
+    setInventary((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Si cambia la periodicidad y no ha seleccionado meses manualmente, auto-sugerir
+      if (name === 'periodicidad' && value) {
+        updated.meses_mantenimiento = calcularMesesSugeridos(value, prev.fecha_instalacion);
+      }
+      return updated;
+    });
   };
 
   const CreateServ = async (e) => {
@@ -376,6 +386,18 @@ function CreateInventary() {
                       onChange={handleSave}
                       className="input-report"
                       placeholder="Ej. Ing. Biomédico / Departamento Técnico"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '8px 12px' }}>
+                    <MesesSelector
+                      selectedMonths={inventary.meses_mantenimiento}
+                      periodicidad={inventary.periodicidad}
+                      fechaBase={inventary.fecha_instalacion}
+                      onChange={(newMonths) =>
+                        setInventary((prev) => ({ ...prev, meses_mantenimiento: newMonths }))
+                      }
                     />
                   </td>
                 </tr>

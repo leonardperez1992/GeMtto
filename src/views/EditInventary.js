@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { apiEditInventario, apiObtenerEquipo, apiIps } from '../utils/api';
 import request from '../utils/request';
 import { FaEdit, FaSave, FaArrowLeft, FaHospital, FaMicrochip, FaCalendarAlt } from 'react-icons/fa';
+import MesesSelector from '../components/MesesSelector';
+import { calcularMesesSugeridos } from '../utils/cronogramaHelper';
 
 function EditInventary() {
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,7 @@ function EditInventary() {
     fecha_instalacion: '',
     fecha_fabricacion: '',
     periodicidad: '',
+    meses_mantenimiento: [],
   });
 
   const fetchIps = async () => {
@@ -50,7 +53,12 @@ function EditInventary() {
         body: { id },
       });
       if (response && response.success && response.equipo) {
-        setInventary(response.equipo);
+        const eq = response.equipo;
+        // Si no tiene meses guardados, auto-sugerir según periodicidad
+        if (!eq.meses_mantenimiento || eq.meses_mantenimiento.length === 0) {
+          eq.meses_mantenimiento = calcularMesesSugeridos(eq.periodicidad, eq.fecha_instalacion);
+        }
+        setInventary(eq);
       } else {
         alert(`${response?.message || 'Error al obtener equipo'}`);
       }
@@ -76,7 +84,13 @@ function EditInventary() {
 
   const handleSave = (e) => {
     const { name, value } = e.target;
-    setInventary((prev) => ({ ...prev, [name]: value }));
+    setInventary((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'periodicidad' && value) {
+        updated.meses_mantenimiento = calcularMesesSugeridos(value, prev.fecha_instalacion);
+      }
+      return updated;
+    });
   };
 
   const EditEquipo = async (e) => {
@@ -427,6 +441,18 @@ function EditInventary() {
                       onChange={handleSave}
                       className="input-report"
                       placeholder="Ej. Ing. Biomédico / Departamento Técnico"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={4} style={{ padding: '8px 12px' }}>
+                    <MesesSelector
+                      selectedMonths={inventary.meses_mantenimiento}
+                      periodicidad={inventary.periodicidad}
+                      fechaBase={inventary.fecha_instalacion}
+                      onChange={(newMonths) =>
+                        setInventary((prev) => ({ ...prev, meses_mantenimiento: newMonths }))
+                      }
                     />
                   </td>
                 </tr>

@@ -743,6 +743,10 @@ textarea:focus {
   .ocultar-en-pantalla {
     display: none !important;
   }
+  .encabezado-impresion-cronograma,
+  .bloque-firmas-cronograma-print {
+    display: none !important;
+  }
 }
 
 /* ===================================================
@@ -751,8 +755,8 @@ textarea:focus {
 
 @media print {
   @page {
-    size: letter portrait;
-    margin: 8mm 8mm 8mm 8mm;
+    size: letter landscape;
+    margin: 6mm 6mm 6mm 6mm;
   }
 
   /* Reset global de fondos y estructura */
@@ -796,7 +800,64 @@ textarea:focus {
     visibility: hidden !important;
   }
 
-  /* Formato de la hoja para impresión */
+  /* Cronograma Impresión */
+  .encabezado-impresion-cronograma {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+
+  .bloque-firmas-cronograma-print {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .vista-cronograma {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .tabla-cronograma-completa {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1.5px solid #0f3b60 !important;
+    margin: 0 !important;
+    font-size: 8.5px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-cronograma-completa th {
+    background-color: #0f3b60 !important;
+    color: #ffffff !important;
+    border: 1px solid #0f3b60 !important;
+    padding: 3px 2px !important;
+    font-size: 8.5px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tabla-cronograma-completa td {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #94a3b8 !important;
+    padding: 2.5px 2px !important;
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Formato de la hoja de vida para impresión */
   .documento-hoja-vida {
     background: #ffffff !important;
     background-color: #ffffff !important;

@@ -141,7 +141,7 @@ function HojaDeVidaUser() {
       fecha: rep.fecha || '',
       tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      descripcion: rep.observaciones || rep.desc_servicio || '-',
+      observaciones: rep.observaciones || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
       data: rep,
     })),
@@ -151,7 +151,7 @@ function HojaDeVidaUser() {
       fecha: rep.fecha || '',
       tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.proveedor || 'Proveedor Externo',
-      descripcion: rep.descripcion || '-',
+      observaciones: rep.descripcion || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
       nombre_original: rep.nombre_original,
       data: rep,
@@ -626,7 +626,7 @@ function HojaDeVidaUser() {
               <th style={{ width: '14%', padding: '8px', textAlign: 'left' }}>FECHA</th>
               <th style={{ width: '20%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
               <th style={{ width: '24%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
-              <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DESCRIPCIÓN</th>
+              <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
               <th style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER</th>
             </tr>
             {todosLosReportes.length === 0 ? (
@@ -649,7 +649,7 @@ function HojaDeVidaUser() {
                       {rep.responsable_proveedor}
                     </strong>
                   </td>
-                  <td style={{ fontSize: '12px' }}>{rep.descripcion}</td>
+                  <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
                   <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {rep.esExterno ? (
                       <a

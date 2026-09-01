@@ -257,7 +257,7 @@ function HojaDeVida() {
       fecha: rep.fecha || '',
       tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      descripcion: rep.observaciones || rep.desc_servicio || '-',
+      observaciones: rep.observaciones || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
       data: rep,
     })),
@@ -267,7 +267,7 @@ function HojaDeVida() {
       fecha: rep.fecha || '',
       tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.proveedor || 'Proveedor Externo',
-      descripcion: rep.descripcion || '-',
+      observaciones: rep.descripcion || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
       nombre_original: rep.nombre_original,
       data: rep,
@@ -778,7 +778,7 @@ function HojaDeVida() {
               <th style={{ width: '13%', padding: '8px', textAlign: 'left' }}>FECHA</th>
               <th style={{ width: '18%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
               <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
-              <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DESCRIPCIÓN</th>
+              <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
               <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>Nº REP./CERT.</th>
               <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>VER</th>
             </tr>
@@ -802,7 +802,7 @@ function HojaDeVida() {
                       {rep.responsable_proveedor}
                     </strong>
                   </td>
-                  <td style={{ fontSize: '12px' }}>{rep.descripcion}</td>
+                  <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
                   <td style={{ textAlign: 'center' }}>
                     <strong style={{ color: '#0284c7', fontSize: '12px' }}>
                       {rep.numero_documento}

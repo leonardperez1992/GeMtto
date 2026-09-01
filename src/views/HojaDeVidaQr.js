@@ -20,6 +20,7 @@ import {
   FaQrcode,
   FaHospital,
   FaCheckDouble,
+  FaFileMedical,
 } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
 import { Link } from 'react-router-dom';
@@ -76,17 +77,19 @@ function HojaDeVidaQr() {
     }
   };
 
-  const obtenerIps = async (institucion) => {
-    if (!institucion) return;
+  const obtenerIps = async (ips) => {
+    if (!ips) return;
     try {
       const response = await request({
         link: apiGetIps,
         method: 'GET',
-        body: { institucion },
+        body: { ips },
       });
-      if (response && response.success && response.ips && response.ips.length > 0) {
+      if (response && response.success && response.institucion?.logo?.[0]) {
+        setIpsLogo(response.institucion.logo[0].data_url);
+      } else if (response && response.success && response.ips && response.ips.length > 0) {
         const found = response.ips.find(
-          (item) => item.ips?.trim().toUpperCase() === institucion.trim().toUpperCase()
+          (item) => item.ips?.trim().toUpperCase() === ips.trim().toUpperCase()
         );
         if (found && found.logo) {
           setIpsLogo(found.logo);
@@ -130,17 +133,16 @@ function HojaDeVidaQr() {
     init();
   }, []);
 
-  // Consolidado cronológico de reportes internos y externos
+  // Consolidado cronológico de reportes internos y externos con observaciones puras
   const todosLosReportes = [
     ...reportes.map((rep) => ({
       _id: rep._id,
       esExterno: false,
       fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || 'MANTENIMIENTO',
+      tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      descripcion: rep.desc_servicio || rep.problema_reportado || '-',
+      observaciones: rep.observaciones || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
-      nombre_original: null,
       data: rep,
     })),
     ...reportesExternos.map((rep) => ({
@@ -149,7 +151,7 @@ function HojaDeVidaQr() {
       fecha: rep.fecha || '',
       tipo_servicio: rep.tipo_servicio || '-',
       responsable_proveedor: rep.proveedor || 'Proveedor Externo',
-      descripcion: rep.descripcion || '-',
+      observaciones: rep.descripcion || '-',
       numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
       nombre_original: rep.nombre_original,
       data: rep,
@@ -338,7 +340,7 @@ function HojaDeVidaQr() {
         </button>
       </div>
 
-      {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}
+      {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO (Formato original) */}
       <div className={`documento-hoja-vida hoja-pagina ${activeTab !== 'ficha' ? 'ocultar-en-pantalla' : ''}`}>
         <table className="tabla-documento">
           {/* Header */}
@@ -352,7 +354,7 @@ function HojaDeVidaQr() {
                 )}
               </td>
               <td
-                colSpan={3}
+                colSpan={2}
                 style={{
                   width: '50%',
                   textAlign: 'center',
@@ -360,11 +362,11 @@ function HojaDeVidaQr() {
                   verticalAlign: 'middle',
                 }}
               >
-                <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '17px', fontWeight: '800', color: '#0f3b60', letterSpacing: '0.5px' }}>
                   HOJA DE VIDA DE EQUIPO BIOMÉDICO
                 </div>
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#555', marginTop: '2px' }}>
-                  GESTIÓN Y CONTROL DE TECNOLOGÍA BIOMÉDICA
+                <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
+                  SISTEMA DE GESTIÓN Y MANTENIMIENTO HOSPITALARIO
                 </div>
               </td>
               <td colSpan={1} style={{ width: '25%', padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
@@ -377,194 +379,192 @@ function HojaDeVidaQr() {
             </tr>
           </thead>
           <tbody>
-            {/* 1. Datos de Identificación */}
+            {/* 1. Ubicación Institucional */}
             <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                1. DATOS DE IDENTIFICACIÓN DEL EQUIPO
+              <td colSpan={4} className="seccion-titulo">
+                1. UBICACIÓN INSTITUCIONAL
               </td>
             </tr>
             <tr>
-              <td colSpan={3} style={{ verticalAlign: 'top', padding: 0 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', margin: 0 }}>
-                  <tbody>
-                    <tr>
-                      <th style={{ width: '38%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>EQUIPO:</th>
-                      <td><strong>{equipo?.equipo}</strong></td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>MARCA:</th>
-                      <td>{equipo?.marca}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>MODELO:</th>
-                      <td>{equipo?.modelo}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>SERIE:</th>
-                      <td><span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#0284c7' }}>{equipo?.serie}</span></td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>INVENTARIO / ACTIVO:</th>
-                      <td>{equipo?.inventario || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>REGISTRO SANITARIO INVIMA:</th>
-                      <td>{equipo?.registro_invima || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FECHA DE COMPRA / INSTALACIÓN:</th>
-                      <td>{equipo?.fecha_compra || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FECHA PUESTA EN SERVICIO:</th>
-                      <td>{equipo?.fecha_operacion || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VENCIMIENTO DE GARANTÍA:</th>
-                      <td>{equipo?.vencimiento_garantia || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VIDA ÚTIL ESTIMADA:</th>
-                      <td>{equipo?.vida_util ? `${equipo?.vida_util} Años` : 'N/A'}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <td colSpan={2}>
+                <span className="label-bold">IPS / CLIENTE:</span> {equipo?.institucion}
               </td>
-              {/* Foto del Equipo */}
-              <td colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', backgroundColor: '#f8fafc' }}>
-                {imagen ? (
-                  <img
-                    src={imagen}
-                    alt="Foto del Equipo"
-                    style={{
-                      maxHeight: '190px',
-                      maxWidth: '100%',
-                      objectFit: 'contain',
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                    }}
-                  />
-                ) : (
-                  <div style={{ color: '#94a3b8', fontSize: '12px', fontStyle: 'italic', padding: '30px 10px' }}>
-                    Sin fotografía adjunta
-                  </div>
-                )}
+              <td colSpan={2}>
+                <span className="label-bold">SERVICIO:</span> {equipo?.servicio}
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <span className="label-bold">UBICACIÓN / ÁREA:</span> {equipo?.ubicacion}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">RESPONSABLE:</span> {equipo?.responsable}
               </td>
             </tr>
 
-            {/* 2. Ubicación Institucional */}
+            {/* 2. Identificación del Equipo */}
             <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                2. UBICACIÓN INSTITUCIONAL Y RESPONSABLE
+              <td colSpan={4} className="seccion-titulo">
+                2. IDENTIFICACIÓN DEL EQUIPO
               </td>
             </tr>
             <tr>
-              <th style={{ width: '20%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>INSTITUCIÓN / IPS:</th>
-              <td colSpan={2}>{equipo?.institucion}</td>
-              <th style={{ width: '20%', backgroundColor: '#f8fafc', color: '#0f3b60' }}>SERVICIO / ÁREA:</th>
-              <td>{equipo?.servicio}</td>
-            </tr>
-            <tr>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>UBICACIÓN EXACTA:</th>
-              <td colSpan={2}>{equipo?.ubicacion || 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>RESPONSABLE DEL EQUIPO:</th>
-              <td>{equipo?.responsable || 'N/A'}</td>
-            </tr>
-
-            {/* 3. Clasificación Técnica y Biomédica */}
-            <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                3. CLASIFICACIÓN TÉCNICA Y BIOMÉDICA
+              {/* Contenedor de la Foto Centrado */}
+              <td
+                colSpan={2}
+                rowSpan={7}
+                style={{
+                  textAlign: 'center',
+                  verticalAlign: 'middle',
+                  padding: '16px',
+                  backgroundColor: '#f8fafc',
+                  borderRight: '1.5px solid #1e293b',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', width: '100%' }}>
+                  {imagen ? (
+                    <img
+                      src={imagen}
+                      alt={equipo?.equipo}
+                      style={{
+                        maxHeight: '190px',
+                        maxWidth: '90%',
+                        objectFit: 'contain',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        display: 'block',
+                        margin: '0 auto',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: '10px' }}>
+                      <FaFileMedical size={42} color="#cbd5e1" style={{ display: 'block', margin: '0 auto 8px auto' }} />
+                      Sin fotografía registrada
+                    </div>
+                  )}
+                </div>
               </td>
+              <td style={{ width: '22%', fontWeight: '700', backgroundColor: '#f1f5f9' }}>NOMBRE EQUIPO:</td>
+              <td style={{ width: '28%', fontWeight: 'bold', color: '#0f3b60' }}>{equipo?.equipo}</td>
             </tr>
             <tr>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>CLASIFICACIÓN BIOMÉDICA:</th>
-              <td colSpan={2}>{ficha?.clas_biomedica || equipo?.clasificacion_biomedica || 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>CLASIFICACIÓN DE RIESGO:</th>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>MARCA:</td>
+              <td>{equipo?.marca}</td>
+            </tr>
+            <tr>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>MODELO:</td>
+              <td>{equipo?.modelo}</td>
+            </tr>
+            <tr>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>SERIE:</td>
+              <td><span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{equipo?.serie}</span></td>
+            </tr>
+            <tr>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>CÓDIGO INVENTARIO:</td>
+              <td>{equipo?.inventario || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>REGISTRO SANITARIO:</td>
+              <td>{equipo?.registro_invima}</td>
+            </tr>
+            <tr>
+              <td style={{ fontWeight: '700', backgroundColor: '#f1f5f9' }}>CLASIFICACIÓN DE RIESGO:</td>
               <td>
-                <strong style={{ color: '#0284c7' }}>{equipo?.riesgo || 'CLASE IIA'}</strong>
+                <span style={{ fontWeight: 'bold', color: '#0369a1' }}>{equipo?.riesgo}</span>
               </td>
             </tr>
             <tr>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>TECNOLOGÍA PREDOMINANTE:</th>
-              <td colSpan={2}>{ficha?.tecnologia || equipo?.tecnologia || 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>USO / APLICACIÓN:</th>
-              <td>{equipo?.uso || 'CLÍNICO / MÉDICO'}</td>
-            </tr>
-
-            {/* 4. Especificaciones Técnicas y Eléctricas */}
-            <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                4. ESPECIFICACIONES TÉCNICAS Y ELÉCTRICAS (MODELO)
+              <td colSpan={2}>
+                <span className="label-bold">FORMA DE ADQUISICIÓN:</span> {equipo?.forma_adquisicion || 'COMPRA'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">FECHA DE INSTALACIÓN:</span> {equipo?.fecha_instalacion || 'N/A'}
               </td>
             </tr>
             <tr>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>VOLTAJE:</th>
-              <td>{ficha?.voltaje ? `${ficha?.voltaje} VAC` : 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>AMPERAJE / CORRIENTE:</th>
-              <td>{ficha?.amperaje ? `${ficha?.amperaje} A` : 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>POTENCIA:</th>
-            </tr>
-            <tr>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>FRECUENCIA:</th>
-              <td>{ficha?.frecuencia ? `${ficha?.frecuencia} Hz` : 'N/A'}</td>
-              <th style={{ backgroundColor: '#f8fafc', color: '#0f3b60' }}>BATERÍA:</th>
-              <td>{ficha?.bateria || 'N/A'}</td>
-              <td style={{ backgroundColor: '#f8fafc', fontWeight: 'bold' }}>
-                {ficha?.potencia ? `${ficha?.potencia} W` : 'N/A'}
+              <td colSpan={2}>
+                <span className="label-bold">FECHA DE FABRICACIÓN:</span> {equipo?.fecha_fabricacion || 'N/A'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">PERIODICIDAD DE MTTO:</span>{' '}
+                <strong style={{ color: '#0f3b60' }}>{equipo?.periodicidad || 'SEMESTRAL'}</strong>
               </td>
             </tr>
 
-            {/* 5. Accesorios y Cantidades */}
+            {/* 3. Información Técnica */}
             <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                5. ACCESORIOS REGISTRADOS
+              <td colSpan={4} className="seccion-titulo">
+                3. ESPECIFICACIONES TÉCNICAS
               </td>
             </tr>
             <tr>
-              <td colSpan={5} style={{ padding: 0 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', margin: 0 }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f1f5f9', fontSize: '11px', textAlign: 'left' }}>
-                      <th style={{ width: '35%', padding: '6px' }}>ACCESORIO 1</th>
-                      <th style={{ width: '15%', padding: '6px' }}>CANTIDAD</th>
-                      <th style={{ width: '35%', padding: '6px' }}>ACCESORIO 2</th>
-                      <th style={{ width: '15%', padding: '6px' }}>CANTIDAD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{ficha?.accesorio1 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad1 || '-'}</td>
-                      <td>{ficha?.accesorio2 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad2 || '-'}</td>
-                    </tr>
-                    <tr>
-                      <td>{ficha?.accesorio3 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad3 || '-'}</td>
-                      <td>{ficha?.accesorio4 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad4 || '-'}</td>
-                    </tr>
-                    <tr>
-                      <td>{ficha?.accesorio5 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad5 || '-'}</td>
-                      <td>{ficha?.accesorio6 || '-'}</td>
-                      <td style={{ textAlign: 'center' }}>{ficha?.cantidad6 || '-'}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <td colSpan={2}>
+                <span className="label-bold">CLASIFICACIÓN BIOMÉDICA:</span> {ficha?.clas_biomedica || '-'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">TECNOLOGÍA PREDOMINANTE:</span> {ficha?.tecnologia || '-'}
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <span className="label-bold">VOLTAJE:</span> {ficha?.voltaje || '-'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">AMPERAJE:</span> {ficha?.amperaje || '-'}
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <span className="label-bold">TEMPERATURA:</span> {ficha?.temperatura || '-'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">FRECUENCIA:</span> {ficha?.frecuencia || '-'}
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={2}>
+                <span className="label-bold">POTENCIA:</span> {ficha?.potencia || '-'}
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">BATERÍA:</span> {ficha?.bateria || '-'}
               </td>
             </tr>
 
-            {/* 6. Recomendaciones del Fabricante */}
+            {/* 4. Accesorios */}
             <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                6. RECOMENDACIONES DEL FABRICANTE
+              <td colSpan={3} className="seccion-titulo">
+                4. ACCESORIOS ASOCIADOS
+              </td>
+              <td className="seccion-titulo" style={{ textAlign: 'center', width: '20%' }}>
+                CANTIDAD
+              </td>
+            </tr>
+            {Array.from({ length: 10 }, (_, i) => i + 1).some((i) => ficha?.[`accesorio${i}`]) ? (
+              Array.from({ length: 10 }, (_, i) => i + 1)
+                .filter((i) => ficha?.[`accesorio${i}`])
+                .map((i) => (
+                  <tr key={i}>
+                    <td colSpan={3} style={{ fontWeight: '500' }}>{ficha[`accesorio${i}`]}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{ficha[`cantidad${i}`] || '1'}</td>
+                  </tr>
+                ))
+            ) : (
+              <tr>
+                <td colSpan={3} style={{ color: '#64748b', fontStyle: 'italic' }}>Sin accesorios adicionales</td>
+                <td style={{ textAlign: 'center', color: '#64748b' }}>-</td>
+              </tr>
+            )}
+
+            {/* 5. Recomendaciones */}
+            <tr>
+              <td colSpan={4} className="seccion-titulo">
+                5. RECOMENDACIONES DEL FABRICANTE
               </td>
             </tr>
             <tr>
-              <td colSpan={5} style={{ padding: '10px 14px', fontSize: '12px', lineHeight: '1.5', color: '#334155' }}>
-                {ficha?.recomendaciones || 'Realizar mantenimiento preventivo periódico según cronograma institucional y recomendaciones del fabricante.'}
+              <td colSpan={4} style={{ padding: '12px', minHeight: '60px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                {ficha?.recomendaciones || 'Realizar mantenimiento preventivo periódico, limpieza con desinfectante no corrosivo y verificación de calibración periódica.'}
               </td>
             </tr>
           </tbody>
@@ -584,7 +584,7 @@ function HojaDeVidaQr() {
                 )}
               </td>
               <td
-                colSpan={3}
+                colSpan={4}
                 style={{
                   width: '50%',
                   textAlign: 'center',
@@ -609,7 +609,7 @@ function HojaDeVidaQr() {
             </tr>
             {/* Banner resumen del equipo */}
             <tr>
-              <td colSpan={5} style={{ backgroundColor: '#f1f5f9', padding: '8px 12px', fontSize: '12px', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1' }}>
+              <td colSpan={6} style={{ backgroundColor: '#f1f5f9', padding: '8px 12px', fontSize: '12px', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1' }}>
                 <span style={{ marginRight: '16px' }}><strong>EQUIPO:</strong> {equipo?.equipo}</span>
                 <span style={{ marginRight: '16px' }}><strong>MARCA:</strong> {equipo?.marca}</span>
                 <span style={{ marginRight: '16px' }}><strong>MODELO:</strong> {equipo?.modelo}</span>
@@ -620,21 +620,22 @@ function HojaDeVidaQr() {
           </thead>
           <tbody>
             <tr>
-              <td colSpan={5} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
-                6. REGISTRO HISTÓRICO DE MANTENIMIENTOS Y SERVICIOS
+              <td colSpan={6} className="seccion-titulo" style={{ backgroundColor: '#0f3b60', color: '#ffffff' }}>
+                6. REGISTRO HISTÓRICO DE ACTIVIDADES Y MANTENIMIENTOS
               </td>
             </tr>
             <tr style={{ backgroundColor: '#f8fafc', fontWeight: 'bold', fontSize: '12px' }}>
-              <th style={{ width: '14%', padding: '8px', textAlign: 'left' }}>FECHA</th>
-              <th style={{ width: '20%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
-              <th style={{ width: '24%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
-              <th style={{ width: '30%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES / DETALLE</th>
-              <th style={{ width: '12%', padding: '8px', textAlign: 'center' }}>VER REPORTE</th>
+              <th style={{ width: '13%', padding: '8px', textAlign: 'left' }}>FECHA</th>
+              <th style={{ width: '18%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
+              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
+              <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
+              <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>Nº REP./CERT.</th>
+              <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>VER</th>
             </tr>
             {todosLosReportes.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontStyle: 'italic' }}>
-                  No hay reportes ni actividades registradas para este equipo biomédico.
+                <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontStyle: 'italic' }}>
+                  No hay reportes ni actividades de servicio registradas para esta serie.
                 </td>
               </tr>
             ) : (
@@ -651,7 +652,12 @@ function HojaDeVidaQr() {
                       {rep.responsable_proveedor}
                     </strong>
                   </td>
-                  <td style={{ fontSize: '12px' }}>{rep.descripcion}</td>
+                  <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <strong style={{ color: '#0284c7', fontSize: '12px' }}>
+                      {rep.numero_documento}
+                    </strong>
+                  </td>
                   <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {rep.esExterno ? (
                       <a

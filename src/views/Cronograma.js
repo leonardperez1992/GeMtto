@@ -693,7 +693,7 @@ function Cronograma() {
           TABLA PRINCIPAL DE CRONOGRAMA
           ========================================================== */}
       <div className="table-responsive-card">
-        <table className="table tabla-documento tabla-cronograma-completa">
+        <table className="table tabla-cronograma-completa">
           <thead>
             <tr>
               <th style={{ width: '3%', textAlign: 'center' }}>#</th>

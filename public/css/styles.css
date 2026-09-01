@@ -749,6 +749,46 @@ textarea:focus {
   }
 }
 
+.tabla-cronograma-completa {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 12.5px;
+  color: #f8fafc !important;
+  background-color: #1e293b !important;
+}
+
+.tabla-cronograma-completa thead th {
+  background-color: #0f172a !important;
+  color: #38bdf8 !important;
+  font-weight: 700;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 8px 10px;
+  border-bottom: 2px solid #0284c7 !important;
+  border-top: none !important;
+  white-space: nowrap;
+}
+
+.tabla-cronograma-completa tbody td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #334155 !important;
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  vertical-align: middle;
+  transition: background-color 0.15s ease;
+  font-size: 12px;
+}
+
+.tabla-cronograma-completa tbody tr:nth-child(even) td {
+  background-color: #0f172a !important;
+}
+
+.tabla-cronograma-completa tbody tr:hover td {
+  background-color: #334155 !important;
+}
+
 .th-mes-vertical {
   width: 28px !important;
   min-width: 26px !important;

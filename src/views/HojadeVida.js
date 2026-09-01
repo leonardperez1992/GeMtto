@@ -12,7 +12,7 @@ import {
   apiVerReporteExterno,
 } from '../utils/api';
 import request from '../utils/request';
-import { FaFileMedical, FaTrash, FaPrint, FaArrowLeft, FaFilePdf, FaFileUpload, FaTimes } from 'react-icons/fa';
+import { FaFileMedical, FaTrash, FaPrint, FaArrowLeft, FaFileUpload, FaTimes } from 'react-icons/fa';
 import { GoEye } from 'react-icons/go';
 
 function HojaDeVida() {
@@ -23,6 +23,7 @@ function HojaDeVida() {
   const [imagen, setImagen] = useState('');
   const [ipsLogo, setIpsLogo] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ficha'); // 'ficha' | 'historial'
 
   // Estados para el modal de subir reporte externo
   const [modalExternoOpen, setModalExternoOpen] = useState(false);
@@ -261,11 +262,19 @@ function HojaDeVida() {
 
   return (
     <div className="contenedor" style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
-      {/* Estilos para impresión y salto de página */}
+      {/* Estilos para pestañas, impresión y salto de página */}
       <style>{`
+        @media screen {
+          .ocultar-en-pantalla {
+            display: none !important;
+          }
+        }
         @media print {
           .no-print {
             display: none !important;
+          }
+          .hoja-pagina {
+            display: block !important;
           }
           .pagina-2 {
             page-break-before: always !important;
@@ -287,7 +296,7 @@ function HojaDeVida() {
           padding: '14px 20px',
           borderRadius: '10px',
           border: '1px solid #334155',
-          marginBottom: '20px',
+          marginBottom: '16px',
           flexWrap: 'wrap',
           gap: '12px',
         }}
@@ -365,8 +374,73 @@ function HojaDeVida() {
         </div>
       </div>
 
+      {/* Pestañas de Navegación (Tabs) */}
+      <div
+        className="no-print"
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '16px',
+          borderBottom: '2px solid #334155',
+          paddingBottom: '2px',
+        }}
+      >
+        <button
+          onClick={() => setActiveTab('ficha')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: activeTab === 'ficha' ? '#0284c7' : '#1e293b',
+            color: activeTab === 'ficha' ? '#ffffff' : '#94a3b8',
+            border: activeTab === 'ficha' ? '1px solid #38bdf8' : '1px solid #334155',
+            borderBottom: 'none',
+            borderRadius: '8px 8px 0 0',
+            fontWeight: '700',
+            fontSize: '14px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          📄 Ficha Técnica / Hoja de Vida
+        </button>
+        <button
+          onClick={() => setActiveTab('historial')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: activeTab === 'historial' ? '#0284c7' : '#1e293b',
+            color: activeTab === 'historial' ? '#ffffff' : '#94a3b8',
+            border: activeTab === 'historial' ? '1px solid #38bdf8' : '1px solid #334155',
+            borderBottom: 'none',
+            borderRadius: '8px 8px 0 0',
+            fontWeight: '700',
+            fontSize: '14px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          📋 Historial de Mantenimientos
+          <span
+            style={{
+              backgroundColor: activeTab === 'historial' ? '#ffffff' : '#334155',
+              color: activeTab === 'historial' ? '#0284c7' : '#f8fafc',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '800',
+            }}
+          >
+            {todosLosReportes.length}
+          </span>
+        </button>
+      </div>
+
       {/* PÁGINA 1: IDENTIFICACIÓN Y FICHA TÉCNICA DEL EQUIPO */}
-      <div className="documento-hoja-vida">
+      <div className={`documento-hoja-vida hoja-pagina ${activeTab !== 'ficha' ? 'ocultar-en-pantalla' : ''}`}>
         <table className="tabla-documento">
           {/* Header */}
           <thead>
@@ -597,7 +671,7 @@ function HojaDeVida() {
       </div>
 
       {/* PÁGINA 2: HISTORIAL DE ACTIVIDADES Y MANTENIMIENTOS (Página independiente) */}
-      <div className="documento-hoja-vida pagina-2" style={{ marginTop: '30px' }}>
+      <div className={`documento-hoja-vida pagina-2 hoja-pagina ${activeTab !== 'historial' ? 'ocultar-en-pantalla' : ''}`} style={{ marginTop: '0px' }}>
         <table className="tabla-documento">
           {/* Header de la Página 2 */}
           <thead>
@@ -698,15 +772,15 @@ function HojaDeVida() {
                             gap: '4px',
                             padding: '4px 8px',
                             borderRadius: '4px',
-                            backgroundColor: '#dc2626',
+                            backgroundColor: '#0284c7',
                             color: '#ffffff',
                             textDecoration: 'none',
                             fontSize: '12px',
                             fontWeight: '600',
                           }}
-                          title={`Abrir PDF: ${rep.nombre_original}`}
+                          title="Ver Reporte"
                         >
-                          <FaFilePdf size={12} /> PDF
+                          <GoEye size={13} /> Ver
                         </a>
                         <button
                           onClick={() => eliminarReporteExterno(rep._id)}

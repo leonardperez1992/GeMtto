@@ -424,18 +424,6 @@ function HojaDeVida() {
           }}
         >
           📋 Historial de Mantenimientos
-          <span
-            style={{
-              backgroundColor: activeTab === 'historial' ? '#ffffff' : '#334155',
-              color: activeTab === 'historial' ? '#0284c7' : '#f8fafc',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: '800',
-            }}
-          >
-            {todosLosReportes.length}
-          </span>
         </button>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import request from '../utils/request';
 import { apiReportes, apiIps } from '../utils/api';
-import ExportJsonExcel from 'js-export-excel';
+import * as XLSX from 'xlsx';
 import Pagination from '../components/Pagination';
 import {
   FaChartPie,
@@ -17,6 +17,38 @@ import {
 import { GoSearch, GoEye } from 'react-icons/go';
 import { Link } from 'react-router-dom';
 
+export const MESES_OPCIONES = [
+  { valor: 'TODOS', label: '-- Todos los Meses --' },
+  { valor: '01', label: 'Enero (01)' },
+  { valor: '02', label: 'Febrero (02)' },
+  { valor: '03', label: 'Marzo (03)' },
+  { valor: '04', label: 'Abril (04)' },
+  { valor: '05', label: 'Mayo (05)' },
+  { valor: '06', label: 'Junio (06)' },
+  { valor: '07', label: 'Julio (07)' },
+  { valor: '08', label: 'Agosto (08)' },
+  { valor: '09', label: 'Septiembre (09)' },
+  { valor: '10', label: 'Octubre (10)' },
+  { valor: '11', label: 'Noviembre (11)' },
+  { valor: '12', label: 'Diciembre (12)' },
+];
+
+export const extraerMesFecha = (fechaStr) => {
+  if (!fechaStr) return '';
+  const str = String(fechaStr).trim();
+  const matchIso = str.match(/^\d{4}-(\d{2})/);
+  if (matchIso) return matchIso[1];
+  const matchSlash = str.match(/^\d{1,2}[/-](\d{1,2})[/-]\d{2,4}/);
+  if (matchSlash) return matchSlash[1].padStart(2, '0');
+  try {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      return String(d.getMonth() + 1).padStart(2, '0');
+    }
+  } catch (e) {}
+  return '';
+};
+
 function Informes() {
   const [reportes, setReportes] = useState([]);
   const [listaIps, setListaIps] = useState([]);
@@ -24,6 +56,7 @@ function Informes() {
   const [filtroTipo, setFiltroTipo] = useState('TODOS');
   const [filtroIps, setFiltroIps] = useState('TODAS');
   const [filtroAnio, setFiltroAnio] = useState('TODOS');
+  const [filtroMes, setFiltroMes] = useState('TODOS');
   const [loading, setLoading] = useState(true);
 
   // Pagination states
@@ -85,7 +118,7 @@ function Informes() {
     return Array.from(new Set(years)).sort((a, b) => b.localeCompare(a));
   }, [reportes]);
 
-  // Base filtrada por IPS y Año para calcular estadísticas del Dashboard
+  // Base filtrada por IPS, Año y Mes para calcular estadísticas del Dashboard
   const baseDashboard = useMemo(() => {
     return reportes.filter((r) => {
       if (filtroIps !== 'TODAS') {
@@ -95,9 +128,13 @@ function Informes() {
       if (filtroAnio !== 'TODOS') {
         if (!r.fecha || !r.fecha.startsWith(filtroAnio)) return false;
       }
+      if (filtroMes !== 'TODOS') {
+        const mesReporte = extraerMesFecha(r.fecha);
+        if (mesReporte !== filtroMes) return false;
+      }
       return true;
     });
-  }, [reportes, filtroIps, filtroAnio]);
+  }, [reportes, filtroIps, filtroAnio, filtroMes]);
 
   // Estadísticas del Dashboard
   const stats = useMemo(() => {
@@ -159,7 +196,7 @@ function Informes() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [buscar, filtroTipo, filtroIps, filtroAnio, itemsPerPage]);
+  }, [buscar, filtroTipo, filtroIps, filtroAnio, filtroMes, itemsPerPage]);
 
   // Paginated slice
   const paginatedReportes = useMemo(() => {
@@ -240,73 +277,68 @@ function Informes() {
     };
   };
 
-  // Descarga optimizada a Excel
+  // Descarga optimizada a Excel (.xlsx nativo)
   const downloadFileToExcel = () => {
     const dataToExport = filteredReportes.length > 0 ? filteredReportes : reportes;
     if (dataToExport.length === 0) {
-      alert('No hay registros de reportes para exportar.');
+      alert('No hay registros de reportes para exportar con los filtros seleccionados.');
       return;
     }
 
-    const dataTable = dataToExport.map((r) => {
+    const dataTable = dataToExport.map((r, idx) => {
       const { repuestos, cantidades } = extraerRepuestosInfo(r);
       return {
-        Fecha: r.fecha || '',
-        Numero_Reporte: r.numero_reporte || '',
-        Equipo: r.equipo || '',
-        Marca: r.marca || '',
-        Modelo: r.modelo || '',
-        Serie: r.serie || '',
-        Institucion: r.institucion || '',
-        Servicio: r.servicio || '',
-        Tipo_Mantenimiento: r.tipo_servicio || '',
-        Repuestos_Instalados: repuestos,
-        Cantidades: cantidades,
+        '#': idx + 1,
+        'FECHA': r.fecha || '',
+        'Nº REPORTE': r.numero_reporte || '',
+        'EQUIPO': r.equipo || '',
+        'MARCA': r.marca || '',
+        'MODELO': r.modelo || '',
+        'SERIE': r.serie || '',
+        'INSTITUCIÓN / IPS': r.institucion || '',
+        'SERVICIO': r.servicio || '',
+        'TIPO DE SERVICIO': r.tipo_servicio || '',
+        'PROBLEMA REPORTADO': r.problema_reportado || '',
+        'DESCRIPCIÓN DEL SERVICIO': r.desc_servicio || '',
+        'REPUESTOS INSTALADOS': repuestos,
+        'CANTIDADES': cantidades,
+        'ESTADO FINAL': r.estado_final || 'FUNCIONANDO',
+        'INGENIERO RESPONSABLE': r.nombre_ingeniero || '',
+        'RECIBIDO POR': r.nombre_recibe || '',
       };
     });
 
-    const ipsLabel = filtroIps !== 'TODAS' ? `_${filtroIps.replace(/\s+/g, '_')}` : '';
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dataTable);
+
+    ws['!cols'] = [
+      { wch: 5 },  // #
+      { wch: 13 }, // FECHA
+      { wch: 13 }, // Nº REPORTE
+      { wch: 28 }, // EQUIPO
+      { wch: 18 }, // MARCA
+      { wch: 18 }, // MODELO
+      { wch: 18 }, // SERIE
+      { wch: 28 }, // INSTITUCION
+      { wch: 20 }, // SERVICIO
+      { wch: 22 }, // TIPO DE SERVICIO
+      { wch: 35 }, // PROBLEMA
+      { wch: 45 }, // DESCRIPCION
+      { wch: 28 }, // REPUESTOS
+      { wch: 14 }, // CANTIDADES
+      { wch: 22 }, // ESTADO FINAL
+      { wch: 24 }, // INGENIERO
+      { wch: 24 }, // RECIBIDO POR
+    ];
+
+    const ipsLabel = filtroIps !== 'TODAS' ? `_${filtroIps.replace(/[^a-zA-Z0-9_-]/g, '_')}` : '';
     const anioLabel = filtroAnio !== 'TODOS' ? `_${filtroAnio}` : '';
-    const fileName = `GEMTTO_Informe_Mantenimiento${ipsLabel}${anioLabel}_${new Date().toISOString().split('T')[0]}`;
+    const mesObj = MESES_OPCIONES.find((m) => m.valor === filtroMes);
+    const mesLabel = filtroMes !== 'TODOS' ? `_${mesObj ? mesObj.label.split(' ')[0] : filtroMes}` : '';
 
-    const option = {
-      fileName: fileName,
-      datas: [
-        {
-          sheetData: dataTable,
-          sheetName: 'Informe_Mantenimientos',
-          sheetHeader: [
-            'Fecha',
-            'Número de Reporte',
-            'Equipo',
-            'Marca',
-            'Modelo',
-            'Serie',
-            'Institución',
-            'Servicio',
-            'Tipo de Mantenimiento',
-            'Repuestos Instalados',
-            'Cantidades',
-          ],
-          sheetFilter: [
-            'Fecha',
-            'Numero_Reporte',
-            'Equipo',
-            'Marca',
-            'Modelo',
-            'Serie',
-            'Institucion',
-            'Servicio',
-            'Tipo_Mantenimiento',
-            'Repuestos_Instalados',
-            'Cantidades',
-          ],
-        },
-      ],
-    };
-
-    const toExcel = new ExportJsonExcel(option);
-    toExcel.saveExcel();
+    XLSX.utils.book_append_sheet(wb, ws, 'Informe_Mantenimientos');
+    const fileName = `GEMTTO_Informe_Mantenimiento${ipsLabel}${anioLabel}${mesLabel}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   const renderBadgeTipo = (tipo) => {
@@ -486,6 +518,8 @@ function Informes() {
             </div>
             <div style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {filtroIps === 'TODAS' ? 'Todas las IPS' : filtroIps}
+              {filtroAnio !== 'TODOS' ? ` • ${filtroAnio}` : ''}
+              {filtroMes !== 'TODOS' ? ` • Mes ${filtroMes}` : ''}
             </div>
           </div>
 
@@ -549,7 +583,7 @@ function Informes() {
             style={{
               padding: '12px 14px',
               borderRadius: '10px',
-              backgroundColor: filtroTipo === 'INSTALACION' ? '#0c4a6e' : '#1e293b',
+              backgroundColor: filtroTipo === 'INSTALACION' ? '#082f49' : '#1e293b',
               border: filtroTipo === 'INSTALACION' ? '2px solid #38bdf8' : '1px solid #334155',
               cursor: 'pointer',
               transition: 'all 0.2s',
@@ -691,6 +725,33 @@ function Informes() {
               {uniqueAniosList.map((yr, idx) => (
                 <option key={idx} value={yr}>
                   {yr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filter by Mes */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#cbd5e1', margin: 0 }}>
+              <FaCalendarAlt style={{ marginRight: '3px' }} /> Mes:
+            </label>
+            <select
+              value={filtroMes}
+              onChange={(e) => setFiltroMes(e.target.value)}
+              style={{
+                padding: '6px 8px',
+                borderRadius: '6px',
+                border: '1px solid #334155',
+                fontSize: '12px',
+                backgroundColor: '#0f172a',
+                color: '#f8fafc',
+                cursor: 'pointer',
+                height: '36px',
+              }}
+            >
+              {MESES_OPCIONES.map((m) => (
+                <option key={m.valor} value={m.valor}>
+                  {m.label}
                 </option>
               ))}
             </select>

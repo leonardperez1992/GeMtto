@@ -27,14 +27,10 @@ export const loginUser = ({ usuario, password }) => {
       localStorage.setItem('user', JSON.stringify(response.user));
       dispatch(saveUser(response.user));
       alert(`Bienvenido ${response.user.name}`);
-      if (response.user.rol === 'user') {
-        window.location.href = './agendaua';
-      } else if (response.user.rol === 'barber') {
-        window.location.href = './serviciosui';
-      } else if (response.user.rol === 'admin') {
+      if (response.user.rol === 'admin') {
         window.location.href = './inventarioua';
       } else {
-        alert('Autenticación incorrecta');
+        window.location.href = './inventariouser';
       }
     } else {
       if (response.message === '{}') {

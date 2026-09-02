@@ -30,7 +30,8 @@ function Cronograma() {
     }
   }, []);
   const user = reduxUser || storedUser || {};
-  const isAdmin = String(user?.rol || '').trim().toLowerCase() === 'admin';
+  const isPathUser = typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('user');
+  const isAdmin = !isPathUser && String(user?.rol || '').trim().toLowerCase() === 'admin';
   const isNonAdmin = !isAdmin;
   const userInstitucion = String(user?.institucion || user?.ips || user?.empresa || '').trim();
 
@@ -39,7 +40,16 @@ function Cronograma() {
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+
+  const matchesInstitucion = (eqInst, targetInst) => {
+    if (!eqInst || !targetInst) return false;
+    const n1 = normalizeText(eqInst);
+    const n2 = normalizeText(targetInst);
+    if (!n1 || !n2) return false;
+    return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+  };
 
   const [inventario, setInventario] = useState([]);
   const [listaIps, setListaIps] = useState([]);
@@ -93,12 +103,10 @@ function Cronograma() {
         } else {
           // Fallback: si el backend no coincide con el regex, consultar inventario y filtrar estrictamente en frontend
           const fallbackRes = await request({ link: apiInventario, method: 'GET' });
-          if (fallbackRes && fallbackRes.success && fallbackRes.inventario) {
-            const normUser = normalizeText(userInstitucion);
-            const soloUser = fallbackRes.inventario.filter((eq) => {
-              const normEq = normalizeText(eq.institucion);
-              return normEq === normUser || normEq.includes(normUser) || normUser.includes(normEq);
-            });
+          if (fallbackRes && fallbackRes.success && Array.isArray(fallbackRes.inventario)) {
+            const soloUser = fallbackRes.inventario.filter((eq) =>
+              matchesInstitucion(eq.institucion, userInstitucion)
+            );
             setInventario(soloUser);
           } else {
             setInventario([]);
@@ -160,12 +168,8 @@ function Cronograma() {
     const set = new Set();
     const targetIps = isNonAdmin ? userInstitucion : selectedIps;
     inventario.forEach((eq) => {
-      if (targetIps) {
-        const normTarget = normalizeText(targetIps);
-        const normEq = normalizeText(eq.institucion);
-        if (normEq !== normTarget && !normEq.includes(normTarget) && !normTarget.includes(normEq)) {
-          return;
-        }
+      if (targetIps && !matchesInstitucion(eq.institucion, targetIps)) {
+        return;
       }
       if (eq.servicio && eq.servicio.trim()) {
         set.add(eq.servicio.trim());
@@ -192,16 +196,11 @@ function Cronograma() {
     return equiposConCronograma.filter((eq) => {
       // Filtro obligatorio por institución si el usuario no es administrador
       if (isNonAdmin) {
-        if (!userInstitucion) return false;
-        const normUser = normalizeText(userInstitucion);
-        const normEq = normalizeText(eq.institucion);
-        if (normEq !== normUser && !normEq.includes(normUser) && !normUser.includes(normEq)) {
+        if (!userInstitucion || !matchesInstitucion(eq.institucion, userInstitucion)) {
           return false;
         }
       } else if (selectedIps) {
-        const normSel = normalizeText(selectedIps);
-        const normEq = normalizeText(eq.institucion);
-        if (normEq !== normSel && !normEq.includes(normSel) && !normSel.includes(normEq)) {
+        if (!matchesInstitucion(eq.institucion, selectedIps)) {
           return false;
         }
       }

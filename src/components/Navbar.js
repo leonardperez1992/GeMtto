@@ -147,7 +147,7 @@ function Navbar() {
         )}
 
         {/* Regular User Navigation */}
-        {user?.rol === 'user' && (
+        {user && user?.rol !== 'admin' && (
           <ul className="nav-list">
             <li>
               <Link to="/inventariouser" style={linkStyle('/inventariouser')}>

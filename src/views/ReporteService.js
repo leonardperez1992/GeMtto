@@ -473,7 +473,7 @@ function ReporteService() {
                       value={reporte.fecha}
                       onChange={handleSave}
                       className="input-report"
-                      style={{ maxWidth: '200px', display: 'inline-block' }}
+                      style={{ maxWidth: '220px', display: 'inline-block', colorScheme: 'dark', cursor: 'pointer' }}
                       required
                     />
                   </td>

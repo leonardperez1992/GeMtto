@@ -289,7 +289,7 @@ function UpdateReporte() {
                       value={reporte.fecha || ''}
                       onChange={handleSave}
                       className="input-report"
-                      style={{ marginTop: '4px' }}
+                      style={{ marginTop: '4px', colorScheme: 'dark', cursor: 'pointer' }}
                     />
                   </td>
                 </tr>

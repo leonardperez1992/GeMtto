@@ -167,6 +167,79 @@ function Informes() {
     return filteredReportes.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredReportes, currentPage, itemsPerPage]);
 
+  const descartadosRepuestos = [
+    '',
+    ' ',
+    'NA',
+    'N/A',
+    'N.A',
+    'N.A.',
+    'NO APLICA',
+    'NO',
+    'NINGUNO',
+    'NINGUNA',
+    'NO TIENE',
+    'NO REQUIERE',
+    'NO SE REQUIERE',
+    'NO SE REQUIEREN',
+    'NO PRESENTA',
+    'SIN REPUESTOS',
+    'SIN REPUESTO',
+    '0',
+    '-',
+    '--',
+    '---',
+    '.',
+    '..',
+    'NULL',
+    'UNDEFINED',
+  ];
+
+  const esRepuestoValido = (desc) => {
+    if (!desc) return false;
+    const d = String(desc).trim().toUpperCase();
+    if (d.length === 0) return false;
+    return !descartadosRepuestos.includes(d);
+  };
+
+  const extraerRepuestosInfo = (r) => {
+    const items = [];
+    for (let i = 1; i <= 4; i++) {
+      const desc = r[`descripcion${i}`];
+      const cant = r[`cantidad${i}`];
+      if (esRepuestoValido(desc)) {
+        items.push({
+          descripcion: String(desc).trim(),
+          cantidad: cant !== undefined && cant !== null && String(cant).trim() !== '' ? String(cant).trim() : '1',
+        });
+      }
+    }
+    if (Array.isArray(r.repuestos)) {
+      r.repuestos.forEach((rep) => {
+        const desc = rep.descripcion || rep.nombre;
+        const cant = rep.cantidad;
+        if (esRepuestoValido(desc)) {
+          items.push({
+            descripcion: String(desc).trim(),
+            cantidad: cant !== undefined && cant !== null && String(cant).trim() !== '' ? String(cant).trim() : '1',
+          });
+        }
+      });
+    }
+
+    if (items.length === 0) {
+      return {
+        repuestos: 'SIN REPUESTOS',
+        cantidades: 'N/A',
+      };
+    }
+
+    return {
+      repuestos: items.map((x) => x.descripcion).join(', '),
+      cantidades: items.map((x) => x.cantidad).join(', '),
+    };
+  };
+
   // Descarga optimizada a Excel
   const downloadFileToExcel = () => {
     const dataToExport = filteredReportes.length > 0 ? filteredReportes : reportes;
@@ -175,33 +248,22 @@ function Informes() {
       return;
     }
 
-    const dataTable = dataToExport.map((r) => ({
-      Fecha: r.fecha || '',
-      Numero_Reporte: r.numero_reporte || '',
-      Tipo_Servicio: r.tipo_servicio || '',
-      Institucion: r.institucion || '',
-      Servicio: r.servicio || '',
-      Ciudad: r.ciudad || '',
-      Equipo: r.equipo || '',
-      Marca: r.marca || '',
-      Modelo: r.modelo || '',
-      Serie: r.serie || '',
-      Inventario: r.inventario || 'NA',
-      Estado_Final: r.estado_final || '',
-      Ingeniero_Responsable: r.nombre_ingeniero || '',
-      Cargo_Ingeniero: r.cargo_ingeniero || '',
-      Problema_Reportado: r.problema_reportado || '',
-      Descripcion_Servicio: r.desc_servicio || '',
-      Repuesto_1: r.descripcion1 || '',
-      Repuesto_2: r.descripcion2 || '',
-      Repuesto_3: r.descripcion3 || '',
-      Repuesto_4: r.descripcion4 || '',
-      Parametro_1: r.parametro1 || '',
-      Parametro_2: r.parametro2 || '',
-      Parametro_3: r.parametro3 || '',
-      Parametro_4: r.parametro4 || '',
-      Observaciones: r.observaciones || '',
-    }));
+    const dataTable = dataToExport.map((r) => {
+      const { repuestos, cantidades } = extraerRepuestosInfo(r);
+      return {
+        Fecha: r.fecha || '',
+        Numero_Reporte: r.numero_reporte || '',
+        Equipo: r.equipo || '',
+        Marca: r.marca || '',
+        Modelo: r.modelo || '',
+        Serie: r.serie || '',
+        Institucion: r.institucion || '',
+        Servicio: r.servicio || '',
+        Tipo_Mantenimiento: r.tipo_servicio || '',
+        Repuestos_Instalados: repuestos,
+        Cantidades: cantidades,
+      };
+    });
 
     const ipsLabel = filtroIps !== 'TODAS' ? `_${filtroIps.replace(/\s+/g, '_')}` : '';
     const anioLabel = filtroAnio !== 'TODOS' ? `_${filtroAnio}` : '';
@@ -215,30 +277,29 @@ function Informes() {
           sheetName: 'Informe_Mantenimientos',
           sheetHeader: [
             'Fecha',
-            'Nº Reporte',
-            'Tipo de Servicio',
-            'Institución / IPS',
-            'Servicio / Área',
-            'Ciudad',
-            'Equipo Biomédico',
+            'Número de Reporte',
+            'Equipo',
             'Marca',
             'Modelo',
             'Serie',
-            'Inventario',
-            'Estado Final',
-            'Ingeniero Responsable',
-            'Cargo Ingeniero',
-            'Problema Reportado',
-            'Descripción del Servicio',
-            'Repuesto 1',
-            'Repuesto 2',
-            'Repuesto 3',
-            'Repuesto 4',
-            'Parámetro 1',
-            'Parámetro 2',
-            'Parámetro 3',
-            'Parámetro 4',
-            'Observaciones',
+            'Institución',
+            'Servicio',
+            'Tipo de Mantenimiento',
+            'Repuestos Instalados',
+            'Cantidades',
+          ],
+          sheetFilter: [
+            'Fecha',
+            'Numero_Reporte',
+            'Equipo',
+            'Marca',
+            'Modelo',
+            'Serie',
+            'Institucion',
+            'Servicio',
+            'Tipo_Mantenimiento',
+            'Repuestos_Instalados',
+            'Cantidades',
           ],
         },
       ],

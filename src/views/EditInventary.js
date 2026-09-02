@@ -33,10 +33,10 @@ function EditInventary() {
   const fetchIps = async () => {
     try {
       const response = await request({
-        link: apiIps + '/getips',
+        link: apiIps,
         method: 'GET',
       });
-      if (response && response.success && response.ips) {
+      if (response && response.success && Array.isArray(response.ips)) {
         setListaIps(response.ips);
       }
     } catch (e) {

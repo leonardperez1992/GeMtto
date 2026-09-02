@@ -30,8 +30,8 @@ function CreateInventary() {
 
   const obtenerIps = async () => {
     try {
-      const response = await request({ link: apiIps + '/getips', method: 'GET' });
-      if (response.success && response.ips) {
+      const response = await request({ link: apiIps, method: 'GET' });
+      if (response && response.success && Array.isArray(response.ips)) {
         setIpss(response.ips);
       }
     } catch (e) {

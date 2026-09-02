@@ -12,6 +12,101 @@ import {
   FaSpinner,
 } from 'react-icons/fa';
 
+const MESES_CANONICOS = [
+  'ENERO',
+  'FEBRERO',
+  'MARZO',
+  'ABRIL',
+  'MAYO',
+  'JUNIO',
+  'JULIO',
+  'AGOSTO',
+  'SEPTIEMBRE',
+  'OCTUBRE',
+  'NOVIEMBRE',
+  'DICIEMBRE',
+];
+
+const MESES_MAPA = {
+  ene: 'ENERO',
+  enero: 'ENERO',
+  jan: 'ENERO',
+  feb: 'FEBRERO',
+  febrero: 'FEBRERO',
+  mar: 'MARZO',
+  marzo: 'MARZO',
+  abr: 'ABRIL',
+  abril: 'ABRIL',
+  apr: 'ABRIL',
+  may: 'MAYO',
+  mayo: 'MAYO',
+  jun: 'JUNIO',
+  junio: 'JUNIO',
+  jul: 'JULIO',
+  julio: 'JULIO',
+  ago: 'AGOSTO',
+  agosto: 'AGOSTO',
+  aug: 'AGOSTO',
+  sep: 'SEPTIEMBRE',
+  sept: 'SEPTIEMBRE',
+  septiembre: 'SEPTIEMBRE',
+  oct: 'OCTUBRE',
+  octubre: 'OCTUBRE',
+  nov: 'NOVIEMBRE',
+  noviembre: 'NOVIEMBRE',
+  dic: 'DICIEMBRE',
+  diciembre: 'DICIEMBRE',
+  dec: 'DICIEMBRE',
+};
+
+const parsearMeses = (val) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  const str = String(val).trim();
+  if (!str) return [];
+  const tokens = str.split(/[,;\-/|]+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+  const result = [];
+  tokens.forEach((t) => {
+    const num = parseInt(t, 10);
+    if (!isNaN(num) && num >= 1 && num <= 12) {
+      const m = MESES_CANONICOS[num - 1];
+      if (!result.includes(m)) result.push(m);
+      return;
+    }
+    const found = MESES_MAPA[t] || MESES_CANONICOS.find((m) => m.toLowerCase().startsWith(t) || t.startsWith(m.toLowerCase()));
+    if (found && !result.includes(found)) {
+      result.push(found);
+    }
+  });
+  return result;
+};
+
+const sugerirMesesPorPeriodicidad = (periodicidad) => {
+  const p = String(periodicidad || '').toUpperCase();
+  if (p.includes('NO APLICA') || p === 'NA' || p === 'N/A') {
+    return [];
+  }
+  if (p.includes('MENSUAL') && !p.includes('BI') && !p.includes('TRI') && !p.includes('CUATRI')) {
+    return [...MESES_CANONICOS];
+  }
+  if (p.includes('BIMESTRAL')) {
+    return ['ENERO', 'MARZO', 'MAYO', 'JULIO', 'SEPTIEMBRE', 'NOVIEMBRE'];
+  }
+  if (p.includes('TRIMESTRAL')) {
+    return ['ENERO', 'ABRIL', 'JULIO', 'OCTUBRE'];
+  }
+  if (p.includes('CUATRIMESTRAL')) {
+    return ['ENERO', 'MAYO', 'SEPTIEMBRE'];
+  }
+  if (p.includes('SEMESTRAL')) {
+    return ['ENERO', 'JULIO'];
+  }
+  if (p.includes('ANUAL')) {
+    return ['ENERO'];
+  }
+  return [];
+};
+
 function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [parsedRows, setParsedRows] = useState([]);
@@ -46,6 +141,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'III',
         RESPONSABLE: 'GEMTTO SAS',
         PERIODICIDAD: 'SEMESTRAL',
+        MESES_MANTENIMIENTO: 'ENERO, JULIO',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2023-05-15',
         FECHA_FABRICACION: '2023-01-10',
@@ -63,6 +159,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'IIB',
         RESPONSABLE: 'GEMTTO SAS',
         PERIODICIDAD: 'TRIMESTRAL',
+        MESES_MANTENIMIENTO: 'ENERO, ABRIL, JULIO, OCTUBRE',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2024-02-10',
         FECHA_FABRICACION: '2023-11-20',
@@ -80,9 +177,28 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'IIA',
         RESPONSABLE: 'ING. BIOMEDICO',
         PERIODICIDAD: 'SEMESTRAL',
+        MESES_MANTENIMIENTO: 'MARZO, SEPTIEMBRE',
         FORMA_ADQUISICION: 'COMODATO',
         FECHA_INSTALACION: '2023-08-01',
         FECHA_FABRICACION: '2022-10-15',
+      },
+      {
+        INSTITUCION: 'CLINICA LAS AMERICAS',
+        EQUIPO: 'BOMBA DE INFUSION',
+        MARCA: 'B. BRAUN',
+        MODELO: 'INFUSOMAT SPACE',
+        SERIE: 'SN-BOM-004',
+        INVENTARIO: 'ACT-00202',
+        SERVICIO: 'HOSPITALIZACION',
+        UBICACION: 'PISO 2 - SALA A',
+        REGISTRO_INVIMA: '2021EBC-004321',
+        RIESGO: 'IIB',
+        RESPONSABLE: 'GEMTTO SAS',
+        PERIODICIDAD: 'CUATRIMESTRAL',
+        MESES_MANTENIMIENTO: 'ENERO, MAYO, SEPTIEMBRE',
+        FORMA_ADQUISICION: 'COMPRA',
+        FECHA_INSTALACION: '2023-10-05',
+        FECHA_FABRICACION: '2023-04-12',
       },
     ];
 
@@ -102,6 +218,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
       { wch: 10 }, // RIESGO
       { wch: 18 }, // RESPONSABLE
       { wch: 16 }, // PERIODICIDAD
+      { wch: 30 }, // MESES_MANTENIMIENTO
       { wch: 18 }, // FORMA_ADQUISICION
       { wch: 18 }, // FECHA_INSTALACION
       { wch: 18 }, // FECHA_FABRICACION
@@ -140,6 +257,8 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         // Mapeo flexible de columnas
         const processed = rawJson.map((row, idx) => {
           const item = {};
+          const mesesFromCols = [];
+
           Object.keys(row).forEach((colName) => {
             const val = String(row[colName]).trim();
             const norm = normalizeHeader(colName);
@@ -168,12 +287,28 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
               item.responsable = val;
             } else if (norm.includes('periodicidad') || norm.includes('frecuencia')) {
               item.periodicidad = val;
+            } else if (
+              norm.includes('mesesmantenimiento') ||
+              norm.includes('mesesmtto') ||
+              norm.includes('mesesprogramados') ||
+              norm === 'meses' ||
+              norm.includes('mesmantenimiento')
+            ) {
+              item.meses_mantenimiento = val;
             } else if (norm.includes('adquisicion')) {
               item.forma_adquisicion = val;
             } else if (norm.includes('instalacion')) {
               item.fecha_instalacion = val;
             } else if (norm.includes('fabricacion')) {
               item.fecha_fabricacion = val;
+            }
+
+            // Chequeo si vienen columnas de meses individuales (ENE..DIC)
+            if (MESES_MAPA[norm] && ['x', '1', 'p', 'si', 's', 'true', 'ok'].includes(val.toLowerCase())) {
+              const mesCanonical = MESES_MAPA[norm];
+              if (!mesesFromCols.includes(mesCanonical)) {
+                mesesFromCols.push(mesCanonical);
+              }
             }
           });
 
@@ -182,6 +317,20 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
           if (!item.institucion) errors.push('Falta Institución');
           if (!item.equipo) errors.push('Falta Equipo');
           if (!item.serie) errors.push('Falta Serie');
+
+          const periodicidadFinal = (item.periodicidad || 'SEMESTRAL').toUpperCase();
+
+          // Determinar meses de mantenimiento
+          let mesesParsed = [];
+          if (item.meses_mantenimiento) {
+            mesesParsed = parsearMeses(item.meses_mantenimiento);
+          }
+          if (mesesParsed.length === 0 && mesesFromCols.length > 0) {
+            mesesParsed = mesesFromCols;
+          }
+          if (mesesParsed.length === 0) {
+            mesesParsed = sugerirMesesPorPeriodicidad(periodicidadFinal);
+          }
 
           return {
             _index: idx + 1,
@@ -196,7 +345,8 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             registro_invima: item.registro_invima || 'NO REGISTRA',
             riesgo: (item.riesgo || 'IIB').toUpperCase(),
             responsable: item.responsable || 'GEMTTO SAS',
-            periodicidad: (item.periodicidad || 'SEMESTRAL').toUpperCase(),
+            periodicidad: periodicidadFinal,
+            meses_mantenimiento: mesesParsed,
             forma_adquisicion: item.forma_adquisicion || 'COMPRA',
             fecha_instalacion: item.fecha_instalacion || '',
             fecha_fabricacion: item.fecha_fabricacion || '',
@@ -598,13 +748,14 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
                     <table className="table" style={{ margin: 0, fontSize: '12px' }}>
                       <thead>
                         <tr>
-                          <th style={{ width: '5%', textAlign: 'center' }}>#</th>
-                          <th style={{ width: '12%', textAlign: 'center' }}>ESTADO</th>
-                          <th style={{ width: '18%' }}>INSTITUCIÓN</th>
-                          <th style={{ width: '20%' }}>EQUIPO</th>
-                          <th style={{ width: '15%' }}>MARCA / MODELO</th>
-                          <th style={{ width: '15%' }}>SERIE</th>
-                          <th style={{ width: '15%' }}>SERVICIO</th>
+                          <th style={{ width: '4%', textAlign: 'center' }}>#</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>ESTADO</th>
+                          <th style={{ width: '16%' }}>INSTITUCIÓN</th>
+                          <th style={{ width: '18%' }}>EQUIPO</th>
+                          <th style={{ width: '14%' }}>MARCA / MODELO</th>
+                          <th style={{ width: '12%' }}>SERIE</th>
+                          <th style={{ width: '12%' }}>SERVICIO</th>
+                          <th style={{ width: '14%' }}>PERIODICIDAD / MESES</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -655,6 +806,16 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
                               </span>
                             </td>
                             <td style={{ color: '#94a3b8' }}>{row.servicio || '-'}</td>
+                            <td>
+                              <div style={{ fontWeight: '700', color: '#38bdf8', fontSize: '11.5px' }}>
+                                {row.periodicidad || '-'}
+                              </div>
+                              <div style={{ color: '#34d399', fontSize: '10.5px', marginTop: '2px' }}>
+                                {Array.isArray(row.meses_mantenimiento) && row.meses_mantenimiento.length > 0
+                                  ? row.meses_mantenimiento.join(', ')
+                                  : (row.periodicidad === 'NO APLICA' || row.periodicidad === 'NA' ? 'No programado' : 'Sin meses')}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>

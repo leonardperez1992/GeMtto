@@ -31,6 +31,40 @@ export const MESES_ABREV = [
 ];
 
 /**
+ * Determina si un equipo tiene una periodicidad de mantenimiento válida y definida.
+ * Retorna false si es vacío, 'N/A', 'NA', 'NO APLICA', 'NO REQUIERE', 'NINGUNA', etc.
+ */
+export function tienePeriodicidadDefinida(periodicidadStr) {
+  if (!periodicidadStr || typeof periodicidadStr !== 'string') return false;
+  const p = periodicidadStr.trim().toUpperCase();
+  if (!p) return false;
+  if (
+    p === 'N/A' ||
+    p === 'NA' ||
+    p === 'N.A.' ||
+    p === 'N / A' ||
+    p === 'NO APLICA' ||
+    p === 'NOAPLICA' ||
+    p === 'NO APLICA.' ||
+    p === 'NO REQUIERE' ||
+    p === 'NO' ||
+    p === 'NINGUNA' ||
+    p === 'NINGUNO' ||
+    p === 'SIN PROGRAMAR' ||
+    p === 'SIN PERIODICIDAD' ||
+    p === 'NO POSEE' ||
+    p === 'NO CUENTA' ||
+    p === '0' ||
+    p === '-' ||
+    p === 'NULL' ||
+    p === 'UNDEFINED'
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Normaliza el nombre de un mes
  */
 export function normalizarMes(mes) {
@@ -60,7 +94,7 @@ export function normalizarMes(mes) {
  * Calcula los meses sugeridos por defecto según la periodicidad y fecha base
  */
 export function calcularMesesSugeridos(periodicidadStr, fechaBaseStr = null) {
-  if (!periodicidadStr) return ['Enero', 'Julio'];
+  if (!tienePeriodicidadDefinida(periodicidadStr)) return [];
   const per = String(periodicidadStr).toUpperCase().trim();
 
   let startMonthIndex = 0; // Por defecto Enero (0)
@@ -95,6 +129,8 @@ export function calcularMesesSugeridos(periodicidadStr, fechaBaseStr = null) {
   } else if (per.includes('ANUAL') || per === '12') {
     step = 12;
     count = 1;
+  } else {
+    return [];
   }
 
   const selectedMonths = [];
@@ -116,9 +152,9 @@ export function calcularMesesSugeridos(periodicidadStr, fechaBaseStr = null) {
  * Obtiene los meses asignados para un equipo (propios o auto-calculados)
  */
 export function obtenerMesesEquipo(equipo) {
-  if (!equipo) {
+  if (!equipo || !tienePeriodicidadDefinida(equipo.periodicidad)) {
     return {
-      nombres: 'No asignado',
+      nombres: 'No aplica',
       array: [],
       indices: [],
     };
@@ -144,7 +180,7 @@ export function obtenerMesesEquipo(equipo) {
   // Si no tiene meses explícitos, calcular sugeridos según su periodicidad
   if (meses.length === 0) {
     meses = calcularMesesSugeridos(
-      equipo.periodicidad || 'SEMESTRAL',
+      equipo.periodicidad,
       equipo.fecha_instalacion || null
     );
   }
@@ -157,7 +193,7 @@ export function obtenerMesesEquipo(equipo) {
   const indices = meses.map((m) => MESES_DEL_ANIO.indexOf(m));
 
   return {
-    nombres: meses.length > 0 ? meses.join(', ') : 'Sin programar',
+    nombres: meses.length > 0 ? meses.join(', ') : 'No aplica',
     array: meses,
     indices: indices,
   };

@@ -1,12 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { apiObtenerEquiposIps } from '../utils/api';
+import { apiObtenerEquiposIps, apiInventario } from '../utils/api';
 import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
 import { GoSearch, GoEye } from 'react-icons/go';
 import { FaBoxes, FaQrcode } from 'react-icons/fa';
 import QrModal from '../components/QrModal';
+
+const normalizeText = (str) =>
+  String(str || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const matchesInstitucion = (eqInst, targetInst) => {
+  if (!eqInst || !targetInst) return false;
+  const n1 = normalizeText(eqInst);
+  const n2 = normalizeText(targetInst);
+  if (!n1 || !n2) return false;
+  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+};
 
 function InventarioUser() {
   const user = useSelector((state) => state.user);
@@ -21,18 +37,30 @@ function InventarioUser() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  const getInventario = async (institucion) => {
-    if (!institucion) return;
+  const getInventario = async (inst) => {
+    if (!inst) {
+      setInventario([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const response = await request({
-        link: `${apiObtenerEquiposIps}?institucion=${encodeURIComponent(institucion)}`,
+        link: `${apiObtenerEquiposIps}?institucion=${encodeURIComponent(inst)}`,
         method: 'GET',
       });
-      if (response && response.success) {
-        setInventario(response.equipos || []);
+      if (response && response.success && Array.isArray(response.equipos) && response.equipos.length > 0) {
+        setInventario(response.equipos);
       } else {
-        alert(`Sin conexión con el Servidor ${response?.message || ''}`);
+        const fallbackRes = await request({ link: apiInventario, method: 'GET' });
+        if (fallbackRes && fallbackRes.success && Array.isArray(fallbackRes.inventario)) {
+          const soloUser = fallbackRes.inventario.filter((eq) =>
+            matchesInstitucion(eq.institucion, inst)
+          );
+          setInventario(soloUser);
+        } else {
+          setInventario([]);
+        }
       }
     } catch (e) {
       console.error(e);

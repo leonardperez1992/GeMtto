@@ -8,6 +8,7 @@ import {
   MESES_DEL_ANIO,
   MESES_ABREV,
   obtenerMesesEquipo,
+  tienePeriodicidadDefinida,
 } from '../utils/cronogramaHelper';
 import {
   FaCalendarAlt,
@@ -164,11 +165,27 @@ function Cronograma() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [listaIps, inventario, isNonAdmin, userInstitucion]);
 
-  // Lista única de Servicios disponibles según los equipos cargados
+  // Procesamiento de datos: SOLO equipos con periodicidad definida (excluye 'No Aplica', 'NA', vacíos, etc.)
+  const equiposConCronograma = useMemo(() => {
+    return inventario
+      .filter((eq) => tienePeriodicidadDefinida(eq.periodicidad))
+      .map((eq) => {
+        const crono = obtenerMesesEquipo(eq);
+        return {
+          ...eq,
+          _cronoMeses: crono.array,
+          _cronoNombres: crono.nombres,
+          _cronoIndices: crono.indices,
+        };
+      })
+      .filter((eq) => eq._cronoMeses && eq._cronoMeses.length > 0);
+  }, [inventario]);
+
+  // Lista única de Servicios disponibles según los equipos del cronograma
   const serviciosDisponibles = useMemo(() => {
     const set = new Set();
     const targetIps = isNonAdmin ? userInstitucion : selectedIps;
-    inventario.forEach((eq) => {
+    equiposConCronograma.forEach((eq) => {
       if (targetIps && !matchesInstitucion(eq.institucion, targetIps)) {
         return;
       }
@@ -177,20 +194,7 @@ function Cronograma() {
       }
     });
     return Array.from(set).sort();
-  }, [inventario, selectedIps, isNonAdmin, userInstitucion]);
-
-  // Procesamiento de datos de los equipos con sus meses
-  const equiposConCronograma = useMemo(() => {
-    return inventario.map((eq) => {
-      const crono = obtenerMesesEquipo(eq);
-      return {
-        ...eq,
-        _cronoMeses: crono.array,
-        _cronoNombres: crono.nombres,
-        _cronoIndices: crono.indices,
-      };
-    });
-  }, [inventario]);
+  }, [equiposConCronograma, selectedIps, isNonAdmin, userInstitucion]);
 
   // Filtrado reactivo de equipos
   const filteredEquipos = useMemo(() => {

@@ -425,6 +425,7 @@ function EditInventary() {
                       className="input-report"
                     >
                       <option value="">-- Seleccionar Periodicidad --</option>
+                      <option value="NO APLICA">NO APLICA (No programar en cronograma)</option>
                       <option value="MENSUAL">MENSUAL (1 mes)</option>
                       <option value="BIMESTRAL">BIMESTRAL (2 meses)</option>
                       <option value="TRIMESTRAL">TRIMESTRAL (3 meses)</option>

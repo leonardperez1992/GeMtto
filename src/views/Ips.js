@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import { apiIps } from '../utils/api';
+import { apiIps, apiDeleteIps } from '../utils/api';
 import request from '../utils/request';
 import {
   FaHospital,
@@ -8,6 +8,10 @@ import {
   FaSync,
   FaCity,
   FaIdCard,
+  FaEdit,
+  FaTrash,
+  FaFolderOpen,
+  FaFilePdf,
 } from 'react-icons/fa';
 import { GoSearch } from 'react-icons/go';
 
@@ -15,6 +19,7 @@ function Ips() {
   const [ips, setIps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   const getReportes = async () => {
     setLoading(true);
@@ -38,6 +43,34 @@ function Ips() {
   useEffect(() => {
     getReportes();
   }, []);
+
+  const handleEliminar = async (item) => {
+    const confirmacion = window.confirm(
+      `¿Estás seguro de que deseas eliminar la institución "${item.ips}"?\nSe borrarán también todos sus documentos PDF asociados.`
+    );
+    if (!confirmacion) return;
+
+    setDeletingId(item._id);
+    try {
+      const response = await request({
+        link: apiDeleteIps,
+        method: 'POST',
+        body: { _id: item._id, ips: item.ips },
+      });
+
+      if (response && response.success) {
+        alert(`Institución "${item.ips}" eliminada exitosamente.`);
+        setIps((prev) => prev.filter((i) => i._id !== item._id));
+      } else {
+        alert(response?.message || 'Error al eliminar la institución');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al eliminar la institución.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredIps = useMemo(() => {
     let list = ips;
@@ -77,27 +110,49 @@ function Ips() {
             </p>
           </div>
 
-          {/* Botón Prominente: Registrar Nueva IPS */}
-          <Link
-            to="/crearips"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#0284c7',
-              color: '#ffffff',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontWeight: '800',
-              fontSize: '14px',
-              textDecoration: 'none',
-              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.45)',
-              border: '1px solid #38bdf8',
-              transition: 'all 0.2s',
-            }}
-          >
-            <FaPlus size={13} /> Registrar Nueva IPS
-          </Link>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={getReportes}
+              disabled={loading}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#1e293b',
+                color: '#94a3b8',
+                border: '1px solid #334155',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '13.5px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <FaSync size={13} className={loading ? 'spin' : ''} /> Actualizar
+            </button>
+
+            {/* Botón Prominente: Registrar Nueva IPS */}
+            <Link
+              to="/crearips"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: '800',
+                fontSize: '14px',
+                textDecoration: 'none',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.45)',
+                border: '1px solid #38bdf8',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaPlus size={13} /> Registrar Nueva IPS
+            </Link>
+          </div>
         </div>
 
         {/* Toolbar & Search */}
@@ -134,30 +189,78 @@ function Ips() {
               <table className="tabla-reportes" style={{ margin: 0, width: '100%' }}>
                 <thead>
                   <tr>
-                    <th>INSTITUCIÓN / IPS</th>
-                    <th>NIT</th>
-                    <th>CIUDAD / MUNICIPIO</th>
-                    <th style={{ textAlign: 'center', width: '110px' }}>ESTADO</th>
+                    <th style={{ width: '30%' }}>INSTITUCIÓN / IPS</th>
+                    <th style={{ width: '15%' }}>NIT</th>
+                    <th style={{ width: '15%' }}>CIUDAD</th>
+                    <th style={{ width: '22%' }}>DOCUMENTACIÓN PDF</th>
+                    <th style={{ textAlign: 'center', width: '18%' }}>ACCIONES</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredIps.length === 0 ? (
                     <tr>
-                      <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron instituciones registradas con el criterio de búsqueda.
                       </td>
                     </tr>
                   ) : (
                     filteredIps.map((item, idx) => {
+                      const logoSrc = item.logo
+                        ? (Array.isArray(item.logo) ? item.logo[0]?.data_url || item.logo[0] : item.logo?.data_url || item.logo)
+                        : null;
+
+                      const docsCount =
+                        (item.plan_mantenimiento ? 1 : 0) +
+                        (item.plan_capacitacion ? 1 : 0) +
+                        (item.protocolos ? 1 : 0) +
+                        (Array.isArray(item.documentos_adicionales) ? item.documentos_adicionales.length : 0);
+
                       return (
                         <tr key={item._id || idx}>
+                          {/* 1. Nombre & Logo */}
                           <td>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                              <FaHospital color="#38bdf8" size={15} />
-                              <strong style={{ color: '#f8fafc', fontSize: '13px' }}>{item?.ips}</strong>
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {logoSrc ? (
+                                <img
+                                  src={logoSrc}
+                                  alt="Logo"
+                                  style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    objectFit: 'contain',
+                                    backgroundColor: '#fff',
+                                    borderRadius: '6px',
+                                    padding: '2px',
+                                    border: '1px solid #475569',
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#0f2744',
+                                    color: '#38bdf8',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid #38bdf8',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <FaHospital size={16} />
+                                </div>
+                              )}
+                              <div>
+                                <strong style={{ color: '#f8fafc', fontSize: '13.5px' }}>{item?.ips}</strong>
+                              </div>
+                            </div>
                           </td>
-                          <td style={{ color: '#cbd5e1', fontFamily: 'monospace' }}>
+
+                          {/* 2. NIT */}
+                          <td style={{ color: '#cbd5e1', fontFamily: 'monospace', fontSize: '13px' }}>
                             {item?.nit ? (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                                 <FaIdCard color="#94a3b8" size={13} /> {item.nit}
@@ -166,7 +269,9 @@ function Ips() {
                               <span style={{ color: '#64748b' }}>Sin NIT</span>
                             )}
                           </td>
-                          <td style={{ color: '#38bdf8', fontWeight: '600' }}>
+
+                          {/* 3. Ciudad */}
+                          <td style={{ color: '#38bdf8', fontWeight: '600', fontSize: '13px' }}>
                             {item?.ciudad ? (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                                 <FaCity color="#38bdf8" size={13} /> {item.ciudad}
@@ -175,20 +280,111 @@ function Ips() {
                               <span style={{ color: '#64748b' }}>No especificada</span>
                             )}
                           </td>
+
+                          {/* 4. Documentos PDF */}
+                          <td>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              {docsCount > 0 ? (
+                                <>
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                      padding: '2px 8px',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: '800',
+                                      backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                      color: '#34d399',
+                                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                                    }}
+                                  >
+                                    <FaFilePdf size={11} color="#ef4444" /> {docsCount} PDF{docsCount > 1 ? 's' : ''}
+                                  </span>
+                                  {item.plan_mantenimiento && (
+                                    <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>• Plan Mtto</span>
+                                  )}
+                                  {item.plan_capacitacion && (
+                                    <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>• Capacitación</span>
+                                  )}
+                                </>
+                              ) : (
+                                <span style={{ color: '#64748b', fontSize: '11.5px', fontStyle: 'italic' }}>
+                                  Sin documentos adjuntos
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* 5. Acciones */}
                           <td style={{ textAlign: 'center' }}>
-                            <span
-                              style={{
-                                padding: '3px 8px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                                color: '#4ade80',
-                                border: '1px solid rgba(34, 197, 94, 0.4)',
-                              }}
-                            >
-                              ACTIVA
-                            </span>
+                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                              {/* Ver Documentos */}
+                              <Link
+                                to={`/documentosips?id=${item._id}&ips=${encodeURIComponent(item.ips)}`}
+                                title="Ver Repositorio Documental"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '5px 9px',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#0f766e',
+                                  color: '#ffffff',
+                                  textDecoration: 'none',
+                                  fontSize: '12px',
+                                  fontWeight: '700',
+                                  border: '1px solid #14b8a6',
+                                }}
+                              >
+                                <FaFolderOpen size={12} color="#34d399" /> Docs
+                              </Link>
+
+                              {/* Editar */}
+                              <Link
+                                to={`/editarips?id=${item._id}`}
+                                title="Editar IPS y gestionar archivos"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '5px 9px',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#0284c7',
+                                  color: '#ffffff',
+                                  textDecoration: 'none',
+                                  fontSize: '12px',
+                                  fontWeight: '700',
+                                  border: '1px solid #38bdf8',
+                                }}
+                              >
+                                <FaEdit size={12} /> Editar
+                              </Link>
+
+                              {/* Eliminar */}
+                              <button
+                                type="button"
+                                onClick={() => handleEliminar(item)}
+                                disabled={deletingId === item._id}
+                                title="Eliminar IPS"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '5px 9px',
+                                  borderRadius: '6px',
+                                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                                  color: '#f87171',
+                                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                                  fontSize: '12px',
+                                  fontWeight: '700',
+                                  cursor: deletingId === item._id ? 'not-allowed' : 'pointer',
+                                }}
+                              >
+                                <FaTrash size={11} /> {deletingId === item._id ? '...' : ''}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

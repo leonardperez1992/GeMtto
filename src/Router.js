@@ -31,6 +31,8 @@ import AlertasMtto from './views/AlertasMtto';
 import HojaDeVidaQr from './views/HojaDeVidaQr';
 import Cronograma from './views/Cronograma';
 import Usuarios from './views/Usuarios';
+import EditarIps from './views/EditarIps';
+import DocumentosIps from './views/DocumentosIps';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -79,6 +81,8 @@ const RouterContainer = () => {
           <Route path="/editaract" element={<EditActMtto />} />
           <Route path="/ips" element={<Ips />} />
           <Route path="/crearips" element={<CrearIps />} />
+          <Route path="/editarips" element={<EditarIps />} />
+          <Route path="/documentosips" element={<DocumentosIps />} />
           <Route path="/verpdf" element={<VerPdf />} />
           <Route path="/informes" element={<Informes />} />
           <Route path="/alertas" element={<AlertasMtto />} />

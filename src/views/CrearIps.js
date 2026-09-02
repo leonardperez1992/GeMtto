@@ -54,8 +54,15 @@ function CrearIps() {
       });
 
       if (response && response.success) {
-        alert('¡Institución (IPS) creada exitosamente!');
-        window.location.href = './ips';
+        const newId = response.ips1?._id || response.ips?._id;
+        const quiereAdjuntar = window.confirm(
+          '¡Institución (IPS) creada exitosamente!\n\n¿Deseas adjuntar ahora los documentos PDF (Plan de Mantenimiento, Capacitación, etc.)?'
+        );
+        if (quiereAdjuntar && newId) {
+          window.location.href = `./editarips?id=${newId}`;
+        } else {
+          window.location.href = './ips';
+        }
       } else {
         alert(`${response?.message || 'Error al crear la institución'}`);
       }

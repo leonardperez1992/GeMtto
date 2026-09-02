@@ -135,8 +135,21 @@ function UpdateReporte() {
         : reporte.firma_recibe || null;
 
     setSubmitting(true);
+    const esPreventivo = reporte.tipo_servicio === 'MTTO PREVENTIVO';
     const body = {
       ...reporte,
+      parametro1: esPreventivo ? (reporte.parametro1 || 'NA') : 'NA',
+      valor_programado1: esPreventivo ? (reporte.valor_programado1 || 'NA') : 'NA',
+      valor_medido1: esPreventivo ? (reporte.valor_medido1 || 'NA') : 'NA',
+      parametro2: esPreventivo ? (reporte.parametro2 || 'NA') : 'NA',
+      valor_programado2: esPreventivo ? (reporte.valor_programado2 || 'NA') : 'NA',
+      valor_medido2: esPreventivo ? (reporte.valor_medido2 || 'NA') : 'NA',
+      parametro3: esPreventivo ? (reporte.parametro3 || 'NA') : 'NA',
+      valor_programado3: esPreventivo ? (reporte.valor_programado3 || 'NA') : 'NA',
+      valor_medido3: esPreventivo ? (reporte.valor_medido3 || 'NA') : 'NA',
+      parametro4: esPreventivo ? (reporte.parametro4 || 'NA') : 'NA',
+      valor_programado4: esPreventivo ? (reporte.valor_programado4 || 'NA') : 'NA',
+      valor_medido4: esPreventivo ? (reporte.valor_medido4 || 'NA') : 'NA',
       firma_ingeniero: firmaIngData,
       firma_recibe: firmaRecData,
     };
@@ -484,47 +497,57 @@ function UpdateReporte() {
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
                     <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
+                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
                   </th>
                 </tr>
-                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
-                  <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
-                  <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
-                  <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
-                </tr>
-                {[1, 2, 3, 4].map((idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <input
-                        className="input-report"
-                        name={`parametro${idx}`}
-                        type="text"
-                        value={reporte[`parametro${idx}`] || ''}
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-report"
-                        style={{ textAlign: 'center' }}
-                        name={`valor_programado${idx}`}
-                        type="text"
-                        value={reporte[`valor_programado${idx}`] || ''}
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-report"
-                        style={{ textAlign: 'center' }}
-                        name={`valor_medido${idx}`}
-                        type="text"
-                        value={reporte[`valor_medido${idx}`] || ''}
-                        onChange={handleSave}
-                      />
+                {reporte.tipo_servicio === 'MTTO PREVENTIVO' ? (
+                  <>
+                    <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                      <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
+                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                      <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
+                    </tr>
+                    {[1, 2, 3, 4].map((idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <input
+                            className="input-report"
+                            name={`parametro${idx}`}
+                            type="text"
+                            value={reporte[`parametro${idx}`] || ''}
+                            onChange={handleSave}
+                          />
+                        </td>
+                        <td colSpan={2}>
+                          <input
+                            className="input-report"
+                            style={{ textAlign: 'center' }}
+                            name={`valor_programado${idx}`}
+                            type="text"
+                            value={reporte[`valor_programado${idx}`] || ''}
+                            onChange={handleSave}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="input-report"
+                            style={{ textAlign: 'center' }}
+                            name={`valor_medido${idx}`}
+                            type="text"
+                            value={reporte[`valor_medido${idx}`] || ''}
+                            onChange={handleSave}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '16px 20px', backgroundColor: '#0f172a', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '700' }}>No requiere verificación de parámetros:</span> La calibración y verificación de parámetros aplica exclusivamente a <strong>Mantenimiento Preventivo</strong>. Para {reporte.tipo_servicio} no se cargan parámetros.
                     </td>
                   </tr>
-                ))}
+                )}
 
                 {/* 8. Observaciones */}
                 <tr>

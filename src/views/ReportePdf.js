@@ -377,34 +377,44 @@ function ReportePdf() {
             {/* 7. Verificación de Parámetros */}
             <tr>
               <td colSpan={4} className="seccion-titulo">
-                7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
+                7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte?.tipo_servicio && reporte?.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
               </td>
             </tr>
-            <tr>
-              <td className="sub-header">PARÁMETRO</td>
-              <td className="sub-header" colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
-              <td className="sub-header">VALOR MEDIDO</td>
-            </tr>
-            <tr>
-              <td>{reporte?.parametro1 || '-'}</td>
-              <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado1 || '-'}</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido1 || '-'}</td>
-            </tr>
-            <tr>
-              <td>{reporte?.parametro2 || '-'}</td>
-              <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado2 || '-'}</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido2 || '-'}</td>
-            </tr>
-            <tr>
-              <td>{reporte?.parametro3 || '-'}</td>
-              <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado3 || '-'}</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido3 || '-'}</td>
-            </tr>
-            <tr>
-              <td>{reporte?.parametro4 || '-'}</td>
-              <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado4 || '-'}</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido4 || '-'}</td>
-            </tr>
+            {reporte?.tipo_servicio === 'MTTO PREVENTIVO' ? (
+              <>
+                <tr>
+                  <td className="sub-header">PARÁMETRO</td>
+                  <td className="sub-header" colSpan={2}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                  <td className="sub-header">VALOR MEDIDO</td>
+                </tr>
+                <tr>
+                  <td>{reporte?.parametro1 || '-'}</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado1 || '-'}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido1 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>{reporte?.parametro2 || '-'}</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado2 || '-'}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido2 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>{reporte?.parametro3 || '-'}</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado3 || '-'}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido3 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>{reporte?.parametro4 || '-'}</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>{reporte?.valor_programado4 || '-'}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{reporte?.valor_medido4 || '-'}</td>
+                </tr>
+              </>
+            ) : (
+              <tr>
+                <td colSpan={4} style={{ textAlign: 'center', color: '#64748b', fontStyle: 'italic', padding: '6px' }}>
+                  NO APLICA PARA {reporte?.tipo_servicio || 'ESTE TIPO DE SERVICIO'} (EXCLUSIVO DE MTTO PREVENTIVO)
+                </td>
+              </tr>
+            )}
 
             {/* 8. Observaciones & Estado Final */}
             <tr>

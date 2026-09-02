@@ -134,14 +134,17 @@ function ReporteService() {
           );
           if (match) {
             setActmto(match.actividades);
-            setReporte((prev) => ({
-              ...prev,
-              desc_servicio: match.actividades,
-              parametro1: prev.parametro1 || match.parametro1 || '',
-              parametro2: prev.parametro2 || match.parametro2 || '',
-              parametro3: prev.parametro3 || match.parametro3 || '',
-              parametro4: prev.parametro4 || match.parametro4 || '',
-            }));
+            setReporte((prev) => {
+              const isPreventivo = prev.tipo_servicio === 'MTTO PREVENTIVO';
+              return {
+                ...prev,
+                desc_servicio: isPreventivo ? match.actividades : prev.desc_servicio,
+                parametro1: isPreventivo ? (prev.parametro1 || match.parametro1 || '') : '',
+                parametro2: isPreventivo ? (prev.parametro2 || match.parametro2 || '') : '',
+                parametro3: isPreventivo ? (prev.parametro3 || match.parametro3 || '') : '',
+                parametro4: isPreventivo ? (prev.parametro4 || match.parametro4 || '') : '',
+              };
+            });
           }
         }
       }
@@ -234,6 +237,9 @@ function ReporteService() {
   };
 
   const handleTipoServicio = (tipo) => {
+    const isPreventivo = tipo === 'MTTO PREVENTIVO';
+    const match = actividadesFiltradas.length > 0 ? actividadesFiltradas[0] : null;
+
     setReporte((prev) => ({
       ...prev,
       tipo_servicio: tipo,
@@ -241,24 +247,47 @@ function ReporteService() {
         tipo === 'MTTO CORRECTIVO'
           ? (prev.problema_reportado.includes('cronograma') ? '' : prev.problema_reportado)
           : (prev.problema_reportado || 'Mantenimiento preventivo programado según cronograma institucional.'),
-      desc_servicio: tipo === 'MTTO CORRECTIVO' ? '' : prev.desc_servicio,
+      desc_servicio:
+        isPreventivo
+          ? (prev.desc_servicio || match?.actividades || actMto || '')
+          : (tipo === 'MTTO CORRECTIVO' ? '' : prev.desc_servicio),
+      // Solo cargar parámetros si es mantenimiento preventivo
+      parametro1: isPreventivo ? (match?.parametro1 || prev.parametro1 || '') : '',
+      valor_programado1: isPreventivo ? prev.valor_programado1 : '',
+      valor_medido1: isPreventivo ? prev.valor_medido1 : '',
+      parametro2: isPreventivo ? (match?.parametro2 || prev.parametro2 || '') : '',
+      valor_programado2: isPreventivo ? prev.valor_programado2 : '',
+      valor_medido2: isPreventivo ? prev.valor_medido2 : '',
+      parametro3: isPreventivo ? (match?.parametro3 || prev.parametro3 || '') : '',
+      valor_programado3: isPreventivo ? prev.valor_programado3 : '',
+      valor_medido3: isPreventivo ? prev.valor_medido3 : '',
+      parametro4: isPreventivo ? (match?.parametro4 || prev.parametro4 || '') : '',
+      valor_programado4: isPreventivo ? prev.valor_programado4 : '',
+      valor_medido4: isPreventivo ? prev.valor_medido4 : '',
     }));
-    if (tipo === 'MTTO CORRECTIVO') {
-      setActmto('');
+
+    if (!isPreventivo) {
+      if (tipo === 'MTTO CORRECTIVO') {
+        setActmto('');
+      }
+    } else if (match?.actividades) {
+      setActmto(match.actividades);
     }
   };
 
   const handleCargarProtocoloDirecto = () => {
     if (actividadesFiltradas.length > 0) {
       const selectedItem = actividadesFiltradas[0];
+      const isPreventivo = reporte.tipo_servicio === 'MTTO PREVENTIVO';
       setActmto(selectedItem.actividades);
       setReporte((prev) => ({
         ...prev,
         desc_servicio: selectedItem.actividades,
-        parametro1: prev.parametro1 || selectedItem.parametro1 || '',
-        parametro2: prev.parametro2 || selectedItem.parametro2 || '',
-        parametro3: prev.parametro3 || selectedItem.parametro3 || '',
-        parametro4: prev.parametro4 || selectedItem.parametro4 || '',
+        // Solo cargar parámetros si es mantenimiento preventivo
+        parametro1: isPreventivo ? (selectedItem.parametro1 || '') : '',
+        parametro2: isPreventivo ? (selectedItem.parametro2 || '') : '',
+        parametro3: isPreventivo ? (selectedItem.parametro3 || '') : '',
+        parametro4: isPreventivo ? (selectedItem.parametro4 || '') : '',
       }));
     } else {
       alert(`No se encontró un protocolo de mantenimiento predefinido para "${equipo?.equipo || reporte.equipo}". Puedes escribirlo manualmente.`);
@@ -281,6 +310,8 @@ function ReporteService() {
       firmaRecref.current && !firmaRecref.current.isEmpty()
         ? firmaRecref.current.toData()
         : null;
+
+    const esPreventivo = reporte.tipo_servicio === 'MTTO PREVENTIVO';
 
     setSubmitting(true);
     const body = {
@@ -309,18 +340,18 @@ function ReporteService() {
       cantidad4: reporte.cantidad4 || 'NA',
       descripcion4: reporte.descripcion4 || 'NA',
       valor4: reporte.valor4 || 'NA',
-      parametro1: reporte.parametro1 || 'NA',
-      valor_programado1: reporte.valor_programado1 || 'NA',
-      valor_medido1: reporte.valor_medido1 || 'NA',
-      parametro2: reporte.parametro2 || 'NA',
-      valor_programado2: reporte.valor_programado2 || 'NA',
-      valor_medido2: reporte.valor_medido2 || 'NA',
-      parametro3: reporte.parametro3 || 'NA',
-      valor_programado3: reporte.valor_programado3 || 'NA',
-      valor_medido3: reporte.valor_medido3 || 'NA',
-      parametro4: reporte.parametro4 || 'NA',
-      valor_programado4: reporte.valor_programado4 || 'NA',
-      valor_medido4: reporte.valor_medido4 || 'NA',
+      parametro1: esPreventivo ? (reporte.parametro1 || 'NA') : 'NA',
+      valor_programado1: esPreventivo ? (reporte.valor_programado1 || 'NA') : 'NA',
+      valor_medido1: esPreventivo ? (reporte.valor_medido1 || 'NA') : 'NA',
+      parametro2: esPreventivo ? (reporte.parametro2 || 'NA') : 'NA',
+      valor_programado2: esPreventivo ? (reporte.valor_programado2 || 'NA') : 'NA',
+      valor_medido2: esPreventivo ? (reporte.valor_medido2 || 'NA') : 'NA',
+      parametro3: esPreventivo ? (reporte.parametro3 || 'NA') : 'NA',
+      valor_programado3: esPreventivo ? (reporte.valor_programado3 || 'NA') : 'NA',
+      valor_medido3: esPreventivo ? (reporte.valor_medido3 || 'NA') : 'NA',
+      parametro4: esPreventivo ? (reporte.parametro4 || 'NA') : 'NA',
+      valor_programado4: esPreventivo ? (reporte.valor_programado4 || 'NA') : 'NA',
+      valor_medido4: esPreventivo ? (reporte.valor_medido4 || 'NA') : 'NA',
       observaciones: reporte.observaciones,
       estado_final: reporte.estado_final,
       firma_ingeniero: firmaIngData,
@@ -744,50 +775,60 @@ function ReporteService() {
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
                     <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO
+                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
                   </th>
                 </tr>
-                <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
-                  <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
-                  <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
-                  <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
-                </tr>
-                {[1, 2, 3, 4].map((idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <input
-                        className="input-report"
-                        name={`parametro${idx}`}
-                        type="text"
-                        placeholder={`Ej. Voltaje, Presión, SpO2...`}
-                        value={reporte[`parametro${idx}`]}
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td colSpan={2}>
-                      <input
-                        className="input-report"
-                        style={{ textAlign: 'center' }}
-                        name={`valor_programado${idx}`}
-                        type="text"
-                        placeholder="Ej. 120V ± 5%"
-                        value={reporte[`valor_programado${idx}`]}
-                        onChange={handleSave}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input-report"
-                        style={{ textAlign: 'center' }}
-                        name={`valor_medido${idx}`}
-                        type="text"
-                        placeholder="Ej. 119.5V"
-                        value={reporte[`valor_medido${idx}`]}
-                        onChange={handleSave}
-                      />
+                {reporte.tipo_servicio === 'MTTO PREVENTIVO' ? (
+                  <>
+                    <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
+                      <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
+                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                      <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
+                    </tr>
+                    {[1, 2, 3, 4].map((idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <input
+                            className="input-report"
+                            name={`parametro${idx}`}
+                            type="text"
+                            placeholder={`Ej. Voltaje, Presión, SpO2...`}
+                            value={reporte[`parametro${idx}`]}
+                            onChange={handleSave}
+                          />
+                        </td>
+                        <td colSpan={2}>
+                          <input
+                            className="input-report"
+                            style={{ textAlign: 'center' }}
+                            name={`valor_programado${idx}`}
+                            type="text"
+                            placeholder="Ej. 120V ± 5%"
+                            value={reporte[`valor_programado${idx}`]}
+                            onChange={handleSave}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="input-report"
+                            style={{ textAlign: 'center' }}
+                            name={`valor_medido${idx}`}
+                            type="text"
+                            placeholder="Ej. 119.5V"
+                            value={reporte[`valor_medido${idx}`]}
+                            onChange={handleSave}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '16px 20px', backgroundColor: '#0f172a', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '700' }}>No requiere verificación de parámetros:</span> La calibración y verificación de parámetros cuantitativos aplica exclusivamente a <strong>Mantenimiento Preventivo</strong>. Para {reporte.tipo_servicio} no se cargan ni registran parámetros.
                     </td>
                   </tr>
-                ))}
+                )}
 
                 {/* 8. Observaciones */}
                 <tr>

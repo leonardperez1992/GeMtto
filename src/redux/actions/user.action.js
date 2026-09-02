@@ -27,10 +27,10 @@ export const loginUser = ({ usuario, password }) => {
       localStorage.setItem('user', JSON.stringify(response.user));
       dispatch(saveUser(response.user));
       alert(`Bienvenido ${response.user.name}`);
-      if (response.user.rol === 'admin') {
-        window.location.href = './inventarioua';
+      if (String(response.user?.rol || '').trim().toLowerCase() === 'admin') {
+        window.location.href = '/inventarioua';
       } else {
-        window.location.href = './inventariouser';
+        window.location.href = '/inventariouser';
       }
     } else {
       if (response.message === '{}') {

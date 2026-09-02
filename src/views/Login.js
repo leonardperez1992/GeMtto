@@ -1,13 +1,32 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { loginUser } from '../redux/actions/user.action';
 import { FaUser, FaLock, FaSignInAlt, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 
 function Login() {
   const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let currentUser = reduxUser;
+    if (!currentUser) {
+      try {
+        const raw = localStorage.getItem('user');
+        currentUser = raw ? JSON.parse(raw) : null;
+      } catch (e) {}
+    }
+    const token = localStorage.getItem('token');
+    if (token && currentUser) {
+      if (String(currentUser.rol || '').trim().toLowerCase() === 'admin') {
+        window.location.href = '/inventarioua';
+      } else {
+        window.location.href = '/inventariouser';
+      }
+    }
+  }, [reduxUser]);
 
   const [user, setUser] = useState({
     usuario: '',

@@ -11,7 +11,8 @@ import {
   FaCogs, 
   FaHospital, 
   FaSignOutAlt,
-  FaCalendarAlt 
+  FaCalendarAlt,
+  FaUsers 
 } from 'react-icons/fa';
 
 function Navbar() {
@@ -121,6 +122,11 @@ function Navbar() {
             <li>
               <Link to="/ips" style={linkStyle('/ips')}>
                 <FaHospital size={13} /> IPS
+              </Link>
+            </li>
+            <li>
+              <Link to="/usuarios" style={linkStyle('/usuarios')}>
+                <FaUsers size={13} /> Usuarios
               </Link>
             </li>
             <li className="nav-item-logout">

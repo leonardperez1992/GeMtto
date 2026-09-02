@@ -30,6 +30,7 @@ import Informes from './views/Informes';
 import AlertasMtto from './views/AlertasMtto';
 import HojaDeVidaQr from './views/HojaDeVidaQr';
 import Cronograma from './views/Cronograma';
+import Usuarios from './views/Usuarios';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -81,6 +82,7 @@ const RouterContainer = () => {
           <Route path="/verpdf" element={<VerPdf />} />
           <Route path="/informes" element={<Informes />} />
           <Route path="/alertas" element={<AlertasMtto />} />
+          <Route path="/usuarios" element={<Usuarios />} />
         </Routes>
 
       </Router>

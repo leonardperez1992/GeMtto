@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import ImageUploading from 'react-images-uploading';
 import {
   apiGetIps,
   apiEditIps,
@@ -22,7 +21,6 @@ import {
   FaPlus,
   FaFolderOpen,
   FaSpinner,
-  FaCamera,
 } from 'react-icons/fa';
 
 function EditarIps() {
@@ -105,10 +103,6 @@ function EditarIps() {
     setIpsData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogoChange = (imageList) => {
-    setIpsData((prev) => ({ ...prev, logo: imageList }));
-  };
-
   // Guardar cambios básicos de la IPS
   const handleGuardarBasicos = async (e) => {
     if (e) e.preventDefault();
@@ -127,7 +121,6 @@ function EditarIps() {
           ips: ipsData.ips.trim().toUpperCase(),
           nit: ipsData.nit.trim(),
           ciudad: ipsData.ciudad.trim().toUpperCase(),
-          logo: ipsData.logo,
         },
       });
 
@@ -405,82 +398,6 @@ function EditarIps() {
                 <FaCity style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#38bdf8' }} />
               </div>
             </div>
-          </div>
-
-          {/* Logo Upload */}
-          <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', color: '#94a3b8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
-              LOGO INSTITUCIONAL:
-            </label>
-            <ImageUploading
-              value={ipsData.logo}
-              onChange={handleLogoChange}
-              maxNumber={1}
-              dataURLKey="data_url"
-            >
-              {({ imageList, onImageUpload, onImageRemove }) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-                  {imageList.map((image, index) => (
-                    <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
-                      <img
-                        src={image['data_url'] || image}
-                        alt="Logo"
-                        style={{
-                          width: '110px',
-                          height: '70px',
-                          objectFit: 'contain',
-                          backgroundColor: '#ffffff',
-                          borderRadius: '8px',
-                          padding: '4px',
-                          border: '1.5px solid #38bdf8',
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => onImageRemove(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '-6px',
-                          right: '-6px',
-                          backgroundColor: '#ef4444',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: '22px',
-                          height: '22px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                  {imageList.length === 0 && (
-                    <button
-                      type="button"
-                      onClick={onImageUpload}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        backgroundColor: '#0f172a',
-                        border: '1.5px dashed #475569',
-                        color: '#94a3b8',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                      }}
-                    >
-                      <FaCamera color="#38bdf8" /> Subir Logo
-                    </button>
-                  )}
-                </div>
-              )}
-            </ImageUploading>
           </div>
 
           <div style={{ textAlign: 'right' }}>

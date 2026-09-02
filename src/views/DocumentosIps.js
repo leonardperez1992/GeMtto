@@ -154,25 +154,21 @@ function DocumentosIps() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              {institucionData?.logo && (
-                <img
-                  src={
-                    Array.isArray(institucionData.logo)
-                      ? institucionData.logo[0]?.data_url || institucionData.logo[0]
-                      : institucionData.logo?.data_url || institucionData.logo
-                  }
-                  alt="Logo IPS"
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    objectFit: 'contain',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '10px',
-                    padding: '4px',
-                    border: '1.5px solid #38bdf8',
-                  }}
-                />
-              )}
+              <div
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  border: '1.5px solid #38bdf8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <FaHospital size={26} color="#38bdf8" />
+              </div>
               <div>
                 <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '21px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <FaFolderOpen color="#38bdf8" /> Documentación Institucional y Planes

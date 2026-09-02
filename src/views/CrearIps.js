@@ -2,21 +2,16 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiCreateIps } from '../utils/api';
 import request from '../utils/request';
-import ImageUploading from 'react-images-uploading';
 import {
   FaHospital,
   FaCity,
   FaIdCard,
   FaSave,
   FaArrowLeft,
-  FaCamera,
-  FaTrash,
 } from 'react-icons/fa';
 
 function CrearIps() {
-  const [imagen, setImagen] = useState([]);
   const [loading, setLoading] = useState(false);
-  const maxNumber = 1;
 
   const [ips, setIps] = useState({
     ips: '',
@@ -27,10 +22,6 @@ function CrearIps() {
   const handleSave = (e) => {
     const { name, value } = e.target;
     setIps((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onImageChange = (imageList) => {
-    setImagen(imageList);
   };
 
   const CreateIps = async (e) => {
@@ -45,7 +36,6 @@ function CrearIps() {
       const response = await request({
         link: apiCreateIps,
         body: {
-          logo: imagen,
           ips: ips.ips.trim().toUpperCase(),
           nit: ips.nit.trim(),
           ciudad: ips.ciudad.trim().toUpperCase(),
@@ -133,90 +123,6 @@ function CrearIps() {
               marginBottom: '24px',
             }}
           >
-            {/* Logo Uploader */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'block', marginBottom: '8px' }}>
-                LOGO INSTITUCIONAL (OPCIONAL):
-              </label>
-              <div
-                style={{
-                  backgroundColor: '#0f172a',
-                  padding: '16px',
-                  borderRadius: '10px',
-                  border: '1px dashed #38bdf8',
-                  textAlign: 'center',
-                }}
-              >
-                <ImageUploading
-                  value={imagen}
-                  onChange={onImageChange}
-                  maxNumber={maxNumber}
-                  dataURLKey="data_url"
-                >
-                  {({ imageList, onImageUpload, onImageRemoveAll, isDragging, dragProps }) => (
-                    <div>
-                      {imageList.length === 0 ? (
-                        <div
-                          onClick={onImageUpload}
-                          {...dragProps}
-                          style={{
-                            cursor: 'pointer',
-                            padding: '14px 10px',
-                            color: isDragging ? '#38bdf8' : '#94a3b8',
-                          }}
-                        >
-                          <FaCamera size={32} color="#38bdf8" style={{ marginBottom: '6px' }} />
-                          <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
-                            Haz clic para subir el logo institucional
-                          </div>
-                          <div style={{ fontSize: '11.5px', marginTop: '3px' }}>PNG o JPG recomendado</div>
-                        </div>
-                      ) : (
-                        <div>
-                          {imageList.map((img, idx) => (
-                            <div key={idx}>
-                              <img
-                                src={img['data_url']}
-                                alt="Logo IPS"
-                                style={{
-                                  maxHeight: '100px',
-                                  maxWidth: '100%',
-                                  objectFit: 'contain',
-                                  borderRadius: '6px',
-                                  marginBottom: '8px',
-                                }}
-                              />
-                              <div>
-                                <button
-                                  type="button"
-                                  onClick={onImageRemoveAll}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '5px 10px',
-                                    backgroundColor: '#7f1d1d',
-                                    color: '#fca5a5',
-                                    border: '1px solid #ef4444',
-                                    borderRadius: '6px',
-                                    fontSize: '11.5px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                  }}
-                                >
-                                  <FaTrash size={11} /> Eliminar Logo
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </ImageUploading>
-              </div>
-            </div>
-
             {/* Nombre de la IPS */}
             <div style={{ marginBottom: '18px' }}>
               <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>

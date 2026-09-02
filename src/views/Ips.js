@@ -205,10 +205,6 @@ function Ips() {
                     </tr>
                   ) : (
                     filteredIps.map((item, idx) => {
-                      const logoSrc = item.logo
-                        ? (Array.isArray(item.logo) ? item.logo[0]?.data_url || item.logo[0] : item.logo?.data_url || item.logo)
-                        : null;
-
                       const docsCount =
                         (item.plan_mantenimiento ? 1 : 0) +
                         (item.plan_capacitacion ? 1 : 0) +
@@ -217,45 +213,11 @@ function Ips() {
 
                       return (
                         <tr key={item._id || idx}>
-                          {/* 1. Nombre & Logo */}
+                          {/* 1. Nombre Institución */}
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              {logoSrc ? (
-                                <img
-                                  src={logoSrc}
-                                  alt="Logo"
-                                  style={{
-                                    width: '36px',
-                                    height: '36px',
-                                    objectFit: 'contain',
-                                    backgroundColor: '#fff',
-                                    borderRadius: '6px',
-                                    padding: '2px',
-                                    border: '1px solid #475569',
-                                    flexShrink: 0,
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: '36px',
-                                    height: '36px',
-                                    borderRadius: '6px',
-                                    backgroundColor: '#0f2744',
-                                    color: '#38bdf8',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    border: '1px solid #38bdf8',
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  <FaHospital size={16} />
-                                </div>
-                              )}
-                              <div>
-                                <strong style={{ color: '#f8fafc', fontSize: '13.5px' }}>{item?.ips}</strong>
-                              </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <FaHospital color="#38bdf8" size={15} />
+                              <strong style={{ color: '#f8fafc', fontSize: '13.5px' }}>{item?.ips}</strong>
                             </div>
                           </td>
 

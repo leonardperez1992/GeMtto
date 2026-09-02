@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { apiInventario, apiIps } from '../utils/api';
+import { apiInventario, apiIps, apiObtenerEquiposIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import {
@@ -20,7 +20,18 @@ import {
 import { GoEye, GoSearch } from 'react-icons/go';
 
 function Cronograma() {
-  const user = useSelector((state) => state.auth?.user || null);
+  const reduxUser = useSelector((state) => state.user);
+  const storedUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+  const user = reduxUser || storedUser;
+  const isRegularUser = user?.rol === 'user' || (user?.rol && user.rol !== 'admin');
+  const userInstitucion = user?.institucion ? user.institucion.trim() : '';
 
   const [inventario, setInventario] = useState([]);
   const [listaIps, setListaIps] = useState([]);
@@ -55,12 +66,17 @@ function Cronograma() {
   const fetchInventario = async () => {
     setLoading(true);
     try {
+      let link = apiInventario;
+      if (isRegularUser && userInstitucion) {
+        link = `${apiObtenerEquiposIps}?institucion=${encodeURIComponent(userInstitucion)}`;
+      }
       const response = await request({
-        link: apiInventario,
+        link,
         method: 'GET',
       });
-      if (response && response.success && response.inventario) {
-        setInventario(response.inventario);
+      if (response && response.success) {
+        const data = response.equipos || response.inventario || [];
+        setInventario(data);
       }
     } catch (e) {
       console.error('Error al cargar inventario para cronograma:', e);
@@ -72,17 +88,20 @@ function Cronograma() {
   useEffect(() => {
     fetchIps();
     fetchInventario();
-  }, []);
+  }, [isRegularUser, userInstitucion]);
 
   // Si el usuario es tipo 'user' y tiene institución asignada, inicializar el filtro
   useEffect(() => {
-    if (user?.rol === 'user' && user?.institucion && !selectedIps) {
-      setSelectedIps(user.institucion);
+    if (isRegularUser && userInstitucion) {
+      setSelectedIps(userInstitucion);
     }
-  }, [user, selectedIps]);
+  }, [isRegularUser, userInstitucion]);
 
   // Lista única y combinada de IPS disponibles (desde la colección IPS + valores de institucion en inventario)
   const ipsDisponibles = useMemo(() => {
+    if (isRegularUser && userInstitucion) {
+      return [userInstitucion];
+    }
     const set = new Set();
     listaIps.forEach((item) => {
       const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
@@ -96,15 +115,16 @@ function Cronograma() {
       }
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [listaIps, inventario]);
+  }, [listaIps, inventario, isRegularUser, userInstitucion]);
 
   // Lista única de Servicios disponibles según los equipos cargados
   const serviciosDisponibles = useMemo(() => {
     const set = new Set();
+    const targetIps = isRegularUser && userInstitucion ? userInstitucion : selectedIps;
     inventario.forEach((eq) => {
       if (
-        selectedIps &&
-        (eq.institucion || '').trim().toLowerCase() !== selectedIps.trim().toLowerCase()
+        targetIps &&
+        (eq.institucion || '').trim().toLowerCase() !== targetIps.trim().toLowerCase()
       ) {
         return;
       }
@@ -113,7 +133,7 @@ function Cronograma() {
       }
     });
     return Array.from(set).sort();
-  }, [inventario, selectedIps]);
+  }, [inventario, selectedIps, isRegularUser, userInstitucion]);
 
   // Procesamiento de datos de los equipos con sus meses
   const equiposConCronograma = useMemo(() => {
@@ -131,8 +151,12 @@ function Cronograma() {
   // Filtrado reactivo de equipos
   const filteredEquipos = useMemo(() => {
     return equiposConCronograma.filter((eq) => {
-      // Filtro por IPS
-      if (
+      // Filtro obligatorio por institución del usuario regular
+      if (isRegularUser && userInstitucion) {
+        if ((eq.institucion || '').trim().toLowerCase() !== userInstitucion.toLowerCase()) {
+          return false;
+        }
+      } else if (
         selectedIps &&
         (eq.institucion || '').trim().toLowerCase() !== selectedIps.trim().toLowerCase()
       ) {
@@ -172,6 +196,8 @@ function Cronograma() {
     selectedMes,
     selectedPeriodicidad,
     buscar,
+    isRegularUser,
+    userInstitucion,
   ]);
 
   // Paginación
@@ -317,7 +343,7 @@ function Cronograma() {
       >
         <div>
           <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '22px', fontWeight: '800' }}>
-            <FaCalendarAlt color="#38bdf8" /> Cronograma de Mantenimiento Preventivo {selectedAnio}
+            <FaCalendarAlt color="#38bdf8" /> Cronograma de Mantenimiento Preventivo {selectedAnio} {isRegularUser && userInstitucion ? `- ${userInstitucion}` : ''}
           </h2>
           <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
             Planificación y programación periódica de mantenimientos de equipos biomédicos por meses.
@@ -514,15 +540,22 @@ function Cronograma() {
             <select
               value={selectedIps}
               onChange={(e) => {
-                setSelectedIps(e.target.value);
-                setSelectedServicio('');
-                setCurrentPage(1);
+                if (!isRegularUser) {
+                  setSelectedIps(e.target.value);
+                  setSelectedServicio('');
+                  setCurrentPage(1);
+                }
               }}
-              disabled={user?.rol === 'user' && !!user?.institucion}
+              disabled={isRegularUser && !!userInstitucion}
               className="input-report"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{
+                padding: '8px 12px',
+                fontSize: '13px',
+                opacity: isRegularUser && !!userInstitucion ? 0.85 : 1,
+                cursor: isRegularUser && !!userInstitucion ? 'not-allowed' : 'pointer',
+              }}
             >
-              <option value="">-- Todas las Instituciones / IPS --</option>
+              {!isRegularUser && <option value="">-- Todas las Instituciones / IPS --</option>}
               {ipsDisponibles.map((nombreIps) => (
                 <option key={nombreIps} value={nombreIps}>
                   {nombreIps}

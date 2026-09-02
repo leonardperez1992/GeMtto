@@ -339,7 +339,9 @@ function ReporteService() {
       });
       if (response && response.success) {
         alert('¡Reporte de servicio creado exitosamente!');
-        window.location.href = './reportes';
+        const storedUser = localStorage.getItem('user');
+        const userObj = storedUser ? JSON.parse(storedUser) : null;
+        window.location.href = userObj && userObj.rol !== 'admin' ? './inventariouser' : './inventarioua';
       } else {
         alert(`${response?.message || 'Verifique que todos los campos requeridos estén diligenciados'}`);
       }

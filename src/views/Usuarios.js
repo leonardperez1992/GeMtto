@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { apiUsers, apiDeleteUser, apiIps } from '../utils/api';
+import { apiUsers, apiDeleteUser, apiUpdateUser, apiIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import {
@@ -13,6 +13,11 @@ import {
   FaSyncAlt,
   FaUserTag,
   FaBuilding,
+  FaUserEdit,
+  FaSave,
+  FaTimes,
+  FaKey,
+  FaCheck,
 } from 'react-icons/fa';
 import { GoSearch } from 'react-icons/go';
 
@@ -22,6 +27,18 @@ function Usuarios() {
   const [listaIps, setListaIps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+
+  // Estados de Modal de Gestión de Rol y Usuario
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    usuario: '',
+    rol: 'user',
+    institucion: '',
+    password: '',
+  });
+  const [savingUser, setSavingUser] = useState(false);
 
   // Filtros
   const [buscar, setBuscar] = useState('');
@@ -102,6 +119,74 @@ function Usuarios() {
       alert('Error de conexión al intentar eliminar el usuario.');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const abrirModalEditar = (u) => {
+    setEditingUser(u);
+    setFormData({
+      name: u.name || '',
+      usuario: u.usuario || '',
+      rol: String(u.rol || 'user').toLowerCase() === 'admin' ? 'admin' : 'user',
+      institucion: u.institucion || '',
+      password: '',
+    });
+    setModalOpen(true);
+  };
+
+  const cerrarModal = () => {
+    setModalOpen(false);
+    setEditingUser(null);
+    setSavingUser(false);
+  };
+
+  const guardarCambiosUsuario = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingUser) return;
+
+    if (!formData.name.trim()) {
+      alert('El nombre del usuario no puede estar vacío.');
+      return;
+    }
+
+    if (formData.rol === 'user' && !formData.institucion.trim()) {
+      alert('Para el rol de Usuario IPS es obligatorio asignar una institución.');
+      return;
+    }
+
+    setSavingUser(true);
+    try {
+      const body = {
+        id: editingUser._id,
+        usuario: editingUser.usuario,
+        name: formData.name.trim(),
+        rol: formData.rol,
+        institucion: formData.rol === 'admin' && !formData.institucion.trim() ? '' : formData.institucion.trim(),
+      };
+      if (formData.password && formData.password.trim().length > 0) {
+        body.password = formData.password.trim();
+      }
+
+      const response = await request({
+        link: apiUpdateUser,
+        method: 'POST',
+        body,
+      });
+
+      if (response && response.success && response.user) {
+        alert(`Usuario "${response.user.name || response.user.usuario}" actualizado correctamente con rol ${response.user.rol.toUpperCase()}.`);
+        setUsers((prev) =>
+          prev.map((u) => (u._id === editingUser._id ? { ...u, ...response.user } : u))
+        );
+        cerrarModal();
+      } else {
+        alert(`Error al actualizar: ${response?.message || 'No se pudo guardar la información'}`);
+      }
+    } catch (err) {
+      console.error('Error al actualizar usuario:', err);
+      alert('Error de conexión al intentar actualizar el usuario.');
+    } finally {
+      setSavingUser(false);
     }
   };
 
@@ -644,18 +729,17 @@ function Usuarios() {
 
                       {/* 6. Acciones */}
                       <td style={{ textAlign: 'center' }}>
-                        {!isCurrent ? (
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           <button
-                            onClick={() => eliminarUsuario(u)}
-                            disabled={deletingId === u._id}
-                            title="Eliminar usuario"
+                            onClick={() => abrirModalEditar(u)}
+                            title="Gestionar rol y datos del usuario"
                             style={{
-                              backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                              border: '1px solid rgba(239, 68, 68, 0.35)',
-                              color: '#f87171',
+                              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                              border: '1px solid rgba(56, 189, 248, 0.35)',
+                              color: '#38bdf8',
                               padding: '6px 10px',
                               borderRadius: '6px',
-                              cursor: deletingId === u._id ? 'not-allowed' : 'pointer',
+                              cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '5px',
@@ -664,21 +748,49 @@ function Usuarios() {
                               transition: 'all 0.2s',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#ef4444';
+                              e.currentTarget.style.backgroundColor = '#0284c7';
                               e.currentTarget.style.color = '#ffffff';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                              e.currentTarget.style.color = '#f87171';
+                              e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.15)';
+                              e.currentTarget.style.color = '#38bdf8';
                             }}
                           >
-                            <FaTrashAlt size={12} /> {deletingId === u._id ? '...' : 'Eliminar'}
+                            <FaUserEdit size={13} /> Gestionar
                           </button>
-                        ) : (
-                          <span style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>
-                            En uso
-                          </span>
-                        )}
+
+                          {!isCurrent ? (
+                            <button
+                              onClick={() => eliminarUsuario(u)}
+                              disabled={deletingId === u._id}
+                              title="Eliminar usuario"
+                              style={{
+                                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                                border: '1px solid rgba(239, 68, 68, 0.35)',
+                                color: '#f87171',
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                cursor: deletingId === u._id ? 'not-allowed' : 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#ef4444';
+                                e.currentTarget.style.color = '#ffffff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                                e.currentTarget.style.color = '#f87171';
+                              }}
+                            >
+                              <FaTrashAlt size={12} /> {deletingId === u._id ? '...' : 'Eliminar'}
+                            </button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -702,6 +814,275 @@ function Usuarios() {
             pageSizeOptions={[15, 25, 50, 100]}
           />
         </div>
+
+        {/* Modal de Gestión de Rol y Usuario */}
+        {modalOpen && editingUser && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.8)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '16px',
+            }}
+            onClick={cerrarModal}
+          >
+            <div
+              style={{
+                backgroundColor: '#1e293b',
+                borderRadius: '16px',
+                border: '1.5px solid #38bdf8',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+                width: '100%',
+                maxWidth: '520px',
+                overflow: 'hidden',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  padding: '16px 20px',
+                  backgroundColor: '#0f172a',
+                  borderBottom: '1px solid #334155',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#38bdf8',
+                    }}
+                  >
+                    <FaUserEdit size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '16px', color: '#f8fafc', fontWeight: '700' }}>
+                      Gestionar Rol y Usuario
+                    </h3>
+                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                      @{editingUser.usuario}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={cerrarModal}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              {/* Modal Form */}
+              <form onSubmit={guardarCambiosUsuario} style={{ padding: '20px' }}>
+                {/* 1. Nombre Completo */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', marginBottom: '6px' }}>
+                    Nombre Completo:
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #334155',
+                      backgroundColor: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                {/* 2. Selector de Rol */}
+                <div style={{ marginBottom: '18px' }}>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', marginBottom: '8px' }}>
+                    Rol / Nivel de Acceso:
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {/* Opción Administrador */}
+                    <div
+                      onClick={() => setFormData({ ...formData, rol: 'admin' })}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '10px',
+                        border: formData.rol === 'admin' ? '2px solid #10b981' : '1px solid #334155',
+                        backgroundColor: formData.rol === 'admin' ? 'rgba(16, 185, 129, 0.12)' : '#0f172a',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '700', fontSize: '13px', color: formData.rol === 'admin' ? '#34d399' : '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <FaUserShield /> Administrador
+                        </span>
+                        {formData.rol === 'admin' && <FaCheck color="#10b981" size={12} />}
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.3' }}>
+                        Acceso total a todos los módulos e IPS.
+                      </span>
+                    </div>
+
+                    {/* Opción Usuario IPS */}
+                    <div
+                      onClick={() => setFormData({ ...formData, rol: 'user' })}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '10px',
+                        border: formData.rol === 'user' ? '2px solid #38bdf8' : '1px solid #334155',
+                        backgroundColor: formData.rol === 'user' ? 'rgba(56, 189, 248, 0.12)' : '#0f172a',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '700', fontSize: '13px', color: formData.rol === 'user' ? '#38bdf8' : '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <FaHospital /> Usuario IPS
+                        </span>
+                        {formData.rol === 'user' && <FaCheck color="#38bdf8" size={12} />}
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.3' }}>
+                        Restringido a su sede asignada.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Institución Asignada (Obligatoria para Usuario IPS) */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', marginBottom: '6px' }}>
+                    Institución Asignada (IPS): {formData.rol === 'user' && <span style={{ color: '#ef4444' }}>*</span>}
+                  </label>
+                  <select
+                    value={formData.institucion}
+                    onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
+                    required={formData.rol === 'user'}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #334155',
+                      backgroundColor: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="">{formData.rol === 'admin' ? '-- Acceso Global (Sin restricción de IPS) --' : '-- Seleccionar IPS Obligatoria --'}</option>
+                    {ipsDisponibles.map((ipsName, idx) => (
+                      <option key={idx} value={ipsName}>
+                        {ipsName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 4. Cambiar Contraseña (Opcional) */}
+                <div style={{ marginBottom: '22px' }}>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', marginBottom: '6px' }}>
+                    <FaKey style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Nueva Contraseña (Opcional):
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Dejar en blanco para mantener la contraseña actual"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #334155',
+                      backgroundColor: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={cerrarModal}
+                    style={{
+                      backgroundColor: '#334155',
+                      color: '#f8fafc',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '13.5px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingUser}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: '#0284c7',
+                      color: '#ffffff',
+                      border: '1px solid #38bdf8',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      fontWeight: '700',
+                      fontSize: '13.5px',
+                      cursor: savingUser ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.4)',
+                    }}
+                  >
+                    <FaSave size={14} /> {savingUser ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

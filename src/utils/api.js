@@ -1,6 +1,7 @@
 const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 export const apiUsers = baseUrl + '/users';
 export const apiCreateUsers = apiUsers + '/create';
+export const apiUpdateUser = apiUsers + '/update';
 export const apiDeleteUser = apiUsers + '/delete';
 export const apiAuth = baseUrl + '/auth';
 export const apiInventario = baseUrl + '/inventario';

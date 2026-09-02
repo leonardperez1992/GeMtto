@@ -5,6 +5,7 @@ export const apiDeleteUser = apiUsers + '/delete';
 export const apiAuth = baseUrl + '/auth';
 export const apiInventario = baseUrl + '/inventario';
 export const apiCreateInventario = apiInventario + '/createinventario';
+export const apiBulkCreateInventario = apiInventario + '/bulkcreate';
 export const apiEditInventario = apiInventario + '/editinventario';
 export const apiObtenerEquipo = apiInventario + '/obtenerequipo';
 export const apiObtenerEquiposIps = apiInventario + '/obtenerequiposips';

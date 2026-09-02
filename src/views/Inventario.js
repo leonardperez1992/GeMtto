@@ -6,8 +6,9 @@ import Pagination from '../components/Pagination';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 import { GoEye, GoSearch } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
-import { FaPlus, FaBoxes, FaQrcode } from 'react-icons/fa';
+import { FaPlus, FaBoxes, FaQrcode, FaFileExcel } from 'react-icons/fa';
 import QrModal from '../components/QrModal';
+import CargaMasivaModal from '../components/CargaMasivaModal';
 
 function Inventario() {
   const [inventario, setInventario] = useState([]);
@@ -15,6 +16,7 @@ function Inventario() {
   const [loading, setLoading] = useState(true);
   const [qrEquipo, setQrEquipo] = useState(null);
   const [modalQrOpen, setModalQrOpen] = useState(false);
+  const [modalCargaMasivaOpen, setModalCargaMasivaOpen] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,26 +88,49 @@ function Inventario() {
               Gestión centralizada de equipos médicos, hojas de vida y servicios técnicos.
             </p>
           </div>
-          <Link
-            to="/createinventary"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#0284c7',
-              color: '#ffffff',
-              padding: '10px 18px',
-              borderRadius: '8px',
-              fontWeight: '700',
-              fontSize: '14px',
-              textDecoration: 'none',
-              boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
-              border: '1px solid #38bdf8',
-              transition: 'all 0.2s',
-            }}
-          >
-            <FaPlus size={13} /> Nuevo Equipo
-          </Link>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setModalCargaMasivaOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#0f766e',
+                color: '#ffffff',
+                padding: '10px 18px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '14px',
+                border: '1px solid #14b8a6',
+                boxShadow: '0 2px 8px rgba(15, 118, 110, 0.4)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaFileExcel size={14} color="#34d399" /> Carga Masiva (Excel)
+            </button>
+            <Link
+              to="/createinventary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                padding: '10px 18px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '14px',
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
+                border: '1px solid #38bdf8',
+                transition: 'all 0.2s',
+              }}
+            >
+              <FaPlus size={13} /> Nuevo Equipo
+            </Link>
+          </div>
         </div>
 
         {/* Toolbar & Search */}
@@ -279,6 +304,13 @@ function Inventario() {
           setQrEquipo(null);
         }}
         equipo={qrEquipo}
+      />
+
+      {/* Modal de Carga Masiva Excel */}
+      <CargaMasivaModal
+        isOpen={modalCargaMasivaOpen}
+        onClose={() => setModalCargaMasivaOpen(false)}
+        onSuccess={() => getInventario()}
       />
     </div>
   );

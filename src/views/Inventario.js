@@ -6,7 +6,8 @@ import Pagination from '../components/Pagination';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 import { GoEye, GoSearch } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
-import { FaPlus, FaBoxes, FaQrcode, FaFileExcel } from 'react-icons/fa';
+import { FaPlus, FaBoxes, FaQrcode, FaFileExcel, FaDownload } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
 import QrModal from '../components/QrModal';
 import CargaMasivaModal from '../components/CargaMasivaModal';
 
@@ -75,6 +76,59 @@ function Inventario() {
     return filteredInventarios.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredInventarios, currentPage, itemsPerPage]);
 
+  // Exportar Inventario a Excel
+  const exportarExcel = () => {
+    const listado = filteredInventarios.length > 0 ? filteredInventarios : inventario;
+    if (listado.length === 0) {
+      alert('No hay equipos en el inventario para exportar.');
+      return;
+    }
+
+    const data = listado.map((eq, index) => ({
+      '#': index + 1,
+      'EQUIPO': eq.equipo || '',
+      'MARCA': eq.marca || '',
+      'MODELO': eq.modelo || '',
+      'SERIE': eq.serie || '',
+      'Nº INVENTARIO': eq.inventario || 'NA',
+      'INSTITUCIÓN / IPS': eq.institucion || '',
+      'SERVICIO': eq.servicio || '',
+      'UBICACIÓN': eq.ubicacion || '',
+      'PERIODICIDAD': eq.periodicidad || 'NO APLICA',
+      'REGISTRO INVIMA': eq.registro_invima || '',
+      'CLASIFICACIÓN RIESGO': eq.riesgo || '',
+      'RESPONSABLE': eq.responsable || '',
+      'FORMA ADQUISICIÓN': eq.forma_adquisicion || '',
+      'FECHA INSTALACIÓN': eq.fecha_instalacion || '',
+      'FECHA FABRICACIÓN': eq.fecha_fabricacion || '',
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    ws['!cols'] = [
+      { wch: 5 },  // #
+      { wch: 28 }, // EQUIPO
+      { wch: 18 }, // MARCA
+      { wch: 18 }, // MODELO
+      { wch: 18 }, // SERIE
+      { wch: 16 }, // INVENTARIO
+      { wch: 28 }, // INSTITUCION
+      { wch: 20 }, // SERVICIO
+      { wch: 20 }, // UBICACION
+      { wch: 18 }, // PERIODICIDAD
+      { wch: 22 }, // INVIMA
+      { wch: 16 }, // RIESGO
+      { wch: 22 }, // RESPONSABLE
+      { wch: 18 }, // FORMA ADQUISICION
+      { wch: 18 }, // FECHA INSTALACION
+      { wch: 18 }, // FECHA FABRICACION
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+    XLSX.writeFile(wb, `Inventario_Equipos_GEMTTO_${new Date().getFullYear()}.xlsx`);
+  };
+
   return (
     <div className="contenedor">
       <main>
@@ -89,6 +143,28 @@ function Inventario() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={exportarExcel}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#059669',
+                color: '#ffffff',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '14px',
+                border: '1px solid #10b981',
+                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.4)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              title="Descargar inventario en formato Excel (.xlsx)"
+            >
+              <FaDownload size={13} /> Descargar Excel
+            </button>
             <button
               type="button"
               onClick={() => setModalCargaMasivaOpen(true)}

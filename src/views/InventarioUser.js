@@ -5,7 +5,8 @@ import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
 import { GoSearch, GoEye } from 'react-icons/go';
-import { FaBoxes, FaQrcode } from 'react-icons/fa';
+import { FaBoxes, FaQrcode, FaDownload } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
 import QrModal from '../components/QrModal';
 
 const normalizeText = (str) =>
@@ -98,17 +99,97 @@ function InventarioUser() {
     return filteredInventarios.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredInventarios, currentPage, itemsPerPage]);
 
+  // Exportar Inventario del Usuario a Excel (.xlsx)
+  const exportarExcel = () => {
+    const listado = filteredInventarios.length > 0 ? filteredInventarios : inventario;
+    if (listado.length === 0) {
+      alert('No hay equipos en el inventario para exportar.');
+      return;
+    }
+
+    const data = listado.map((eq, index) => ({
+      '#': index + 1,
+      'EQUIPO': eq.equipo || '',
+      'MARCA': eq.marca || '',
+      'MODELO': eq.modelo || '',
+      'SERIE': eq.serie || '',
+      'Nº INVENTARIO': eq.inventario || 'NA',
+      'INSTITUCIÓN / IPS': eq.institucion || institucion || '',
+      'SERVICIO': eq.servicio || '',
+      'UBICACIÓN': eq.ubicacion || '',
+      'PERIODICIDAD': eq.periodicidad || 'NO APLICA',
+      'REGISTRO INVIMA': eq.registro_invima || '',
+      'CLASIFICACIÓN RIESGO': eq.riesgo || '',
+      'RESPONSABLE': eq.responsable || '',
+      'FORMA ADQUISICIÓN': eq.forma_adquisicion || '',
+      'FECHA INSTALACIÓN': eq.fecha_instalacion || '',
+      'FECHA FABRICACIÓN': eq.fecha_fabricacion || '',
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    ws['!cols'] = [
+      { wch: 5 },  // #
+      { wch: 28 }, // EQUIPO
+      { wch: 18 }, // MARCA
+      { wch: 18 }, // MODELO
+      { wch: 18 }, // SERIE
+      { wch: 16 }, // INVENTARIO
+      { wch: 28 }, // INSTITUCION
+      { wch: 20 }, // SERVICIO
+      { wch: 20 }, // UBICACION
+      { wch: 18 }, // PERIODICIDAD
+      { wch: 22 }, // INVIMA
+      { wch: 16 }, // RIESGO
+      { wch: 22 }, // RESPONSABLE
+      { wch: 18 }, // FORMA ADQUISICION
+      { wch: 18 }, // FECHA INSTALACION
+      { wch: 18 }, // FECHA FABRICACION
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+    const nomIps = institucion ? institucion.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Sede';
+    XLSX.writeFile(wb, `Inventario_${nomIps}_${new Date().getFullYear()}.xlsx`);
+  };
+
   return (
     <div className="contenedor">
       <main>
-        {/* Header Title */}
-        <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FaBoxes color="#38bdf8" /> Inventario de Equipos - {institucion || 'Mi Institución'}
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
-            Consulta y seguimiento del parque biomédico asignado a tu institución.
-          </p>
+        {/* Header Title & Actions */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FaBoxes color="#38bdf8" /> Inventario de Equipos - {institucion || 'Mi Institución'}
+            </h2>
+            <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>
+              Consulta y seguimiento del parque biomédico asignado a tu institución.
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={exportarExcel}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#059669',
+                color: '#ffffff',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '14px',
+                border: '1px solid #10b981',
+                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.4)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              title="Descargar inventario en formato Excel (.xlsx)"
+            >
+              <FaDownload size={13} /> Descargar Inventario Excel
+            </button>
+          </div>
         </div>
 
         {/* Toolbar & Search */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import * as XLSX from 'xlsx';
 import { apiInventario, apiIps, apiObtenerEquiposIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
@@ -290,70 +291,60 @@ function Cronograma() {
     );
   }, [selectedIps, listaIps]);
 
-  // Exportar a formato CSV / Excel
-  const exportarCSV = () => {
-    if (filteredEquipos.length === 0) {
+  // Exportar a formato Excel (.xlsx) nativo
+  const exportarExcel = () => {
+    const listado = filteredEquipos.length > 0 ? filteredEquipos : equiposConCronograma;
+    if (listado.length === 0) {
       alert('No hay equipos en el cronograma para exportar con los filtros actuales.');
       return;
     }
 
-    const headers = [
-      '#',
-      'EQUIPO',
-      'MARCA',
-      'MODELO',
-      'SERIE',
-      'INSTITUCION',
-      'SERVICIO',
-      'UBICACION',
-      'PERIODICIDAD',
-      'ENE',
-      'FEB',
-      'MAR',
-      'ABR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AGO',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DIC',
-      'RESPONSABLE',
-    ];
+    const data = listado.map((eq, index) => {
+      const matrizMeses = {};
+      MESES_DEL_ANIO.forEach((m) => {
+        matrizMeses[m] = (eq._cronoMeses || []).includes(m) ? 'P' : '';
+      });
 
-    const rows = filteredEquipos.map((eq, index) => {
-      const matrizMeses = MESES_DEL_ANIO.map((m) =>
-        eq._cronoMeses.includes(m) ? 'P' : ''
-      );
-
-      return [
-        index + 1,
-        `"${(eq.equipo || '').replace(/"/g, '""')}"`,
-        `"${(eq.marca || '').replace(/"/g, '""')}"`,
-        `"${(eq.modelo || '').replace(/"/g, '""')}"`,
-        `"${(eq.serie || '').replace(/"/g, '""')}"`,
-        `"${(eq.institucion || '').replace(/"/g, '""')}"`,
-        `"${(eq.servicio || '').replace(/"/g, '""')}"`,
-        `"${(eq.ubicacion || '').replace(/"/g, '""')}"`,
-        `"${(eq.periodicidad || 'SEMESTRAL').replace(/"/g, '""')}"`,
-        ...matrizMeses.map((m) => `"${m}"`),
-        `"${(eq.responsable || '').replace(/"/g, '""')}"`,
-      ];
+      return {
+        '#': index + 1,
+        'EQUIPO': eq.equipo || '',
+        'MARCA': eq.marca || '',
+        'MODELO': eq.modelo || '',
+        'SERIE': eq.serie || '',
+        'Nº INVENTARIO': eq.inventario || 'NA',
+        'INSTITUCIÓN': eq.institucion || '',
+        'SERVICIO': eq.servicio || '',
+        'UBICACIÓN': eq.ubicacion || '',
+        'PERIODICIDAD': eq.periodicidad || 'SEMESTRAL',
+        ...matrizMeses,
+        'RESPONSABLE': eq.responsable || '',
+      };
     });
 
-    const csvContent =
-      'data:text/csv;charset=utf-8,\uFEFF' +
-      [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    const nombreArchivo = `Cronograma_Mantenimiento_${selectedIps || 'General'}_${selectedAnio}.csv`;
-    link.setAttribute('download', nombreArchivo);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Ajustar anchos de columnas
+    ws['!cols'] = [
+      { wch: 5 },  // #
+      { wch: 28 }, // EQUIPO
+      { wch: 18 }, // MARCA
+      { wch: 18 }, // MODELO
+      { wch: 18 }, // SERIE
+      { wch: 15 }, // INVENTARIO
+      { wch: 28 }, // INSTITUCION
+      { wch: 20 }, // SERVICIO
+      { wch: 20 }, // UBICACION
+      { wch: 16 }, // PERIODICIDAD
+      { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, // ENE-ABR
+      { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, // MAY-AGO
+      { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, // SEP-DIC
+      { wch: 22 }, // RESPONSABLE
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Cronograma');
+    const ipsNombre = selectedIps ? selectedIps.replace(/[^a-zA-Z0-9_-]/g, '_') : 'General';
+    XLSX.writeFile(wb, `Cronograma_Mantenimiento_${ipsNombre}_${selectedAnio}.xlsx`);
   };
 
   const getPeriodicidadBadgeStyle = (per) => {
@@ -399,7 +390,7 @@ function Cronograma() {
 
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
-            onClick={exportarCSV}
+            onClick={exportarExcel}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -414,9 +405,9 @@ function Cronograma() {
               cursor: 'pointer',
               boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
             }}
-            title="Exportar cronograma filtrado a Excel / CSV"
+            title="Exportar cronograma filtrado a archivo Excel (.xlsx)"
           >
-            <FaFileExcel size={15} /> Exportar Excel / CSV
+            <FaFileExcel size={15} /> Exportar Excel (.xlsx)
           </button>
 
           <button

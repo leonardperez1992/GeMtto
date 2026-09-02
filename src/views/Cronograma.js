@@ -29,16 +29,24 @@ function Cronograma() {
       return null;
     }
   }, []);
-  const user = reduxUser || storedUser;
-  const isRegularUser = user?.rol === 'user' || (user?.rol && user.rol !== 'admin');
-  const userInstitucion = user?.institucion ? user.institucion.trim() : '';
+  const user = reduxUser || storedUser || {};
+  const isAdmin = String(user?.rol || '').trim().toLowerCase() === 'admin';
+  const isNonAdmin = !isAdmin;
+  const userInstitucion = String(user?.institucion || user?.ips || user?.empresa || '').trim();
+
+  const normalizeText = (str) =>
+    String(str || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
 
   const [inventario, setInventario] = useState([]);
   const [listaIps, setListaIps] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filtros
-  const [selectedIps, setSelectedIps] = useState('');
+  const [selectedIps, setSelectedIps] = useState(isNonAdmin ? userInstitucion : '');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [selectedMes, setSelectedMes] = useState('');
   const [selectedPeriodicidad, setSelectedPeriodicidad] = useState('');
@@ -50,6 +58,10 @@ function Cronograma() {
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const fetchIps = async () => {
+    if (isNonAdmin && userInstitucion) {
+      setListaIps([{ ips: userInstitucion, nombre: userInstitucion, institucion: userInstitucion }]);
+      return;
+    }
     try {
       const response = await request({
         link: apiIps,
@@ -66,17 +78,40 @@ function Cronograma() {
   const fetchInventario = async () => {
     setLoading(true);
     try {
-      let link = apiInventario;
-      if (isRegularUser && userInstitucion) {
-        link = `${apiObtenerEquiposIps}?institucion=${encodeURIComponent(userInstitucion)}`;
-      }
-      const response = await request({
-        link,
-        method: 'GET',
-      });
-      if (response && response.success) {
-        const data = response.equipos || response.inventario || [];
-        setInventario(data);
+      if (isNonAdmin) {
+        if (!userInstitucion) {
+          setInventario([]);
+          setLoading(false);
+          return;
+        }
+        const response = await request({
+          link: `${apiObtenerEquiposIps}?institucion=${encodeURIComponent(userInstitucion)}`,
+          method: 'GET',
+        });
+        if (response && response.success && Array.isArray(response.equipos) && response.equipos.length > 0) {
+          setInventario(response.equipos);
+        } else {
+          // Fallback: si el backend no coincide con el regex, consultar inventario y filtrar estrictamente en frontend
+          const fallbackRes = await request({ link: apiInventario, method: 'GET' });
+          if (fallbackRes && fallbackRes.success && fallbackRes.inventario) {
+            const normUser = normalizeText(userInstitucion);
+            const soloUser = fallbackRes.inventario.filter((eq) => {
+              const normEq = normalizeText(eq.institucion);
+              return normEq === normUser || normEq.includes(normUser) || normUser.includes(normEq);
+            });
+            setInventario(soloUser);
+          } else {
+            setInventario([]);
+          }
+        }
+      } else {
+        const response = await request({
+          link: apiInventario,
+          method: 'GET',
+        });
+        if (response && response.success && response.inventario) {
+          setInventario(response.inventario);
+        }
       }
     } catch (e) {
       console.error('Error al cargar inventario para cronograma:', e);
@@ -88,19 +123,22 @@ function Cronograma() {
   useEffect(() => {
     fetchIps();
     fetchInventario();
-  }, [isRegularUser, userInstitucion]);
+  }, [isAdmin, userInstitucion]);
 
-  // Si el usuario es tipo 'user' y tiene institución asignada, inicializar el filtro
+  // Si el usuario no es admin y tiene institución asignada, inicializar el filtro
   useEffect(() => {
-    if (isRegularUser && userInstitucion) {
+    if (isNonAdmin && userInstitucion) {
       setSelectedIps(userInstitucion);
     }
-  }, [isRegularUser, userInstitucion]);
+  }, [isNonAdmin, userInstitucion]);
 
   // Lista única y combinada de IPS disponibles (desde la colección IPS + valores de institucion en inventario)
   const ipsDisponibles = useMemo(() => {
-    if (isRegularUser && userInstitucion) {
+    if (isNonAdmin && userInstitucion) {
       return [userInstitucion];
+    }
+    if (isNonAdmin) {
+      return [];
     }
     const set = new Set();
     listaIps.forEach((item) => {
@@ -115,25 +153,26 @@ function Cronograma() {
       }
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [listaIps, inventario, isRegularUser, userInstitucion]);
+  }, [listaIps, inventario, isNonAdmin, userInstitucion]);
 
   // Lista única de Servicios disponibles según los equipos cargados
   const serviciosDisponibles = useMemo(() => {
     const set = new Set();
-    const targetIps = isRegularUser && userInstitucion ? userInstitucion : selectedIps;
+    const targetIps = isNonAdmin ? userInstitucion : selectedIps;
     inventario.forEach((eq) => {
-      if (
-        targetIps &&
-        (eq.institucion || '').trim().toLowerCase() !== targetIps.trim().toLowerCase()
-      ) {
-        return;
+      if (targetIps) {
+        const normTarget = normalizeText(targetIps);
+        const normEq = normalizeText(eq.institucion);
+        if (normEq !== normTarget && !normEq.includes(normTarget) && !normTarget.includes(normEq)) {
+          return;
+        }
       }
       if (eq.servicio && eq.servicio.trim()) {
         set.add(eq.servicio.trim());
       }
     });
     return Array.from(set).sort();
-  }, [inventario, selectedIps, isRegularUser, userInstitucion]);
+  }, [inventario, selectedIps, isNonAdmin, userInstitucion]);
 
   // Procesamiento de datos de los equipos con sus meses
   const equiposConCronograma = useMemo(() => {
@@ -151,16 +190,20 @@ function Cronograma() {
   // Filtrado reactivo de equipos
   const filteredEquipos = useMemo(() => {
     return equiposConCronograma.filter((eq) => {
-      // Filtro obligatorio por institución del usuario regular
-      if (isRegularUser && userInstitucion) {
-        if ((eq.institucion || '').trim().toLowerCase() !== userInstitucion.toLowerCase()) {
+      // Filtro obligatorio por institución si el usuario no es administrador
+      if (isNonAdmin) {
+        if (!userInstitucion) return false;
+        const normUser = normalizeText(userInstitucion);
+        const normEq = normalizeText(eq.institucion);
+        if (normEq !== normUser && !normEq.includes(normUser) && !normUser.includes(normEq)) {
           return false;
         }
-      } else if (
-        selectedIps &&
-        (eq.institucion || '').trim().toLowerCase() !== selectedIps.trim().toLowerCase()
-      ) {
-        return false;
+      } else if (selectedIps) {
+        const normSel = normalizeText(selectedIps);
+        const normEq = normalizeText(eq.institucion);
+        if (normEq !== normSel && !normEq.includes(normSel) && !normSel.includes(normEq)) {
+          return false;
+        }
       }
       // Filtro por Servicio
       if (selectedServicio && eq.servicio !== selectedServicio) {
@@ -196,7 +239,7 @@ function Cronograma() {
     selectedMes,
     selectedPeriodicidad,
     buscar,
-    isRegularUser,
+    isNonAdmin,
     userInstitucion,
   ]);
 
@@ -343,7 +386,7 @@ function Cronograma() {
       >
         <div>
           <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '22px', fontWeight: '800' }}>
-            <FaCalendarAlt color="#38bdf8" /> Cronograma de Mantenimiento Preventivo {selectedAnio} {isRegularUser && userInstitucion ? `- ${userInstitucion}` : ''}
+            <FaCalendarAlt color="#38bdf8" /> Cronograma de Mantenimiento Preventivo {selectedAnio} {isNonAdmin && userInstitucion ? `- ${userInstitucion}` : ''}
           </h2>
           <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
             Planificación y programación periódica de mantenimientos de equipos biomédicos por meses.
@@ -537,31 +580,43 @@ function Cronograma() {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
               Institución / IPS:
             </label>
-            <select
-              value={selectedIps}
-              onChange={(e) => {
-                if (!isRegularUser) {
+            {isNonAdmin ? (
+              <div
+                className="input-report"
+                style={{
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  backgroundColor: '#0f172a',
+                  color: '#38bdf8',
+                  fontWeight: '700',
+                  border: '1.5px solid #0284c7',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {userInstitucion || 'Mi Institución'}
+              </div>
+            ) : (
+              <select
+                value={selectedIps}
+                onChange={(e) => {
                   setSelectedIps(e.target.value);
                   setSelectedServicio('');
                   setCurrentPage(1);
-                }
-              }}
-              disabled={isRegularUser && !!userInstitucion}
-              className="input-report"
-              style={{
-                padding: '8px 12px',
-                fontSize: '13px',
-                opacity: isRegularUser && !!userInstitucion ? 0.85 : 1,
-                cursor: isRegularUser && !!userInstitucion ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {!isRegularUser && <option value="">-- Todas las Instituciones / IPS --</option>}
-              {ipsDisponibles.map((nombreIps) => (
-                <option key={nombreIps} value={nombreIps}>
-                  {nombreIps}
-                </option>
-              ))}
-            </select>
+                }}
+                className="input-report"
+                style={{ padding: '8px 12px', fontSize: '13px' }}
+              >
+                <option value="">-- Todas las Instituciones / IPS --</option>
+                {ipsDisponibles.map((nombreIps) => (
+                  <option key={nombreIps} value={nombreIps}>
+                    {nombreIps}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* 2. Filtro Servicio */}

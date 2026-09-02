@@ -19,6 +19,22 @@ import {
 } from 'react-icons/fa';
 import { GoEye, GoSearch } from 'react-icons/go';
 
+const normalizeText = (str) =>
+  String(str || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const matchesInstitucion = (eqInst, targetInst) => {
+  if (!eqInst || !targetInst) return false;
+  const n1 = normalizeText(eqInst);
+  const n2 = normalizeText(targetInst);
+  if (!n1 || !n2) return false;
+  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+};
+
 function Cronograma() {
   const reduxUser = useSelector((state) => state.user);
   const storedUser = useMemo(() => {
@@ -34,22 +50,6 @@ function Cronograma() {
   const isAdmin = !isPathUser && String(user?.rol || '').trim().toLowerCase() === 'admin';
   const isNonAdmin = !isAdmin;
   const userInstitucion = String(user?.institucion || user?.ips || user?.empresa || '').trim();
-
-  const normalizeText = (str) =>
-    String(str || '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '');
-
-  const matchesInstitucion = (eqInst, targetInst) => {
-    if (!eqInst || !targetInst) return false;
-    const n1 = normalizeText(eqInst);
-    const n2 = normalizeText(targetInst);
-    if (!n1 || !n2) return false;
-    return n1 === n2 || n1.includes(n2) || n2.includes(n1);
-  };
 
   const [inventario, setInventario] = useState([]);
   const [listaIps, setListaIps] = useState([]);
@@ -131,6 +131,7 @@ function Cronograma() {
   useEffect(() => {
     fetchIps();
     fetchInventario();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, userInstitucion]);
 
   // Si el usuario no es admin y tiene institución asignada, inicializar el filtro

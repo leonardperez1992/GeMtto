@@ -844,7 +844,7 @@ function HojaDeVida() {
                       </div>
                     ) : (
                       <Link
-                        to={`/reporte?id=${rep._id}`}
+                        to={`/reporte?id=${rep._id}&returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',

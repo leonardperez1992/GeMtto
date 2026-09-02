@@ -6,6 +6,7 @@ import generatePDF, { Resolution } from 'react-to-pdf';
 import { GrDocumentPdf } from 'react-icons/gr';
 import { BsTrash } from 'react-icons/bs';
 import { SlPrinter } from 'react-icons/sl';
+import { FaArrowLeft } from 'react-icons/fa';
 
 function ReportePdf() {
   const imgIng = useRef({});
@@ -127,8 +128,41 @@ function ReportePdf() {
           gap: '12px',
         }}
       >
-        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
-          📄 Reporte de Servicio Nº {reporte?.numero_reporte}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => {
+              const queryParams = new URLSearchParams(window.location.search);
+              const returnUrl = queryParams.get('returnUrl');
+              if (returnUrl) {
+                window.location.href = returnUrl;
+              } else if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = './reportes';
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#0f172a',
+              color: '#38bdf8',
+              border: '1.5px solid #0284c7',
+              padding: '7px 14px',
+              borderRadius: '6px',
+              fontWeight: '700',
+              fontSize: '13px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            <FaArrowLeft size={13} /> Regresar a Hoja de Vida
+          </button>
+
+          <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+            📄 Reporte de Servicio Nº {reporte?.numero_reporte}
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button

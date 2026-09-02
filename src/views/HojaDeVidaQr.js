@@ -676,7 +676,7 @@ function HojaDeVidaQr() {
                       </a>
                     ) : (
                       <Link
-                        to={`/reporte?id=${rep._id}`}
+                        to={`/reporte?id=${rep._id}&returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

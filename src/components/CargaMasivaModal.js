@@ -113,13 +113,33 @@ const formatExcelDate = (val) => {
     return val.toISOString().split('T')[0];
   }
   const str = String(val).trim();
-  // Si es un número serial de Excel (ej: 44927)
-  if (/^\d{5}$/.test(str)) {
-    const num = parseInt(str, 10);
+  if (
+    !str ||
+    ['na', 'n/a', '-', '--', 'no', 'null', 'undefined', 'no aplica', 'no registra', 'sn', 's/n'].includes(
+      str.toLowerCase()
+    )
+  ) {
+    return '';
+  }
+  // Si es un número serial de Excel (ej: 44927 o 44927.5)
+  if (/^\d{5}(\.\d+)?$/.test(str)) {
+    const num = parseFloat(str);
     const date = new Date(Math.round((num - 25569) * 86400 * 1000));
     if (!isNaN(date.getTime())) {
       return date.toISOString().split('T')[0];
     }
+  }
+  // Si viene en formato DD/MM/YYYY o DD-MM-YYYY
+  const ddmmyyyy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (ddmmyyyy) {
+    const day = ddmmyyyy[1].padStart(2, '0');
+    const month = ddmmyyyy[2].padStart(2, '0');
+    const year = ddmmyyyy[3];
+    return `${year}-${month}-${day}`;
+  }
+  // Si viene en formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    return str.slice(0, 10);
   }
   return str;
 };
@@ -386,8 +406,8 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             periodicidad: periodicidadFinal,
             meses_mantenimiento: mesesParsed,
             forma_adquisicion: item.forma_adquisicion || 'COMPRA',
-            fecha_instalacion: item.fecha_instalacion || 'NA',
-            fecha_fabricacion: item.fecha_fabricacion || 'NA',
+            fecha_instalacion: item.fecha_instalacion || '',
+            fecha_fabricacion: item.fecha_fabricacion || '',
             isValid: errors.length === 0,
             errors,
           };
@@ -705,6 +725,36 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
                   <span>{importProgress || 'Procesando equipos...'}</span>
                 </div>
               )}
+
+              {/* Nota Informativa sobre campos obligatorios vs opcionales */}
+              <div
+                style={{
+                  backgroundColor: '#0f172a',
+                  border: '1px solid #334155',
+                  borderRadius: '10px',
+                  padding: '10px 16px',
+                  marginBottom: '16px',
+                  fontSize: '12.5px',
+                  color: '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>💡</span>
+                <div style={{ lineHeight: '1.4' }}>
+                  <strong style={{ color: '#38bdf8' }}>Campos obligatorios mínimos:</strong>{' '}
+                  <span style={{ color: '#f8fafc', fontWeight: '600' }}>INSTITUCIÓN</span>,{' '}
+                  <span style={{ color: '#f8fafc', fontWeight: '600' }}>EQUIPO</span> y{' '}
+                  <span style={{ color: '#f8fafc', fontWeight: '600' }}>SERIE</span>.{' '}
+                  <span>
+                    La <strong style={{ color: '#34d399' }}>Fecha de Instalación</strong> y{' '}
+                    <strong style={{ color: '#34d399' }}>Fecha de Fabricación</strong> son{' '}
+                    <strong style={{ color: '#38bdf8' }}>100% OPCIONALES</strong>. Si no cuentas con ellas en tu archivo,
+                    puedes dejarlas en blanco o no incluir esas columnas.
+                  </span>
+                </div>
+              </div>
 
               {/* Acciones Superiores: Descargar Plantilla y Cargar Archivo */}
               <div

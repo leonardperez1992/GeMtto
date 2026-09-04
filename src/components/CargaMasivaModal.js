@@ -107,11 +107,30 @@ const sugerirMesesPorPeriodicidad = (periodicidad) => {
   return [];
 };
 
+const formatExcelDate = (val) => {
+  if (!val) return '';
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    return val.toISOString().split('T')[0];
+  }
+  const str = String(val).trim();
+  // Si es un número serial de Excel (ej: 44927)
+  if (/^\d{5}$/.test(str)) {
+    const num = parseInt(str, 10);
+    const date = new Date(Math.round((num - 25569) * 86400 * 1000));
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
+  return str;
+};
+
 function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [parsedRows, setParsedRows] = useState([]);
   const [loadingFile, setLoadingFile] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState('');
+  const [importError, setImportError] = useState('');
   const [importResult, setImportResult] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -237,53 +256,72 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
     setFile(selectedFile);
     setLoadingFile(true);
     setImportResult(null);
+    setImportError('');
+    setImportProgress('');
 
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
         const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const rawJson = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        const rawJson = XLSX.utils.sheet_to_json(worksheet, { defval: '', raw: false });
 
-        if (rawJson.length === 0) {
+        if (!rawJson || rawJson.length === 0) {
           alert('El archivo no contiene filas de datos.');
           setParsedRows([]);
           setLoadingFile(false);
           return;
         }
 
-        // Mapeo flexible de columnas
+        // Mapeo flexible de columnas con sinónimos ampliados
         const processed = rawJson.map((row, idx) => {
           const item = {};
           const mesesFromCols = [];
 
           Object.keys(row).forEach((colName) => {
-            const val = String(row[colName]).trim();
+            const val = String(row[colName] || '').trim();
             const norm = normalizeHeader(colName);
 
-            if (norm.includes('institucion') || norm.includes('ips') || norm.includes('sede') || norm.includes('cliente')) {
+            if (
+              norm.includes('institucion') ||
+              norm.includes('ips') ||
+              norm.includes('sede') ||
+              norm.includes('hospital') ||
+              norm.includes('clinica') ||
+              norm.includes('cliente') ||
+              norm.includes('entidad') ||
+              norm.includes('empresa')
+            ) {
               item.institucion = val;
-            } else if (norm === 'equipo' || norm.includes('nombreequipo') || norm.includes('descripcion')) {
+            } else if (
+              norm.includes('equipo') ||
+              norm.includes('dispositivo') ||
+              norm.includes('descripcion') ||
+              norm === 'nombre' ||
+              norm.includes('nombreequipo') ||
+              norm.includes('nombredel') ||
+              (norm.includes('activo') && !norm.includes('placa') && !norm.includes('inventario') && !norm.includes('fijo'))
+            ) {
               item.equipo = val;
-            } else if (norm.includes('marca')) {
+            } else if (norm.includes('marca') || norm.includes('fabricante') || norm.includes('brand')) {
               item.marca = val;
-            } else if (norm.includes('modelo')) {
+            } else if (norm.includes('modelo') || norm.includes('referencia') || norm.includes('ref')) {
               item.modelo = val;
-            } else if (norm.includes('serie') || norm.includes('serial') || norm.includes('sn')) {
+            } else if (norm.includes('serie') || norm.includes('serial') || norm === 'sn' || norm.startsWith('sn')) {
               item.serie = val;
-            } else if (norm.includes('inventario') || norm.includes('placa') || norm.includes('activo')) {
+            } else if (norm.includes('inventario') || norm.includes('placa') || norm.includes('codigo') || norm.includes('activo')) {
               item.inventario = val;
-            } else if (norm.includes('servicio') || norm.includes('area')) {
+            } else if (norm.includes('servicio') || norm.includes('area') || norm.includes('departamento') || norm.includes('seccion')) {
               item.servicio = val;
-            } else if (norm.includes('ubicacion')) {
+            } else if (norm.includes('ubicacion') || norm.includes('lugar') || norm.includes('sala') || norm.includes('piso') || norm.includes('consultorio')) {
               item.ubicacion = val;
             } else if (norm.includes('invima') || norm.includes('registro')) {
               item.registro_invima = val;
-            } else if (norm.includes('riesgo')) {
+            } else if (norm.includes('riesgo') || norm.includes('clasificacion')) {
               item.riesgo = val;
-            } else if (norm.includes('responsable')) {
+            } else if (norm.includes('responsable') || norm.includes('encargado') || norm.includes('proveedor')) {
               item.responsable = val;
             } else if (norm.includes('periodicidad') || norm.includes('frecuencia')) {
               item.periodicidad = val;
@@ -295,12 +333,12 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
               norm.includes('mesmantenimiento')
             ) {
               item.meses_mantenimiento = val;
-            } else if (norm.includes('adquisicion')) {
+            } else if (norm.includes('adquisicion') || norm.includes('compra') || norm.includes('comodato')) {
               item.forma_adquisicion = val;
             } else if (norm.includes('instalacion')) {
-              item.fecha_instalacion = val;
+              item.fecha_instalacion = formatExcelDate(val);
             } else if (norm.includes('fabricacion')) {
-              item.fecha_fabricacion = val;
+              item.fecha_fabricacion = formatExcelDate(val);
             }
 
             // Chequeo si vienen columnas de meses individuales (ENE..DIC)
@@ -312,11 +350,11 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             }
           });
 
-          // Validación de campos obligatorios
+          // Validación de campos obligatorios mínimos
           const errors = [];
           if (!item.institucion) errors.push('Falta Institución');
-          if (!item.equipo) errors.push('Falta Equipo');
-          if (!item.serie) errors.push('Falta Serie');
+          if (!item.equipo) errors.push('Falta Nombre de Equipo');
+          if (!item.serie) errors.push('Falta Número de Serie');
 
           const periodicidadFinal = (item.periodicidad || 'SEMESTRAL').toUpperCase();
 
@@ -339,7 +377,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             marca: item.marca || 'GENÉRICA',
             modelo: item.modelo || 'S/M',
             serie: item.serie || '',
-            inventario: item.inventario || '',
+            inventario: item.inventario || 'NA',
             servicio: item.servicio || 'GENERAL',
             ubicacion: item.ubicacion || 'ÁREA GENERAL',
             registro_invima: item.registro_invima || 'NO REGISTRA',
@@ -348,8 +386,8 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             periodicidad: periodicidadFinal,
             meses_mantenimiento: mesesParsed,
             forma_adquisicion: item.forma_adquisicion || 'COMPRA',
-            fecha_instalacion: item.fecha_instalacion || '',
-            fecha_fabricacion: item.fecha_fabricacion || '',
+            fecha_instalacion: item.fecha_instalacion || 'NA',
+            fecha_fabricacion: item.fecha_fabricacion || 'NA',
             isValid: errors.length === 0,
             errors,
           };
@@ -366,7 +404,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
     reader.readAsArrayBuffer(selectedFile);
   };
 
-  // 3. Confirmar e Importar Equipos
+  // 3. Confirmar e Importar Equipos en Lotes Seguros
   const handleConfirmarImportacion = async () => {
     const validRows = parsedRows.filter((r) => r.isValid);
     if (validRows.length === 0) {
@@ -375,24 +413,77 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
     }
 
     setImporting(true);
+    setImportError('');
+    setImportProgress('Iniciando importación...');
+
+    // Limpiar claves internas antes de transferir datos
+    const cleanEquipos = validRows.map((r) => ({
+      _index: r._index,
+      institucion: r.institucion,
+      equipo: r.equipo,
+      marca: r.marca,
+      modelo: r.modelo,
+      serie: r.serie,
+      inventario: r.inventario,
+      servicio: r.servicio,
+      ubicacion: r.ubicacion,
+      registro_invima: r.registro_invima,
+      riesgo: r.riesgo,
+      responsable: r.responsable,
+      periodicidad: r.periodicidad,
+      meses_mantenimiento: r.meses_mantenimiento,
+      forma_adquisicion: r.forma_adquisicion,
+      fecha_instalacion: r.fecha_instalacion,
+      fecha_fabricacion: r.fecha_fabricacion,
+    }));
+
+    const BATCH_SIZE = 150;
+    const totalBatches = Math.ceil(cleanEquipos.length / BATCH_SIZE);
+    let totalCreated = 0;
+    let totalSkipped = 0;
+    let allSkippedDetails = [];
+
     try {
-      const response = await request({
-        link: apiBulkCreateInventario,
-        method: 'POST',
-        body: { equipos: validRows },
+      for (let i = 0; i < cleanEquipos.length; i += BATCH_SIZE) {
+        const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+        const chunk = cleanEquipos.slice(i, i + BATCH_SIZE);
+        setImportProgress(`Importando lote ${batchNum} de ${totalBatches} (${chunk.length} equipos)...`);
+
+        const response = await request({
+          link: apiBulkCreateInventario,
+          method: 'POST',
+          body: { equipos: chunk },
+        });
+
+        if (response && response.success) {
+          totalCreated += (response.createdCount || 0);
+          totalSkipped += (response.skippedCount || 0);
+          if (Array.isArray(response.skippedDetails)) {
+            allSkippedDetails = [...allSkippedDetails, ...response.skippedDetails];
+          }
+        } else {
+          const errMsg = response?.message || 'Error inesperado del servidor al procesar el lote.';
+          throw new Error(errMsg);
+        }
+      }
+
+      setImportResult({
+        success: true,
+        message: `Importación masiva completada: ${totalCreated} equipos registrados exitosamente, ${totalSkipped} omitidos.`,
+        createdCount: totalCreated,
+        skippedCount: totalSkipped,
+        skippedDetails: allSkippedDetails,
       });
 
-      if (response && response.success) {
-        setImportResult(response);
-        if (onSuccess) onSuccess();
-      } else {
-        alert(`Error al importar: ${response?.message || 'Error en el servidor'}`);
-      }
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error(err);
-      alert('Error de conexión al enviar los equipos.');
+      console.error('Error al importar equipos:', err);
+      const msg = err?.message || 'Error de conexión o fallo inesperado al enviar los equipos al servidor.';
+      setImportError(msg);
+      alert(`Error al importar: ${msg}`);
     } finally {
       setImporting(false);
+      setImportProgress('');
     }
   };
 
@@ -567,6 +658,54 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
           ) : (
             /* Flujo de Carga y Previsualización */
             <div>
+              {/* Alerta de Error si ocurre durante la importación */}
+              {importError && (
+                <div
+                  style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid #ef4444',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    color: '#fca5a5',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <FaExclamationCircle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong style={{ display: 'block', color: '#f87171', marginBottom: '2px' }}>
+                      Error durante la importación:
+                    </strong>
+                    <span>{importError}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Barra de Progreso de Importación */}
+              {importing && (
+                <div
+                  style={{
+                    backgroundColor: 'rgba(2, 132, 199, 0.15)',
+                    border: '1px solid #0284c7',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    color: '#38bdf8',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <FaSpinner size={18} className="spin" style={{ flexShrink: 0 }} />
+                  <span>{importProgress || 'Procesando equipos...'}</span>
+                </div>
+              )}
+
               {/* Acciones Superiores: Descargar Plantilla y Cargar Archivo */}
               <div
                 style={{
@@ -879,7 +1018,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             >
               {importing ? (
                 <>
-                  <FaSpinner size={14} className="spin" /> Importando Equipos...
+                  <FaSpinner size={14} className="spin" /> {importProgress || 'Importando Equipos...'}
                 </>
               ) : (
                 <>

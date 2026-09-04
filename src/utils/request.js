@@ -22,10 +22,23 @@ export default async ({ link, body, method }) => {
     }
 
     let response = await fetch(link, requestOptions);
-    const resJson = await response.json();
+    const text = await response.text();
+    let resJson;
+    try {
+      resJson = JSON.parse(text);
+    } catch (e) {
+      const cleanText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      return {
+        success: false,
+        message: cleanText
+          ? `Error del servidor (${response.status}): ${cleanText.slice(0, 180)}`
+          : `Error HTTP ${response.status} del servidor`,
+      };
+    }
     return resJson;
   } catch (error) {
-    console.log(error);
-    return { success: false, message: JSON.stringify(error) };
+    console.error('Error en request:', error);
+    const msg = error?.message || (typeof error === 'string' ? error : 'Error de conexión');
+    return { success: false, message: msg };
   }
 };

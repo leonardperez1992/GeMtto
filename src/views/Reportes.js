@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import { apiReportes } from '../utils/api';
+import { useSelector } from 'react-redux';
+import { apiReportes, apiIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import {
@@ -12,12 +13,37 @@ import {
   FaCheckCircle,
   FaTools,
   FaWrench,
+  FaFilter,
 } from 'react-icons/fa';
 import { GoSearch, GoEye } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
 
+const normalizeText = (str) =>
+  String(str || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const matchesInstitucion = (eqInst, targetInst) => {
+  if (!eqInst || !targetInst) return false;
+  const n1 = normalizeText(eqInst);
+  const n2 = normalizeText(targetInst);
+  if (!n1 || !n2) return false;
+  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+};
+
 function Reportes() {
+  const reduxUser = useSelector((state) => state.user);
+  const isNonAdmin = Boolean(reduxUser && reduxUser.rol !== 'admin');
+  const userInstitucion = (reduxUser?.institucion || '').trim();
+
   const [reportes, setReportes] = useState([]);
+  const [listaIps, setListaIps] = useState([]);
+  const [selectedIps, setSelectedIps] = useState('');
+  const [selectedServicio, setSelectedServicio] = useState('');
+  const [selectedTipo, setSelectedTipo] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncingFull, setIsSyncingFull] = useState(false);
@@ -25,6 +51,24 @@ function Reportes() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+
+  const fetchIps = async () => {
+    if (isNonAdmin && userInstitucion) {
+      setListaIps([{ ips: userInstitucion, nombre: userInstitucion, institucion: userInstitucion }]);
+      return;
+    }
+    try {
+      const response = await request({
+        link: apiIps,
+        method: 'GET',
+      });
+      if (response && response.success && response.ips) {
+        setListaIps(response.ips);
+      }
+    } catch (e) {
+      console.error('Error al obtener lista de IPS:', e);
+    }
+  };
 
   const getReportes = async () => {
     setLoading(true);
@@ -61,7 +105,69 @@ function Reportes() {
 
   useEffect(() => {
     getReportes();
+    fetchIps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isNonAdmin && userInstitucion) {
+      setSelectedIps(userInstitucion);
+    }
+  }, [isNonAdmin, userInstitucion]);
+
+  // Lista única y combinada de IPS disponibles (desde colección IPS + valores presentes en reportes)
+  const ipsDisponibles = useMemo(() => {
+    if (isNonAdmin && userInstitucion) {
+      return [userInstitucion];
+    }
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    reportes.forEach((rep) => {
+      if (rep.institucion && typeof rep.institucion === 'string' && rep.institucion.trim()) {
+        set.add(rep.institucion.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, reportes, isNonAdmin, userInstitucion]);
+
+  // Lista única de Servicios disponibles según la IPS seleccionada (o todos si no hay IPS elegida)
+  const serviciosDisponibles = useMemo(() => {
+    const set = new Set();
+    const targetIps = isNonAdmin ? userInstitucion : selectedIps;
+    reportes.forEach((rep) => {
+      if (targetIps && !matchesInstitucion(rep.institucion, targetIps)) {
+        return;
+      }
+      if (rep.servicio && typeof rep.servicio === 'string' && rep.servicio.trim()) {
+        set.add(rep.servicio.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [reportes, selectedIps, isNonAdmin, userInstitucion]);
+
+  // Tipos extras no convencionales presentes en los reportes
+  const otrosTiposExtras = useMemo(() => {
+    const extras = new Set();
+    reportes.forEach((rep) => {
+      const t = String(rep.tipo_servicio || '').trim();
+      if (!t) return;
+      const upper = t.toUpperCase();
+      if (
+        !upper.includes('PREVENTIVO') &&
+        !upper.includes('CORRECTIVO') &&
+        !upper.includes('INSTALAC') &&
+        upper !== 'OTRO'
+      ) {
+        extras.add(t);
+      }
+    });
+    return Array.from(extras).sort((a, b) => a.localeCompare(b));
+  }, [reportes]);
 
   const handleSave = (e) => {
     setBuscar(e.target.value);
@@ -70,23 +176,63 @@ function Reportes() {
 
   // Filtered and sorted reportes
   const filteredReportes = useMemo(() => {
-    let result = reportes;
-    if (buscar.trim() !== '') {
-      const q = buscar.toLowerCase();
-      result = reportes.filter(
-        (dato) =>
-          (dato.numero_reporte && String(dato.numero_reporte).toLowerCase().includes(q)) ||
-          (dato.serie && dato.serie.toLowerCase().includes(q)) ||
-          (dato.institucion && dato.institucion.toLowerCase().includes(q)) ||
-          (dato.servicio && dato.servicio.toLowerCase().includes(q)) ||
-          (dato.equipo && dato.equipo.toLowerCase().includes(q)) ||
-          (dato.tipo_servicio && dato.tipo_servicio.toLowerCase().includes(q)) ||
-          (dato.nombre_ingeniero && dato.nombre_ingeniero.toLowerCase().includes(q)),
-      );
-    }
+    const targetIps = isNonAdmin ? userInstitucion : selectedIps;
 
-    return result;
-  }, [reportes, buscar]);
+    return reportes.filter((dato) => {
+      // 1. Filtro por Institución / IPS
+      if (targetIps && !matchesInstitucion(dato.institucion, targetIps)) {
+        return false;
+      }
+
+      // 2. Filtro por Servicio / Área
+      if (
+        selectedServicio &&
+        String(dato.servicio || '').trim().toLowerCase() !== selectedServicio.trim().toLowerCase()
+      ) {
+        return false;
+      }
+
+      // 3. Filtro por Tipo de Mantenimiento / Servicio
+      if (selectedTipo) {
+        const tipoServ = String(dato.tipo_servicio || '').toUpperCase();
+        if (selectedTipo === 'MTTO PREVENTIVO') {
+          if (!tipoServ.includes('PREVENTIVO')) return false;
+        } else if (selectedTipo === 'MTTO CORRECTIVO') {
+          if (!tipoServ.includes('CORRECTIVO')) return false;
+        } else if (selectedTipo === 'INSTALACION') {
+          if (!tipoServ.includes('INSTALAC')) return false;
+        } else if (selectedTipo === 'OTRO') {
+          if (
+            tipoServ.includes('PREVENTIVO') ||
+            tipoServ.includes('CORRECTIVO') ||
+            tipoServ.includes('INSTALAC')
+          ) {
+            return false;
+          }
+        } else {
+          if (tipoServ !== selectedTipo.toUpperCase()) return false;
+        }
+      }
+
+      // 4. Búsqueda por texto libre
+      if (buscar.trim() !== '') {
+        const q = buscar.toLowerCase();
+        const match =
+          (dato.numero_reporte && String(dato.numero_reporte).toLowerCase().includes(q)) ||
+          (dato.serie && String(dato.serie).toLowerCase().includes(q)) ||
+          (dato.institucion && String(dato.institucion).toLowerCase().includes(q)) ||
+          (dato.servicio && String(dato.servicio).toLowerCase().includes(q)) ||
+          (dato.equipo && String(dato.equipo).toLowerCase().includes(q)) ||
+          (dato.marca && String(dato.marca).toLowerCase().includes(q)) ||
+          (dato.modelo && String(dato.modelo).toLowerCase().includes(q)) ||
+          (dato.tipo_servicio && String(dato.tipo_servicio).toLowerCase().includes(q)) ||
+          (dato.nombre_ingeniero && String(dato.nombre_ingeniero).toLowerCase().includes(q));
+        if (!match) return false;
+      }
+
+      return true;
+    });
+  }, [reportes, selectedIps, selectedServicio, selectedTipo, buscar, isNonAdmin, userInstitucion]);
 
   // Paginated slice
   const paginatedReportes = useMemo(() => {
@@ -285,14 +431,143 @@ function Reportes() {
           </div>
         </div>
 
+        {/* ==========================================================
+            BARRA DE FILTROS POR INSTITUCIÓN, SERVICIO Y TIPO DE MANTENIMIENTO
+            ========================================================== */}
+        <div
+          style={{
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '10px',
+            padding: '16px 20px',
+            marginBottom: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaFilter /> Filtrar Reportes por Institución, Servicio y Tipo de Mantenimiento:
+            </div>
+            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isNonAdmin) setSelectedIps('');
+                  setSelectedServicio('');
+                  setSelectedTipo('');
+                  setBuscar('');
+                  setCurrentPage(1);
+                }}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: '1px solid #475569',
+                  color: '#94a3b8',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                Restablecer Filtros
+              </button>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '14px',
+            }}
+          >
+            {/* 1. Desplegable Institución / IPS */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Institución / IPS:
+              </label>
+              <select
+                value={selectedIps}
+                disabled={isNonAdmin && Boolean(userInstitucion)}
+                onChange={(e) => {
+                  setSelectedIps(e.target.value);
+                  setSelectedServicio('');
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                {!isNonAdmin && <option value="">-- Todas las Instituciones / IPS --</option>}
+                {ipsDisponibles.map((nombreIps) => (
+                  <option key={nombreIps} value={nombreIps}>
+                    {nombreIps}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 2. Desplegable Servicio / Área */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Servicio / Área:
+              </label>
+              <select
+                value={selectedServicio}
+                onChange={(e) => {
+                  setSelectedServicio(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                <option value="">-- Todos los Servicios --</option>
+                {serviciosDisponibles.map((srv) => (
+                  <option key={srv} value={srv}>
+                    {srv}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 3. Desplegable Tipo de Mantenimiento */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Tipo de Mantenimiento / Servicio:
+              </label>
+              <select
+                value={selectedTipo}
+                onChange={(e) => {
+                  setSelectedTipo(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                <option value="">-- Todos los Tipos --</option>
+                <option value="MTTO PREVENTIVO">Mantenimiento Preventivo</option>
+                <option value="MTTO CORRECTIVO">Mantenimiento Correctivo</option>
+                <option value="INSTALACION">Instalación</option>
+                <option value="OTRO">Otro / No clasificado</option>
+                {otrosTiposExtras.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Toolbar & Search */}
-        <div className="div-buscar" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '18px' }}>
+        <div className="div-buscar" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '14px' }}>
           <div style={{ flex: '1 1 300px', position: 'relative', width: '100%' }}>
             <input
               className="input-buscar"
               style={{ width: '100%', paddingRight: '40px' }}
               value={buscar}
-              placeholder="Buscar por Nº reporte, serie, equipo, tipo de servicio, IPS o responsable..."
+              placeholder="Buscar por Nº reporte, serie, equipo, modelo, responsable..."
               onChange={handleSave}
             />
             <GoSearch
@@ -307,6 +582,44 @@ function Reportes() {
             />
           </div>
         </div>
+
+        {/* Info contador de reportes filtrados */}
+        {!loading && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '14px',
+              fontSize: '13px',
+              color: '#94a3b8',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
+            <span>
+              Mostrando <strong style={{ color: '#38bdf8' }}>{paginatedReportes.length}</strong> de{' '}
+              <strong style={{ color: '#f8fafc' }}>{filteredReportes.length}</strong> reportes
+              {filteredReportes.length !== reportes.length && (
+                <span> (filtrados de un total de {reportes.length})</span>
+              )}
+            </span>
+            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
+              <span
+                style={{
+                  backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                  color: '#38bdf8',
+                  padding: '3px 10px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                }}
+              >
+                Filtros activos aplicados
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Table Content */}
         {loading ? (

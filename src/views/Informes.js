@@ -55,6 +55,7 @@ function Informes() {
   const [buscar, setBuscar] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('TODOS');
   const [filtroIps, setFiltroIps] = useState('TODAS');
+  const [filtroServicio, setFiltroServicio] = useState('TODOS');
   const [filtroAnio, setFiltroAnio] = useState('TODOS');
   const [filtroMes, setFiltroMes] = useState('TODOS');
   const [loading, setLoading] = useState(true);
@@ -118,6 +119,21 @@ function Informes() {
     return Array.from(new Set(years)).sort((a, b) => b.localeCompare(a));
   }, [reportes]);
 
+  // Lista única de Servicios disponibles según la IPS seleccionada
+  const uniqueServiciosList = useMemo(() => {
+    const set = new Set();
+    reportes.forEach((r) => {
+      if (filtroIps !== 'TODAS') {
+        const itemInst = (r.institucion || '').trim().toUpperCase();
+        if (itemInst !== filtroIps.trim().toUpperCase()) return;
+      }
+      if (r.servicio && typeof r.servicio === 'string' && r.servicio.trim()) {
+        set.add(r.servicio.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [reportes, filtroIps]);
+
   // Base filtrada por IPS, Año y Mes para calcular estadísticas del Dashboard
   const baseDashboard = useMemo(() => {
     return reportes.filter((r) => {
@@ -174,6 +190,11 @@ function Informes() {
         if (filtroTipo === 'OTRO' && (tipoServ.includes('PREVENTIVO') || tipoServ.includes('CORRECTIVO') || tipoServ.includes('INSTALAC'))) return false;
       }
 
+      // Filtro por servicio
+      if (filtroServicio !== 'TODOS') {
+        if (String(dato.servicio || '').trim().toLowerCase() !== filtroServicio.trim().toLowerCase()) return false;
+      }
+
       // Filtro de búsqueda
       if (buscar.trim() !== '') {
         const q = buscar.toLowerCase();
@@ -191,12 +212,12 @@ function Informes() {
 
       return true;
     });
-  }, [baseDashboard, filtroTipo, buscar]);
+  }, [baseDashboard, filtroTipo, filtroServicio, buscar]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [buscar, filtroTipo, filtroIps, filtroAnio, filtroMes, itemsPerPage]);
+  }, [buscar, filtroTipo, filtroIps, filtroServicio, filtroAnio, filtroMes, itemsPerPage]);
 
   // Paginated slice
   const paginatedReportes = useMemo(() => {
@@ -680,7 +701,10 @@ function Informes() {
             </label>
             <select
               value={filtroIps}
-              onChange={(e) => setFiltroIps(e.target.value)}
+              onChange={(e) => {
+                setFiltroIps(e.target.value);
+                setFiltroServicio('TODOS');
+              }}
               style={{
                 padding: '6px 8px',
                 borderRadius: '6px',
@@ -697,6 +721,35 @@ function Informes() {
               {uniqueIpsList.map((ipsName, idx) => (
                 <option key={idx} value={ipsName}>
                   {ipsName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filter by Servicio */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#cbd5e1', margin: 0 }}>
+              Servicio:
+            </label>
+            <select
+              value={filtroServicio}
+              onChange={(e) => setFiltroServicio(e.target.value)}
+              style={{
+                padding: '6px 8px',
+                borderRadius: '6px',
+                border: '1px solid #334155',
+                fontSize: '12px',
+                backgroundColor: '#0f172a',
+                color: '#f8fafc',
+                cursor: 'pointer',
+                maxWidth: '180px',
+                height: '36px',
+              }}
+            >
+              <option value="TODOS">-- Todos los Servicios --</option>
+              {uniqueServiciosList.map((srv, idx) => (
+                <option key={idx} value={srv}>
+                  {srv}
                 </option>
               ))}
             </select>

@@ -1,18 +1,37 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import { apiInventario } from '../utils/api';
+import { apiInventario, apiIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 import { GoEye, GoSearch } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
-import { FaPlus, FaBoxes, FaQrcode, FaFileExcel, FaDownload } from 'react-icons/fa';
+import { FaPlus, FaBoxes, FaQrcode, FaFileExcel, FaDownload, FaFilter } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import QrModal from '../components/QrModal';
 import CargaMasivaModal from '../components/CargaMasivaModal';
 
+const normalizeText = (str) =>
+  String(str || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const matchesInstitucion = (eqInst, targetInst) => {
+  if (!eqInst || !targetInst) return false;
+  const n1 = normalizeText(eqInst);
+  const n2 = normalizeText(targetInst);
+  if (!n1 || !n2) return false;
+  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+};
+
 function Inventario() {
   const [inventario, setInventario] = useState([]);
+  const [listaIps, setListaIps] = useState([]);
+  const [selectedIps, setSelectedIps] = useState('');
+  const [selectedServicio, setSelectedServicio] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [qrEquipo, setQrEquipo] = useState(null);
@@ -22,6 +41,20 @@ function Inventario() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+
+  const fetchIps = async () => {
+    try {
+      const response = await request({
+        link: apiIps,
+        method: 'GET',
+      });
+      if (response && response.success && response.ips) {
+        setListaIps(response.ips);
+      }
+    } catch (e) {
+      console.error('Error al obtener lista de IPS:', e);
+    }
+  };
 
   const getInventario = async () => {
     setLoading(true);
@@ -45,7 +78,39 @@ function Inventario() {
 
   useEffect(() => {
     getInventario();
+    fetchIps();
   }, []);
+
+  // Lista única y combinada de IPS disponibles (desde colección IPS + valores presentes en inventario)
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    inventario.forEach((eq) => {
+      if (eq.institucion && typeof eq.institucion === 'string' && eq.institucion.trim()) {
+        set.add(eq.institucion.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, inventario]);
+
+  // Lista única de Servicios disponibles según la IPS seleccionada (o todos si no hay IPS elegida)
+  const serviciosDisponibles = useMemo(() => {
+    const set = new Set();
+    inventario.forEach((eq) => {
+      if (selectedIps && !matchesInstitucion(eq.institucion, selectedIps)) {
+        return;
+      }
+      if (eq.servicio && typeof eq.servicio === 'string' && eq.servicio.trim()) {
+        set.add(eq.servicio.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [inventario, selectedIps]);
 
   const handleSave = (e) => {
     setBuscar(e.target.value);
@@ -54,21 +119,36 @@ function Inventario() {
 
   // Filtered inventory
   const filteredInventarios = useMemo(() => {
-    if (!buscar.trim()) {
-      return inventario;
-    }
-    const q = buscar.toLowerCase();
-    return inventario.filter(
-      (dato) =>
-        (dato.serie && dato.serie.toLowerCase().includes(q)) ||
-        (dato.institucion && dato.institucion.toLowerCase().includes(q)) ||
-        (dato.servicio && dato.servicio.toLowerCase().includes(q)) ||
-        (dato.equipo && dato.equipo.toLowerCase().includes(q)) ||
-        (dato.marca && dato.marca.toLowerCase().includes(q)) ||
-        (dato.modelo && dato.modelo.toLowerCase().includes(q)) ||
-        (dato.ubicacion && dato.ubicacion.toLowerCase().includes(q)),
-    );
-  }, [inventario, buscar]);
+    return inventario.filter((dato) => {
+      // 1. Filtro por Institución / IPS
+      if (selectedIps && !matchesInstitucion(dato.institucion, selectedIps)) {
+        return false;
+      }
+
+      // 2. Filtro por Servicio
+      if (
+        selectedServicio &&
+        String(dato.servicio || '').trim().toLowerCase() !== selectedServicio.trim().toLowerCase()
+      ) {
+        return false;
+      }
+
+      // 3. Filtro por texto de búsqueda
+      if (buscar.trim()) {
+        const q = buscar.toLowerCase();
+        const match =
+          (dato.serie && dato.serie.toLowerCase().includes(q)) ||
+          (dato.institucion && dato.institucion.toLowerCase().includes(q)) ||
+          (dato.servicio && dato.servicio.toLowerCase().includes(q)) ||
+          (dato.equipo && dato.equipo.toLowerCase().includes(q)) ||
+          (dato.marca && dato.marca.toLowerCase().includes(q)) ||
+          (dato.modelo && dato.modelo.toLowerCase().includes(q)) ||
+          (dato.ubicacion && dato.ubicacion.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+  }, [inventario, selectedIps, selectedServicio, buscar]);
 
   // Paginated slice
   const paginatedInventarios = useMemo(() => {
@@ -208,6 +288,105 @@ function Inventario() {
             >
               <FaPlus size={13} /> Nuevo Equipo
             </Link>
+          </div>
+        </div>
+
+        {/* ==========================================================
+            BARRA DE FILTROS POR INSTITUCIÓN Y SERVICIO (LISTAS DESPLEGABLES)
+            ========================================================== */}
+        <div
+          style={{
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '10px',
+            padding: '16px 20px',
+            marginBottom: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaFilter /> Filtrar por Institución y Servicio:
+            </div>
+            {(selectedIps || selectedServicio || buscar) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedIps('');
+                  setSelectedServicio('');
+                  setBuscar('');
+                  setCurrentPage(1);
+                }}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: '1px solid #475569',
+                  color: '#94a3b8',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                Restablecer Filtros
+              </button>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '14px',
+            }}
+          >
+            {/* 1. Desplegable Institución / IPS */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Institución / IPS:
+              </label>
+              <select
+                value={selectedIps}
+                onChange={(e) => {
+                  setSelectedIps(e.target.value);
+                  setSelectedServicio('');
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                <option value="">-- Todas las Instituciones / IPS --</option>
+                {ipsDisponibles.map((nombreIps) => (
+                  <option key={nombreIps} value={nombreIps}>
+                    {nombreIps}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 2. Desplegable Servicio / Área */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Servicio / Área:
+              </label>
+              <select
+                value={selectedServicio}
+                onChange={(e) => {
+                  setSelectedServicio(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                <option value="">-- Todos los Servicios --</option>
+                {serviciosDisponibles.map((srv) => (
+                  <option key={srv} value={srv}>
+                    {srv}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

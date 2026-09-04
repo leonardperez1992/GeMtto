@@ -58,6 +58,7 @@ const RouterContainer = () => {
           <Route exact path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/inventario" element={<Inventario />} />
           <Route path="/inventarioua" element={<Inventario />} />
           <Route path="/inventariouser" element={<InventarioUser />} />
           <Route path="/cronograma" element={<Cronograma />} />

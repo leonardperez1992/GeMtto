@@ -5,7 +5,7 @@ import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
 import { GoSearch, GoEye } from 'react-icons/go';
-import { FaBoxes, FaQrcode, FaDownload } from 'react-icons/fa';
+import { FaBoxes, FaQrcode, FaDownload, FaFilter } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import QrModal from '../components/QrModal';
 
@@ -29,6 +29,7 @@ function InventarioUser() {
   const user = useSelector((state) => state.user);
   const institucion = user?.institucion;
   const [inventario, setInventario] = useState([]);
+  const [selectedServicio, setSelectedServicio] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [qrEquipo, setQrEquipo] = useState(null);
@@ -75,24 +76,44 @@ function InventarioUser() {
     getInventario(institucion);
   }, [institucion]);
 
+  // Lista única de Servicios disponibles en la institución asignada
+  const serviciosDisponibles = useMemo(() => {
+    const set = new Set();
+    inventario.forEach((eq) => {
+      if (eq.servicio && typeof eq.servicio === 'string' && eq.servicio.trim()) {
+        set.add(eq.servicio.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [inventario]);
+
   const handleSave = (e) => {
     setBuscar(e.target.value);
     setCurrentPage(1);
   };
 
   const filteredInventarios = useMemo(() => {
-    if (!buscar.trim()) return inventario;
-    const q = buscar.toLowerCase();
-    return inventario.filter(
-      (dato) =>
-        (dato.servicio && dato.servicio.toLowerCase().includes(q)) ||
-        (dato.equipo && dato.equipo.toLowerCase().includes(q)) ||
-        (dato.serie && dato.serie.toLowerCase().includes(q)) ||
-        (dato.marca && dato.marca.toLowerCase().includes(q)) ||
-        (dato.modelo && dato.modelo.toLowerCase().includes(q)) ||
-        (dato.ubicacion && dato.ubicacion.toLowerCase().includes(q)),
-    );
-  }, [inventario, buscar]);
+    return inventario.filter((dato) => {
+      if (
+        selectedServicio &&
+        String(dato.servicio || '').trim().toLowerCase() !== selectedServicio.trim().toLowerCase()
+      ) {
+        return false;
+      }
+      if (buscar.trim()) {
+        const q = buscar.toLowerCase();
+        const match =
+          (dato.servicio && dato.servicio.toLowerCase().includes(q)) ||
+          (dato.equipo && dato.equipo.toLowerCase().includes(q)) ||
+          (dato.serie && dato.serie.toLowerCase().includes(q)) ||
+          (dato.marca && dato.marca.toLowerCase().includes(q)) ||
+          (dato.modelo && dato.modelo.toLowerCase().includes(q)) ||
+          (dato.ubicacion && dato.ubicacion.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+  }, [inventario, selectedServicio, buscar]);
 
   const paginatedInventarios = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -191,6 +212,104 @@ function InventarioUser() {
             >
               <FaDownload size={13} /> Descargar Inventario Excel
             </button>
+          </div>
+        </div>
+
+        {/* ==========================================================
+            BARRA DE FILTROS POR SERVICIO (COMO EN CRONOGRAMA)
+            ========================================================== */}
+        <div
+          style={{
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '10px',
+            padding: '16px 20px',
+            marginBottom: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaFilter /> Filtrar Inventario por Servicio:
+            </div>
+            {(selectedServicio || buscar) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedServicio('');
+                  setBuscar('');
+                  setCurrentPage(1);
+                }}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: '1px solid #475569',
+                  color: '#94a3b8',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                Restablecer Filtros
+              </button>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '14px',
+            }}
+          >
+            {/* 1. Institución fija para usuario */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Institución / IPS:
+              </label>
+              <div
+                className="input-report"
+                style={{
+                  padding: '9px 12px',
+                  fontSize: '13px',
+                  backgroundColor: '#0f172a',
+                  color: '#38bdf8',
+                  fontWeight: '700',
+                  border: '1.5px solid #0284c7',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {institucion || 'Mi Institución'}
+              </div>
+            </div>
+
+            {/* 2. Desplegable Servicio / Área */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Servicio / Área:
+              </label>
+              <select
+                value={selectedServicio}
+                onChange={(e) => {
+                  setSelectedServicio(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '9px 12px', fontSize: '13px', width: '100%' }}
+              >
+                <option value="">-- Todos los Servicios --</option>
+                {serviciosDisponibles.map((srv) => (
+                  <option key={srv} value={srv}>
+                    {srv}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

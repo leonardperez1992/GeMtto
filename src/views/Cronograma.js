@@ -20,6 +20,7 @@ import {
   FaTools,
 } from 'react-icons/fa';
 import { GoEye, GoSearch } from 'react-icons/go';
+import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 
 const normalizeText = (str) =>
   String(str || '')
@@ -821,7 +822,7 @@ function Cronograma() {
                 </th>
               ))}
               <th style={{ width: '12%' }}>RESPONSABLE</th>
-              <th className="no-print" style={{ width: '4%', textAlign: 'center' }}>ACCIONES</th>
+              <th className="no-print" style={{ width: '6%', minWidth: '76px', textAlign: 'center' }}>ACCIONES</th>
             </tr>
           </thead>
           <tbody>
@@ -948,15 +949,25 @@ function Cronograma() {
                       {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
                     </td>
 
-                    {/* 11. Acciones (Ver Hoja de Vida) */}
+                    {/* 11. Acciones (Ver Hoja de Vida y Generar Reporte) */}
                     <td className="no-print" style={{ textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                        {/* Botón Ver Hoja de Vida */}
                         <Link
                           to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}`}
                           title="Ver Hoja de Vida"
                           className="action-btn action-btn-view"
                         >
                           <GoEye size={15} color="#38bdf8" />
+                        </Link>
+
+                        {/* Botón Realizar Reporte de Servicio */}
+                        <Link
+                          to={`/reporteService?id=${eq?._id}&equipo=${encodeURIComponent(eq?.equipo || '')}&serie=${encodeURIComponent(eq?.serie || '')}&institucion=${encodeURIComponent(eq?.institucion || '')}&servicio=${encodeURIComponent(eq?.servicio || '')}&marca=${encodeURIComponent(eq?.marca || '')}&modelo=${encodeURIComponent(eq?.modelo || '')}`}
+                          title="Realizar Reporte de Servicio"
+                          className="action-btn action-btn-primary"
+                        >
+                          <HiOutlineDocumentPlus size={15} color="#ffffff" />
                         </Link>
                       </div>
                     </td>

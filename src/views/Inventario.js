@@ -3,8 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { apiInventario, apiIps } from '../utils/api';
 import request from '../utils/request';
 import Pagination from '../components/Pagination';
-import { HiOutlineDocumentPlus } from 'react-icons/hi2';
-import { GoEye, GoSearch } from 'react-icons/go';
+import { GoSearch } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
 import { FaPlus, FaBoxes, FaQrcode, FaFileExcel, FaDownload, FaFilter } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
@@ -480,22 +479,13 @@ function Inventario() {
                           <td style={{ color: '#cbd5e1' }}>{item?.responsable}</td>
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
-                              {/* Botón Reporte */}
+                              {/* Botón Editar */}
                               <Link
-                                to={`/reporteService?id=${item?._id}&equipo=${encodeURIComponent(item?.equipo || '')}&serie=${encodeURIComponent(item?.serie || '')}&institucion=${encodeURIComponent(item?.institucion || '')}&servicio=${encodeURIComponent(item?.servicio || '')}&marca=${encodeURIComponent(item?.marca || '')}&modelo=${encodeURIComponent(item?.modelo || '')}`}
-                                title="Crear Reporte de Servicio"
-                                className="action-btn action-btn-primary"
+                                to={`/editarequipo?id=${item?._id}`}
+                                title="Editar Equipo"
+                                className="action-btn action-btn-edit"
                               >
-                                <HiOutlineDocumentPlus size={16} color="#ffffff" />
-                              </Link>
-
-                              {/* Botón Ver Hoja de Vida */}
-                              <Link
-                                to={`/hojadevida?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
-                                title="Ver Hoja de Vida"
-                                className="action-btn action-btn-view"
-                              >
-                                <GoEye size={16} color="#38bdf8" />
+                                <CiEdit size={16} color="#ffffff" />
                               </Link>
 
                               {/* Botón Código QR */}
@@ -521,15 +511,6 @@ function Inventario() {
                               >
                                 <FaQrcode size={15} color="#ffffff" />
                               </button>
-
-                              {/* Botón Editar */}
-                              <Link
-                                to={`/editarequipo?id=${item?._id}`}
-                                title="Editar Equipo"
-                                className="action-btn action-btn-edit"
-                              >
-                                <CiEdit size={16} color="#ffffff" />
-                              </Link>
                             </div>
                           </td>
                         </tr>

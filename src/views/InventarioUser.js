@@ -402,7 +402,7 @@ function InventarioUser() {
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
                               <Link
-                                to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}`}
+                                to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&from=inventario`}
                                 className="action-btn action-btn-view"
                                 title="Ver Hoja de Vida"
                               >

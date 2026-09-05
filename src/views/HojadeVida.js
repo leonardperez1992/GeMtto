@@ -45,6 +45,7 @@ function HojaDeVida() {
   const [modalQrOpen, setModalQrOpen] = useState(false);
   const [modalPrintOpen, setModalPrintOpen] = useState(false);
   const [printMode, setPrintMode] = useState('all'); // 'all' | 'current'
+  const [fromOrigin, setFromOrigin] = useState('cronograma');
 
   const handleTriggerPrint = (mode = 'all') => {
     setPrintMode(mode);
@@ -233,10 +234,15 @@ function HojaDeVida() {
     let modelo = queryParameters.get('modelo');
     let serie = queryParameters.get('serie');
     let ips = queryParameters.get('institucion');
+    let originParam = queryParameters.get('from');
+
+    if (originParam) {
+      setFromOrigin(originParam);
+    }
 
     if (!idEquipo) {
-      alert('Por favor seleccione un equipo en la pestaña de Inventario');
-      window.location.href = './inventarioua';
+      alert('Por favor seleccione un equipo en la pestaña de Cronograma o Inventario');
+      window.location.href = originParam === 'inventario' ? './inventarioua' : './cronograma';
       return;
     }
 
@@ -309,20 +315,73 @@ function HojaDeVida() {
           gap: '12px',
         }}
       >
-        <Link
-          to="/inventarioua"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: '#38bdf8',
-            textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '14px',
-          }}
-        >
-          <FaArrowLeft /> Volver a Inventario
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          {fromOrigin === 'inventario' ? (
+            <>
+              <Link
+                to="/inventarioua"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#38bdf8',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                }}
+              >
+                <FaArrowLeft /> Volver a Inventario
+              </Link>
+              <span style={{ color: '#475569' }}>|</span>
+              <Link
+                to="/cronograma"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#94a3b8',
+                  textDecoration: 'none',
+                  fontWeight: '500',
+                  fontSize: '13.5px',
+                }}
+              >
+                Ir a Cronograma
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/cronograma"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#38bdf8',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                }}
+              >
+                <FaArrowLeft /> Volver al Cronograma
+              </Link>
+              <span style={{ color: '#475569' }}>|</span>
+              <Link
+                to="/inventarioua"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#94a3b8',
+                  textDecoration: 'none',
+                  fontWeight: '500',
+                  fontSize: '13.5px',
+                }}
+              >
+                Ir a Inventario
+              </Link>
+            </>
+          )}
+        </div>
         <div className="toolbar-hoja-vida-botones" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setModalExternoOpen(true)}

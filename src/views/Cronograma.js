@@ -962,7 +962,7 @@ function Cronograma() {
                       <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
                         {/* Botón Ver Hoja de Vida */}
                         <Link
-                          to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}`}
+                          to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma`}
                           title="Ver Hoja de Vida"
                           className="action-btn action-btn-view"
                         >

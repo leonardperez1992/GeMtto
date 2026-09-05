@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { apiEditInventario, apiObtenerEquipo, apiIps } from '../utils/api';
 import request from '../utils/request';
@@ -38,11 +38,28 @@ function EditInventary() {
       });
       if (response && response.success && Array.isArray(response.ips)) {
         setListaIps(response.ips);
+      } else if (Array.isArray(response)) {
+        setListaIps(response);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error al cargar lista de IPS:', e);
     }
   };
+
+  // Lista única y ordenada alfabéticamente de instituciones (desde BD + institución actual del equipo)
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    if (inventary.institucion && typeof inventary.institucion === 'string' && inventary.institucion.trim()) {
+      set.add(inventary.institucion.trim());
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, inventary.institucion]);
 
   const obtenerEquipos = async (id) => {
     setLoading(true);
@@ -54,6 +71,9 @@ function EditInventary() {
       });
       if (response && response.success && response.equipo) {
         const eq = response.equipo;
+        if (eq.institucion && typeof eq.institucion === 'string') {
+          eq.institucion = eq.institucion.trim();
+        }
         // Si no tiene meses guardados, auto-sugerir según periodicidad
         if (!eq.meses_mantenimiento || eq.meses_mantenimiento.length === 0) {
           eq.meses_mantenimiento = calcularMesesSugeridos(eq.periodicidad, eq.fecha_instalacion);
@@ -95,8 +115,8 @@ function EditInventary() {
 
   const EditEquipo = async (e) => {
     if (e) e.preventDefault();
-    if (!inventary.equipo || !inventary.serie) {
-      alert('Por favor diligencie los campos obligatorios (Equipo y Serie).');
+    if (!inventary.equipo || !inventary.serie || !inventary.institucion) {
+      alert('Por favor diligencie los campos obligatorios (Institución, Equipo y Serie).');
       return;
     }
 
@@ -204,17 +224,18 @@ function EditInventary() {
                 <tr>
                   <th style={{ width: '22%' }}>IPS / CLIENTE:</th>
                   <td colSpan={3}>
-                    {listaIps.length > 0 ? (
+                    {ipsDisponibles.length > 0 ? (
                       <select
                         name="institucion"
                         value={inventary.institucion || ''}
                         onChange={handleSave}
                         className="input-report"
+                        required
                       >
                         <option value="">-- Seleccione una IPS --</option>
-                        {listaIps.map((ipsItem, idx) => (
-                          <option key={idx} value={ipsItem.nombre || ipsItem.institucion}>
-                            {ipsItem.nombre || ipsItem.institucion}
+                        {ipsDisponibles.map((nombreIps, idx) => (
+                          <option key={idx} value={nombreIps}>
+                            {nombreIps}
                           </option>
                         ))}
                       </select>
@@ -225,6 +246,7 @@ function EditInventary() {
                         onChange={handleSave}
                         className="input-report"
                         placeholder="Nombre de la IPS / Clínica"
+                        required
                       />
                     )}
                   </td>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { apiCreateInventario, apiIps } from '../utils/api';
 import request from '../utils/request';
@@ -33,11 +33,27 @@ function CreateInventary() {
       const response = await request({ link: apiIps, method: 'GET' });
       if (response && response.success && Array.isArray(response.ips)) {
         setIpss(response.ips);
+      } else if (Array.isArray(response)) {
+        setIpss(response);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error al cargar lista de IPS:', e);
     }
   };
+
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    ipss.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    if (inventary.institucion && typeof inventary.institucion === 'string' && inventary.institucion.trim()) {
+      set.add(inventary.institucion.trim());
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [ipss, inventary.institucion]);
 
   useEffect(() => {
     obtenerIps();
@@ -158,20 +174,31 @@ function CreateInventary() {
                 <tr>
                   <th style={{ width: '22%' }}>IPS / CLIENTE:</th>
                   <td colSpan={3}>
-                    <select
-                      name="institucion"
-                      value={inventary.institucion}
-                      onChange={handleSave}
-                      className="input-report"
-                      required
-                    >
-                      <option value="">-- Seleccione la Institución --</option>
-                      {ipss.map((value, index) => (
-                        <option key={index} value={value.nombre || value.ips || value.institucion}>
-                          {value.nombre || value.ips || value.institucion}
-                        </option>
-                      ))}
-                    </select>
+                    {ipsDisponibles.length > 0 ? (
+                      <select
+                        name="institucion"
+                        value={inventary.institucion}
+                        onChange={handleSave}
+                        className="input-report"
+                        required
+                      >
+                        <option value="">-- Seleccione la Institución --</option>
+                        {ipsDisponibles.map((nombreIps, index) => (
+                          <option key={index} value={nombreIps}>
+                            {nombreIps}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        name="institucion"
+                        value={inventary.institucion}
+                        onChange={handleSave}
+                        className="input-report"
+                        placeholder="Nombre de la IPS / Clínica"
+                        required
+                      />
+                    )}
                   </td>
                 </tr>
                 <tr>

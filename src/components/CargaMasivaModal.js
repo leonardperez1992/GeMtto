@@ -180,6 +180,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'III',
         RESPONSABLE: 'GEMTTO SAS',
         PERIODICIDAD: 'SEMESTRAL',
+        PERIODICIDAD_CALIBRACION: 'ANUAL',
         MESES_MANTENIMIENTO: 'ENERO, JULIO',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2023-05-15',
@@ -198,6 +199,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'IIB',
         RESPONSABLE: 'GEMTTO SAS',
         PERIODICIDAD: 'TRIMESTRAL',
+        PERIODICIDAD_CALIBRACION: 'ANUAL',
         MESES_MANTENIMIENTO: 'ENERO, ABRIL, JULIO, OCTUBRE',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2024-02-10',
@@ -216,6 +218,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'IIA',
         RESPONSABLE: 'ING. BIOMEDICO',
         PERIODICIDAD: 'SEMESTRAL',
+        PERIODICIDAD_CALIBRACION: 'ANUAL',
         MESES_MANTENIMIENTO: 'MARZO, SEPTIEMBRE',
         FORMA_ADQUISICION: 'COMODATO',
         FECHA_INSTALACION: '2023-08-01',
@@ -234,6 +237,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         RIESGO: 'IIB',
         RESPONSABLE: 'GEMTTO SAS',
         PERIODICIDAD: 'CUATRIMESTRAL',
+        PERIODICIDAD_CALIBRACION: 'ANUAL',
         MESES_MANTENIMIENTO: 'ENERO, MAYO, SEPTIEMBRE',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2023-10-05',
@@ -257,6 +261,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
       { wch: 10 }, // RIESGO
       { wch: 18 }, // RESPONSABLE
       { wch: 16 }, // PERIODICIDAD
+      { wch: 24 }, // PERIODICIDAD_CALIBRACION
       { wch: 30 }, // MESES_MANTENIMIENTO
       { wch: 18 }, // FORMA_ADQUISICION
       { wch: 18 }, // FECHA_INSTALACION
@@ -343,6 +348,8 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
               item.riesgo = val;
             } else if (norm.includes('responsable') || norm.includes('encargado') || norm.includes('proveedor')) {
               item.responsable = val;
+            } else if (norm.includes('calibracion')) {
+              item.periodicidad_calibracion = val;
             } else if (norm.includes('periodicidad') || norm.includes('frecuencia')) {
               item.periodicidad = val;
             } else if (
@@ -404,6 +411,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
             riesgo: (item.riesgo || 'IIB').toUpperCase(),
             responsable: item.responsable || 'GEMTTO SAS',
             periodicidad: periodicidadFinal,
+            periodicidad_calibracion: (item.periodicidad_calibracion || 'ANUAL').toUpperCase(),
             meses_mantenimiento: mesesParsed,
             forma_adquisicion: item.forma_adquisicion || 'COMPRA',
             fecha_instalacion: item.fecha_instalacion || '',
@@ -451,6 +459,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
       riesgo: r.riesgo,
       responsable: r.responsable,
       periodicidad: r.periodicidad,
+      periodicidad_calibracion: r.periodicidad_calibracion || 'ANUAL',
       meses_mantenimiento: r.meses_mantenimiento,
       forma_adquisicion: r.forma_adquisicion,
       fecha_instalacion: r.fecha_instalacion,

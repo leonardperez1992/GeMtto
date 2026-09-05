@@ -25,6 +25,7 @@ function CreateInventary() {
     fecha_instalacion: '',
     fecha_fabricacion: '',
     periodicidad: '',
+    periodicidad_calibracion: 'ANUAL',
     meses_mantenimiento: [],
   });
 
@@ -406,8 +407,25 @@ function CreateInventary() {
                       <option value="ANUAL">ANUAL (12 meses)</option>
                     </select>
                   </td>
-                  <th>RESPONSABLE / ASIGNADO:</th>
+                  <th>PERIODICIDAD DE CALIBRACIÓN:</th>
                   <td>
+                    <select
+                      name="periodicidad_calibracion"
+                      value={inventary.periodicidad_calibracion || 'ANUAL'}
+                      onChange={handleSave}
+                      className="input-report"
+                    >
+                      <option value="ANUAL">ANUAL (12 meses)</option>
+                      <option value="SEMESTRAL">SEMESTRAL (6 meses)</option>
+                      <option value="BIANUAL">BIANUAL (24 meses)</option>
+                      <option value="TRIMESTRAL">TRIMESTRAL (3 meses)</option>
+                      <option value="NO APLICA">NO APLICA</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <th>RESPONSABLE / ASIGNADO:</th>
+                  <td colSpan={3}>
                     <input
                       name="responsable"
                       value={inventary.responsable}

@@ -174,6 +174,7 @@ function Inventario() {
       'SERVICIO': eq.servicio || '',
       'UBICACIÓN': eq.ubicacion || '',
       'PERIODICIDAD': eq.periodicidad || 'NO APLICA',
+      'PERIODICIDAD CALIBRACIÓN': eq.periodicidad_calibracion || 'ANUAL',
       'MESES MANTENIMIENTO': Array.isArray(eq.meses_mantenimiento) && eq.meses_mantenimiento.length > 0 ? eq.meses_mantenimiento.join(', ') : '',
       'REGISTRO INVIMA': eq.registro_invima || '',
       'CLASIFICACIÓN RIESGO': eq.riesgo || '',
@@ -197,6 +198,7 @@ function Inventario() {
       { wch: 20 }, // SERVICIO
       { wch: 20 }, // UBICACION
       { wch: 18 }, // PERIODICIDAD
+      { wch: 22 }, // PERIODICIDAD CALIBRACIÓN
       { wch: 30 }, // MESES MANTENIMIENTO
       { wch: 22 }, // INVIMA
       { wch: 16 }, // RIESGO

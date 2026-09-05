@@ -27,6 +27,7 @@ function EditInventary() {
     fecha_instalacion: '',
     fecha_fabricacion: '',
     periodicidad: '',
+    periodicidad_calibracion: 'ANUAL',
     meses_mantenimiento: [],
   });
 
@@ -78,6 +79,7 @@ function EditInventary() {
         if (!eq.meses_mantenimiento || eq.meses_mantenimiento.length === 0) {
           eq.meses_mantenimiento = calcularMesesSugeridos(eq.periodicidad, eq.fecha_instalacion);
         }
+        eq.periodicidad_calibracion = eq.periodicidad_calibracion || 'ANUAL';
         setInventary(eq);
       } else {
         alert(`${response?.message || 'Error al obtener equipo'}`);
@@ -456,8 +458,25 @@ function EditInventary() {
                       <option value="ANUAL">ANUAL (12 meses)</option>
                     </select>
                   </td>
-                  <th>RESPONSABLE / ASIGNADO:</th>
+                  <th>PERIODICIDAD DE CALIBRACIÓN:</th>
                   <td>
+                    <select
+                      name="periodicidad_calibracion"
+                      value={inventary.periodicidad_calibracion || 'ANUAL'}
+                      onChange={handleSave}
+                      className="input-report"
+                    >
+                      <option value="ANUAL">ANUAL (12 meses)</option>
+                      <option value="SEMESTRAL">SEMESTRAL (6 meses)</option>
+                      <option value="BIANUAL">BIANUAL (24 meses)</option>
+                      <option value="TRIMESTRAL">TRIMESTRAL (3 meses)</option>
+                      <option value="NO APLICA">NO APLICA</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <th>RESPONSABLE / ASIGNADO:</th>
+                  <td colSpan={3}>
                     <input
                       name="responsable"
                       value={inventary.responsable || ''}

@@ -685,12 +685,18 @@ function HojaDeVida() {
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
+              <td colSpan={4}>
                 <span className="label-bold">FECHA DE FABRICACIÓN:</span> {equipo?.fecha_fabricacion || 'N/A'}
               </td>
+            </tr>
+            <tr>
               <td colSpan={2}>
                 <span className="label-bold">PERIODICIDAD DE MTTO:</span>{' '}
                 <strong style={{ color: '#0f3b60' }}>{equipo?.periodicidad || 'SEMESTRAL'}</strong>
+              </td>
+              <td colSpan={2}>
+                <span className="label-bold">PERIODICIDAD DE CALIBRACIÓN:</span>{' '}
+                <strong style={{ color: '#0f3b60' }}>{equipo?.periodicidad_calibracion || 'ANUAL'}</strong>
               </td>
             </tr>
 

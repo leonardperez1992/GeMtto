@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { apiObtenerEquiposIps, apiInventario } from '../utils/api';
 import request from '../utils/request';
 import { useSelector } from 'react-redux';
 import Pagination from '../components/Pagination';
-import { GoSearch, GoEye } from 'react-icons/go';
-import { FaBoxes, FaQrcode, FaDownload, FaFilter } from 'react-icons/fa';
+import { GoSearch } from 'react-icons/go';
+import { FaBoxes, FaDownload, FaFilter } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
-import QrModal from '../components/QrModal';
 
 const normalizeText = (str) =>
   String(str || '')
@@ -32,8 +30,6 @@ function InventarioUser() {
   const [selectedServicio, setSelectedServicio] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
-  const [qrEquipo, setQrEquipo] = useState(null);
-  const [modalQrOpen, setModalQrOpen] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -356,13 +352,12 @@ function InventarioUser() {
                     <th>REG. INVIMA</th>
                     <th>RIESGO</th>
                     <th>RESPONSABLE</th>
-                    <th style={{ textAlign: 'center' }}>HOJA DE VIDA</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedInventarios.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron equipos en esta institución.
                       </td>
                     </tr>
@@ -399,41 +394,6 @@ function InventarioUser() {
                             )}
                           </td>
                           <td style={{ color: '#cbd5e1' }}>{item?.responsable}</td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
-                              <Link
-                                to={`/hojadevidausuario?id=${item._id}&modelo=${encodeURIComponent(item.modelo || '')}&serie=${encodeURIComponent(item.serie || '')}&institucion=${encodeURIComponent(item.institucion || '')}&from=inventario`}
-                                className="action-btn action-btn-view"
-                                title="Ver Hoja de Vida"
-                              >
-                                <GoEye size={16} color="#38bdf8" /> Ver Hoja
-                              </Link>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setQrEquipo(item);
-                                  setModalQrOpen(true);
-                                }}
-                                title="Generar / Imprimir Código QR"
-                                className="action-btn"
-                                style={{
-                                  backgroundColor: '#7c3aed',
-                                  border: '1px solid #a855f7',
-                                  color: '#ffffff',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                }}
-                              >
-                                <FaQrcode size={14} color="#ffffff" /> QR
-                              </button>
-                            </div>
-                          </td>
                         </tr>
                       );
                     })
@@ -454,16 +414,6 @@ function InventarioUser() {
           </div>
         )}
       </main>
-
-      {/* Modal de Código QR */}
-      <QrModal
-        isOpen={modalQrOpen}
-        onClose={() => {
-          setModalQrOpen(false);
-          setQrEquipo(null);
-        }}
-        equipo={qrEquipo}
-      />
     </div>
   );
 }

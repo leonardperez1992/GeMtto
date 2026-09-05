@@ -780,7 +780,7 @@ function Cronograma() {
                 </th>
               ))}
               <th style={{ width: '9.5%' }}>RESPONSABLE</th>
-              <th className="no-print" style={{ width: '60px', minWidth: '58px', textAlign: 'center', padding: '6px 2px' }}>ACCIONES</th>
+              <th className="no-print" style={{ width: isNonAdmin ? '45px' : '60px', minWidth: isNonAdmin ? '42px' : '58px', textAlign: 'center', padding: '6px 2px' }}>ACCIONES</th>
             </tr>
           </thead>
           <tbody>
@@ -908,12 +908,12 @@ function Cronograma() {
                       {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
                     </td>
 
-                    {/* 11. Acciones (Ver Hoja de Vida y Generar Reporte) */}
+                    {/* 11. Acciones (Ver Hoja de Vida y Generar Reporte solo para admin) */}
                     <td className="no-print" style={{ textAlign: 'center', padding: '6px 2px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'inline-flex', gap: '5px', justifyContent: 'center' }}>
                         {/* Botón Ver Hoja de Vida */}
                         <Link
-                          to={user?.rol === 'user' ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma`}
+                          to={isNonAdmin ? `/hojadevidausuario?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma` : `/hojadevida?id=${eq._id}&modelo=${encodeURIComponent(eq.modelo || '')}&serie=${encodeURIComponent(eq.serie || '')}&institucion=${encodeURIComponent(eq.institucion || '')}&from=cronograma`}
                           title="Ver Hoja de Vida"
                           className="action-btn action-btn-view"
                           style={{ padding: '4px 6px' }}
@@ -921,15 +921,17 @@ function Cronograma() {
                           <GoEye size={14} color="#38bdf8" />
                         </Link>
 
-                        {/* Botón Realizar Reporte de Servicio */}
-                        <Link
-                          to={`/reporteService?id=${eq?._id}&equipo=${encodeURIComponent(eq?.equipo || '')}&serie=${encodeURIComponent(eq?.serie || '')}&institucion=${encodeURIComponent(eq?.institucion || '')}&servicio=${encodeURIComponent(eq?.servicio || '')}&marca=${encodeURIComponent(eq?.marca || '')}&modelo=${encodeURIComponent(eq?.modelo || '')}&from=cronograma`}
-                          title="Realizar Reporte de Servicio"
-                          className="action-btn action-btn-primary"
-                          style={{ padding: '4px 6px' }}
-                        >
-                          <HiOutlineDocumentPlus size={14} color="#ffffff" />
-                        </Link>
+                        {/* Botón Realizar Reporte de Servicio (Solo visible para Administradores) */}
+                        {isAdmin && (
+                          <Link
+                            to={`/reporteService?id=${eq?._id}&equipo=${encodeURIComponent(eq?.equipo || '')}&serie=${encodeURIComponent(eq?.serie || '')}&institucion=${encodeURIComponent(eq?.institucion || '')}&servicio=${encodeURIComponent(eq?.servicio || '')}&marca=${encodeURIComponent(eq?.marca || '')}&modelo=${encodeURIComponent(eq?.modelo || '')}&from=cronograma`}
+                            title="Realizar Reporte de Servicio"
+                            className="action-btn action-btn-primary"
+                            style={{ padding: '4px 6px' }}
+                          >
+                            <HiOutlineDocumentPlus size={14} color="#ffffff" />
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>

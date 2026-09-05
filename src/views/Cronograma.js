@@ -785,11 +785,13 @@ function Cronograma() {
               <th
                 className="no-print"
                 style={{
-                  width: isNonAdmin ? '75px' : '65px',
-                  minWidth: isNonAdmin ? '70px' : '60px',
+                  width: isNonAdmin ? '92px' : '65px',
+                  minWidth: isNonAdmin ? '88px' : '60px',
                   textAlign: 'center',
                   padding: '6px 2px',
                   fontSize: isNonAdmin ? '10px' : '11px',
+                  whiteSpace: 'normal',
+                  lineHeight: '1.2',
                 }}
               >
                 {isNonAdmin ? 'HOJA DE VIDA' : 'ACCIONES'}

@@ -405,26 +405,28 @@ function Cronograma() {
             <FaFileExcel size={14} /> Exportar Excel (.xlsx)
           </button>
 
-          <button
-            onClick={() => window.print()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#0284c7',
-              color: '#ffffff',
-              border: '1px solid #38bdf8',
-              padding: '6px 13px',
-              borderRadius: '6px',
-              fontWeight: '700',
-              fontSize: '12.5px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-            }}
-            title="Imprimir formato oficial de cronograma institucional"
-          >
-            <FaPrint size={14} /> Imprimir Cronograma
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => window.print()}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                border: '1px solid #38bdf8',
+                padding: '6px 13px',
+                borderRadius: '6px',
+                fontWeight: '700',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+              }}
+              title="Imprimir formato oficial de cronograma institucional"
+            >
+              <FaPrint size={14} /> Imprimir Cronograma
+            </button>
+          )}
         </div>
       </div>
 

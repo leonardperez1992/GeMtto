@@ -62,9 +62,8 @@ function Cronograma() {
   const [selectedIps, setSelectedIps] = useState(isNonAdmin ? userInstitucion : '');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [selectedMes, setSelectedMes] = useState('');
-  const [selectedPeriodicidad, setSelectedPeriodicidad] = useState('');
   const [buscar, setBuscar] = useState('');
-  const [selectedAnio, setSelectedAnio] = useState(new Date().getFullYear().toString());
+  const selectedAnio = new Date().getFullYear().toString();
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -219,10 +218,6 @@ function Cronograma() {
       if (selectedMes && !eq._cronoMeses.includes(selectedMes)) {
         return false;
       }
-      // Filtro por Periodicidad
-      if (selectedPeriodicidad && eq.periodicidad !== selectedPeriodicidad) {
-        return false;
-      }
       // Filtro por texto de búsqueda
       if (buscar.trim()) {
         const q = buscar.toLowerCase();
@@ -243,7 +238,6 @@ function Cronograma() {
     selectedIps,
     selectedServicio,
     selectedMes,
-    selectedPeriodicidad,
     buscar,
     isNonAdmin,
     userInstitucion,
@@ -539,13 +533,12 @@ function Cronograma() {
           <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <FaFilter /> Filtros del Cronograma:
           </div>
-          {(selectedIps || selectedServicio || selectedMes || selectedPeriodicidad || buscar) && (
+          {(selectedIps || selectedServicio || selectedMes || buscar) && (
             <button
               onClick={() => {
                 if (user?.rol !== 'user') setSelectedIps('');
                 setSelectedServicio('');
                 setSelectedMes('');
-                setSelectedPeriodicidad('');
                 setBuscar('');
                 setCurrentPage(1);
               }}
@@ -567,7 +560,7 @@ function Cronograma() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
             gap: '8px',
           }}
         >
@@ -661,50 +654,7 @@ function Cronograma() {
             </select>
           </div>
 
-          {/* 4. Filtro Periodicidad */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
-              Periodicidad:
-            </label>
-            <select
-              value={selectedPeriodicidad}
-              onChange={(e) => {
-                setSelectedPeriodicidad(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="input-report"
-              style={{ padding: '5px 8px', fontSize: '12px' }}
-            >
-              <option value="">-- Todas las Periodicidades --</option>
-              <option value="MENSUAL">MENSUAL</option>
-              <option value="BIMESTRAL">BIMESTRAL</option>
-              <option value="TRIMESTRAL">TRIMESTRAL</option>
-              <option value="CUATRIMESTRAL">CUATRIMESTRAL</option>
-              <option value="SEMESTRAL">SEMESTRAL</option>
-              <option value="ANUAL">ANUAL</option>
-            </select>
-          </div>
-
-          {/* 5. Filtro Año */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
-              Año del Cronograma:
-            </label>
-            <select
-              value={selectedAnio}
-              onChange={(e) => setSelectedAnio(e.target.value)}
-              className="input-report"
-              style={{ padding: '5px 8px', fontSize: '12px' }}
-            >
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-            </select>
-          </div>
-
-          {/* 6. Buscador de Texto */}
+          {/* 4. Buscador de Texto */}
           <div>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Búsqueda Rápida:

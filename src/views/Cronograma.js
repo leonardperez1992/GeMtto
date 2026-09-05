@@ -745,8 +745,13 @@ function Cronograma() {
               <th style={{ width: '6.5%', minWidth: '50px' }}>MARCA</th>
               <th style={{ width: '6.5%', minWidth: '50px' }}>MODELO</th>
               <th style={{ width: '7%', minWidth: '55px' }}>SERIE</th>
-              <th style={{ width: '10%', minWidth: '80px' }}>INSTITUCIÓN</th>
+              {isAdmin && (
+                <th style={{ width: '10%', minWidth: '80px' }}>INSTITUCIÓN</th>
+              )}
               <th style={{ width: '7%', minWidth: '55px' }}>SERVICIO</th>
+              {isNonAdmin && (
+                <th style={{ width: '10%', minWidth: '80px' }}>UBICACIÓN</th>
+              )}
               <th style={{ width: '70px', minWidth: '65px', textAlign: 'center', padding: '6px 1px' }}>PERIODICIDAD</th>
               {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
               {MESES_ABREV.map((abrev) => (
@@ -852,15 +857,24 @@ function Cronograma() {
                       </span>
                     </td>
 
-                    {/* 6. Institución (IPS) */}
-                    <td style={{ color: '#e2e8f0', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', fontSize: '11.5px' }}>
-                      {eq.institucion || '-'}
-                    </td>
+                    {/* 6. Institución (Solo vista Admin) */}
+                    {isAdmin && (
+                      <td style={{ color: '#e2e8f0', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', fontSize: '11.5px' }}>
+                        {eq.institucion || '-'}
+                      </td>
+                    )}
 
                     {/* 7. Servicio */}
                     <td style={{ color: '#cbd5e1', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', fontSize: '11.5px' }}>
                       {eq.servicio}
                     </td>
+
+                    {/* 7.1 Ubicación (Solo vista de Usuario, después de Servicio) */}
+                    {isNonAdmin && (
+                      <td style={{ color: '#94a3b8', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', fontSize: '11.5px' }}>
+                        {eq.ubicacion || '-'}
+                      </td>
+                    )}
 
                     {/* 8. Periodicidad */}
                     <td style={{ textAlign: 'center', padding: '6px 1px', whiteSpace: 'nowrap' }}>

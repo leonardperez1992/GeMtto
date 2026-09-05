@@ -366,57 +366,50 @@ function EditarIps() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             {/* Nombre IPS */}
             <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
-                NOMBRE DE LA IPS / CLÍNICA *:
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
+                <FaHospital /> NOMBRE DE LA IPS / CLÍNICA *:
               </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  name="ips"
-                  value={ipsData.ips}
-                  onChange={handleChange}
-                  className="input-report"
-                  style={{ width: '100%', paddingLeft: '32px' }}
-                  required
-                />
-                <FaHospital style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#38bdf8' }} />
-              </div>
+              <input
+                type="text"
+                name="ips"
+                value={ipsData.ips}
+                onChange={handleChange}
+                className="input-report"
+                placeholder="Ej. CLÍNICA MÉDICA DEL CARIBE..."
+                style={{ textTransform: 'uppercase' }}
+                required
+              />
             </div>
 
             {/* NIT */}
             <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
-                NÚMERO DE NIT / IDENTIFICACIÓN:
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
+                <FaIdCard /> NÚMERO DE NIT / IDENTIFICACIÓN:
               </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  name="nit"
-                  value={ipsData.nit}
-                  onChange={handleChange}
-                  className="input-report"
-                  style={{ width: '100%', paddingLeft: '32px' }}
-                />
-                <FaIdCard style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              </div>
+              <input
+                type="text"
+                name="nit"
+                value={ipsData.nit}
+                onChange={handleChange}
+                className="input-report"
+                placeholder="Ej. 900.123.456-7"
+              />
             </div>
 
             {/* Ciudad */}
             <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
-                CIUDAD / MUNICIPIO:
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
+                <FaCity /> CIUDAD / MUNICIPIO:
               </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  name="ciudad"
-                  value={ipsData.ciudad}
-                  onChange={handleChange}
-                  className="input-report"
-                  style={{ width: '100%', paddingLeft: '32px' }}
-                />
-                <FaCity style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#38bdf8' }} />
-              </div>
+              <input
+                type="text"
+                name="ciudad"
+                value={ipsData.ciudad}
+                onChange={handleChange}
+                className="input-report"
+                placeholder="Ej. VALLEDUPAR"
+                style={{ textTransform: 'uppercase' }}
+              />
             </div>
           </div>
 

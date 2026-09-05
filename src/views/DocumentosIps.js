@@ -143,6 +143,10 @@ function DocumentosIps() {
 
   const handleGuardarEnlaceDrive = async (e) => {
     if (e) e.preventDefault();
+    if (!isAdmin) {
+      alert('Solo los administradores pueden agregar enlaces de Google Drive.');
+      return;
+    }
     const currentId = institucionData?._id;
     const currentIps = institucionData?.ips || selectedIpsName;
     if (!currentId && !currentIps) {
@@ -191,6 +195,10 @@ function DocumentosIps() {
   };
 
   const handleEliminarEnlaceDrive = async (enlaceId, titulo) => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden eliminar enlaces de Google Drive.');
+      return;
+    }
     const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar el enlace "${titulo || 'de Google Drive'}"?`);
     if (!confirmacion) return;
 
@@ -321,7 +329,7 @@ function DocumentosIps() {
                 </div>
               )}
 
-              {institucionData && (
+              {isAdmin && institucionData && (
                 <button
                   type="button"
                   onClick={() => setShowModalDrive(true)}
@@ -943,26 +951,28 @@ function DocumentosIps() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowModalDrive(true)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: '#059669',
-                    color: '#ffffff',
-                    border: '1px solid #10b981',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontWeight: '800',
-                    fontSize: '12.5px',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(5, 150, 105, 0.35)',
-                  }}
-                >
-                  <FaPlus size={11} /> Agregar Enlace de Drive
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowModalDrive(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: '#059669',
+                      color: '#ffffff',
+                      border: '1px solid #10b981',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      fontWeight: '800',
+                      fontSize: '12.5px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(5, 150, 105, 0.35)',
+                    }}
+                  >
+                    <FaPlus size={11} /> Agregar Enlace de Drive
+                  </button>
+                )}
               </div>
 
               {enlacesDrive.length === 0 ? (
@@ -983,25 +993,27 @@ function DocumentosIps() {
                   <p style={{ fontSize: '12.5px', margin: '4px auto 14px auto', maxWidth: '420px', color: '#94a3b8' }}>
                     Puedes vincular carpetas compartidas con manuales, fotos o certificados almacenados en la nube.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowModalDrive(true)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      backgroundColor: '#0284c7',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '7px 16px',
-                      borderRadius: '6px',
-                      fontSize: '12.5px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <FaPlus size={11} /> Vincular Primera Carpeta
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setShowModalDrive(true)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: '#0284c7',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '7px 16px',
+                        borderRadius: '6px',
+                        fontSize: '12.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <FaPlus size={11} /> Vincular Primera Carpeta
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div
@@ -1150,7 +1162,7 @@ function DocumentosIps() {
                           )}
                         </button>
 
-                        {(isAdmin || true) && (
+                        {isAdmin && (
                           <button
                             type="button"
                             onClick={() => handleEliminarEnlaceDrive(item._id, item.titulo)}
@@ -1180,7 +1192,7 @@ function DocumentosIps() {
         )}
 
         {/* Modal: Agregar Enlace de Google Drive */}
-        {showModalDrive && (
+        {isAdmin && showModalDrive && (
           <div
             style={{
               position: 'fixed',

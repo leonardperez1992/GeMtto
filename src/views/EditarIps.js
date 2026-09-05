@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import ImageUploading from 'react-images-uploading';
 import {
@@ -35,6 +36,18 @@ import {
 function EditarIps() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const reduxUser = useSelector((state) => state.user);
+  const storedUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+  const user = reduxUser || storedUser || {};
+  const isAdmin = String(user?.rol || '').trim().toLowerCase() === 'admin';
+
   const ipsId = searchParams.get('id');
   const ipsNombre = searchParams.get('ips');
 
@@ -123,6 +136,11 @@ function EditarIps() {
   };
 
   useEffect(() => {
+    if (user && user.rol && !isAdmin) {
+      alert('Acceso restringido: Solo los administradores pueden editar información de las IPS.');
+      navigate('/documentosips');
+      return;
+    }
     if (!ipsId && !ipsNombre) {
       alert('Por favor selecciona una IPS para editar');
       navigate('/ips');
@@ -130,7 +148,7 @@ function EditarIps() {
     }
     cargarIps();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ipsId, ipsNombre]);
+  }, [ipsId, ipsNombre, isAdmin]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

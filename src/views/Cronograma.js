@@ -743,13 +743,21 @@ function Cronograma() {
           <tbody>
             <tr>
               <td style={{ width: '22%', textAlign: 'center', padding: '8px', verticalAlign: 'middle', borderRight: '1px solid #0f3b60' }}>
-                {ipsActualData?.logo ? (
-                  <img src={ipsActualData.logo} alt="Logo IPS" style={{ maxHeight: '60px', maxWidth: '100%', objectFit: 'contain' }} />
-                ) : (
-                  <div style={{ fontWeight: '800', color: '#0f3b60', fontSize: '13px' }}>
-                    {selectedIps || user?.institucion || 'GEMTTO BIOMÉDICA'}
-                  </div>
-                )}
+                {(() => {
+                  const logoUrl = Array.isArray(ipsActualData?.logo)
+                    ? ipsActualData.logo[0]?.data_url
+                    : ipsActualData?.logo?.data_url || (typeof ipsActualData?.logo === 'string' ? ipsActualData.logo : null);
+                  if (logoUrl) {
+                    return (
+                      <img src={logoUrl} alt="Logo IPS" style={{ maxHeight: '60px', maxWidth: '100%', objectFit: 'contain' }} />
+                    );
+                  }
+                  return (
+                    <div style={{ fontWeight: '800', color: '#0f3b60', fontSize: '13px' }}>
+                      {selectedIps || user?.institucion || 'GEMTTO BIOMÉDICA'}
+                    </div>
+                  );
+                })()}
               </td>
               <td style={{ width: '56%', textAlign: 'center', padding: '6px', borderRight: '1px solid #0f3b60' }}>
                 <div style={{ fontSize: '13px', fontWeight: '900', color: '#0f3b60', textTransform: 'uppercase' }}>

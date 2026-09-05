@@ -121,8 +121,10 @@ function HojaDeVida() {
       method: 'GET',
       body: { ips },
     });
-    if (response && response.success && response.institucion?.logo?.[0]) {
-      setIpsLogo(response.institucion.logo[0].data_url);
+    if (response && response.success && response.institucion?.logo) {
+      const l = response.institucion.logo;
+      const logoUrl = Array.isArray(l) ? l[0]?.data_url : (l?.data_url || (typeof l === 'string' ? l : ''));
+      if (logoUrl) setIpsLogo(logoUrl);
     }
   };
 

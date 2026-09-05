@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import ImageUploading from 'react-images-uploading';
 import { apiCreateIps } from '../utils/api';
 import request from '../utils/request';
 import {
@@ -8,10 +9,14 @@ import {
   FaIdCard,
   FaSave,
   FaArrowLeft,
+  FaCamera,
+  FaImage,
+  FaTrash,
 } from 'react-icons/fa';
 
 function CrearIps() {
   const [loading, setLoading] = useState(false);
+  const [logoList, setLogoList] = useState([]);
 
   const [ips, setIps] = useState({
     ips: '',
@@ -39,6 +44,7 @@ function CrearIps() {
           ips: ips.ips.trim().toUpperCase(),
           nit: ips.nit.trim(),
           ciudad: ips.ciudad.trim().toUpperCase(),
+          logo: logoList,
         },
         method: 'POST',
       });
@@ -169,6 +175,123 @@ function CrearIps() {
                 onChange={handleSave}
                 style={{ textTransform: 'uppercase' }}
               />
+            </div>
+
+            {/* Logotipo de la Institución */}
+            <div style={{ marginTop: '18px', paddingTop: '16px', borderTop: '1px solid #334155' }}>
+              <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <FaImage /> LOGOTIPO DE LA INSTITUCIÓN (OPCIONAL):
+              </label>
+              <div
+                style={{
+                  backgroundColor: '#0f172a',
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: '1.5px dashed #38bdf8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '120px',
+                }}
+              >
+                <ImageUploading
+                  value={logoList}
+                  onChange={(imageList) => setLogoList(imageList)}
+                  maxNumber={1}
+                  dataURLKey="data_url"
+                  acceptType={['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']}
+                >
+                  {({ imageList, onImageUpload, onImageRemoveAll, isDragging, dragProps }) => (
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                      {imageList.length === 0 ? (
+                        <div
+                          onClick={onImageUpload}
+                          {...dragProps}
+                          style={{
+                            cursor: 'pointer',
+                            padding: '16px 10px',
+                            color: isDragging ? '#38bdf8' : '#94a3b8',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <FaCamera size={30} color="#38bdf8" style={{ marginBottom: '6px' }} />
+                          <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#f8fafc' }}>
+                            Haz clic o arrastra aquí para subir el logo de la IPS
+                          </div>
+                          <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>
+                            PNG, JPG, JPEG, SVG o WebP
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                          <div
+                            style={{
+                              backgroundColor: '#ffffff',
+                              padding: '8px 16px',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                            }}
+                          >
+                            <img
+                              src={imageList[0]?.data_url}
+                              alt="Logo IPS"
+                              style={{
+                                maxHeight: '75px',
+                                maxWidth: '220px',
+                                objectFit: 'contain',
+                              }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={onImageUpload}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                backgroundColor: '#0369a1',
+                                color: '#ffffff',
+                                border: '1px solid #38bdf8',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <FaCamera size={12} /> Cambiar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={onImageRemoveAll}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                backgroundColor: '#7f1d1d',
+                                color: '#fca5a5',
+                                border: '1px solid #ef4444',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <FaTrash size={11} /> Quitar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </ImageUploading>
+              </div>
             </div>
           </div>
 

@@ -215,8 +215,37 @@ function Ips() {
                         <tr key={item._id || idx}>
                           {/* 1. Nombre Institución */}
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <FaHospital color="#38bdf8" size={15} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {(() => {
+                                const logoUrl = Array.isArray(item.logo)
+                                  ? item.logo[0]?.data_url
+                                  : item.logo?.data_url || (typeof item.logo === 'string' ? item.logo : null);
+                                if (logoUrl) {
+                                  return (
+                                    <div
+                                      style={{
+                                        backgroundColor: '#ffffff',
+                                        padding: '2px 5px',
+                                        borderRadius: '5px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minWidth: '34px',
+                                        height: '28px',
+                                        boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      <img
+                                        src={logoUrl}
+                                        alt="Logo"
+                                        style={{ maxHeight: '24px', maxWidth: '36px', objectFit: 'contain' }}
+                                      />
+                                    </div>
+                                  );
+                                }
+                                return <FaHospital color="#38bdf8" size={16} style={{ flexShrink: 0 }} />;
+                              })()}
                               <strong style={{ color: '#f8fafc', fontSize: '13.5px' }}>{item?.ips}</strong>
                             </div>
                           </td>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import ImageUploading from 'react-images-uploading';
 import {
   apiGetIps,
   apiEditIps,
@@ -21,6 +22,8 @@ import {
   FaPlus,
   FaFolderOpen,
   FaSpinner,
+  FaCamera,
+  FaImage,
 } from 'react-icons/fa';
 
 function EditarIps() {
@@ -33,7 +36,8 @@ function EditarIps() {
   const [saving, setSaving] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
-  // Datos básicos
+  // Datos básicos y Logo
+  const [logoList, setLogoList] = useState([]);
   const [ipsData, setIpsData] = useState({
     _id: '',
     ips: '',
@@ -65,12 +69,27 @@ function EditarIps() {
 
       if (response && response.success && response.institucion) {
         const inst = response.institucion;
+
+        let initialLogo = [];
+        if (inst.logo) {
+          if (Array.isArray(inst.logo)) {
+            initialLogo = inst.logo
+              .map((item) => (typeof item === 'string' ? { data_url: item } : item))
+              .filter((item) => item && item.data_url);
+          } else if (typeof inst.logo === 'string' && inst.logo.trim()) {
+            initialLogo = [{ data_url: inst.logo.trim() }];
+          } else if (inst.logo && inst.logo.data_url) {
+            initialLogo = [inst.logo];
+          }
+        }
+        setLogoList(initialLogo);
+
         setIpsData({
           _id: inst._id || '',
           ips: inst.ips || '',
           nit: inst.nit || '',
           ciudad: inst.ciudad || '',
-          logo: inst.logo ? (Array.isArray(inst.logo) ? inst.logo : [inst.logo]) : [],
+          logo: initialLogo,
           plan_mantenimiento: inst.plan_mantenimiento || null,
           plan_capacitacion: inst.plan_capacitacion || null,
           protocolos: inst.protocolos || null,
@@ -103,7 +122,7 @@ function EditarIps() {
     setIpsData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Guardar cambios básicos de la IPS
+  // Guardar cambios básicos y logotipo de la IPS
   const handleGuardarBasicos = async (e) => {
     if (e) e.preventDefault();
     if (!ipsData.ips.trim()) {
@@ -121,11 +140,12 @@ function EditarIps() {
           ips: ipsData.ips.trim().toUpperCase(),
           nit: ipsData.nit.trim(),
           ciudad: ipsData.ciudad.trim().toUpperCase(),
+          logo: logoList,
         },
       });
 
       if (response && response.success) {
-        alert('¡Datos de la IPS actualizados correctamente!');
+        alert('¡Datos y logotipo de la IPS actualizados correctamente!');
       } else {
         alert(response?.message || 'Error al actualizar datos');
       }
@@ -397,6 +417,125 @@ function EditarIps() {
                 />
                 <FaCity style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#38bdf8' }} />
               </div>
+            </div>
+          </div>
+
+          {/* Logotipo de la Institución */}
+          <div style={{ marginTop: '18px', paddingTop: '18px', borderTop: '1px solid #334155', marginBottom: '20px' }}>
+            <label style={{ display: 'block', color: '#94a3b8', fontSize: '12.5px', fontWeight: '700', marginBottom: '8px' }}>
+              <FaImage style={{ marginRight: '6px', verticalAlign: 'middle', color: '#38bdf8' }} />
+              LOGOTIPO DE LA INSTITUCIÓN / IPS:
+            </label>
+            <div
+              style={{
+                backgroundColor: '#0f172a',
+                padding: '16px',
+                borderRadius: '10px',
+                border: '1.5px dashed #38bdf8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '120px',
+              }}
+            >
+              <ImageUploading
+                value={logoList}
+                onChange={(imageList) => setLogoList(imageList)}
+                maxNumber={1}
+                dataURLKey="data_url"
+                acceptType={['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']}
+              >
+                {({ imageList, onImageUpload, onImageRemoveAll, isDragging, dragProps }) => (
+                  <div style={{ width: '100%', textAlign: 'center' }}>
+                    {imageList.length === 0 ? (
+                      <div
+                        onClick={onImageUpload}
+                        {...dragProps}
+                        style={{
+                          cursor: 'pointer',
+                          padding: '18px 12px',
+                          color: isDragging ? '#38bdf8' : '#94a3b8',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <FaCamera size={32} color="#38bdf8" style={{ marginBottom: '8px' }} />
+                        <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#f8fafc' }}>
+                          Haz clic o arrastra aquí para subir el logotipo de la IPS
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                          Formatos admitidos: PNG, JPG, JPEG, SVG, WebP (Se recomienda fondo transparente)
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                        <div
+                          style={{
+                            backgroundColor: '#ffffff',
+                            padding: '10px 18px',
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+                          }}
+                        >
+                          <img
+                            src={imageList[0]?.data_url}
+                            alt="Logo IPS"
+                            style={{
+                              maxHeight: '85px',
+                              maxWidth: '260px',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={onImageUpload}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '7px 14px',
+                              backgroundColor: '#0369a1',
+                              color: '#ffffff',
+                              border: '1px solid #38bdf8',
+                              borderRadius: '6px',
+                              fontSize: '12.5px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(3, 105, 161, 0.3)',
+                            }}
+                          >
+                            <FaCamera size={13} /> Cambiar Logotipo
+                          </button>
+                          <button
+                            type="button"
+                            onClick={onImageRemoveAll}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '7px 14px',
+                              backgroundColor: '#7f1d1d',
+                              color: '#fca5a5',
+                              border: '1px solid #ef4444',
+                              borderRadius: '6px',
+                              fontSize: '12.5px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <FaTrash size={12} /> Eliminar Logotipo
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </ImageUploading>
             </div>
           </div>
 

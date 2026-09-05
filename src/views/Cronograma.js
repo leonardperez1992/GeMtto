@@ -360,7 +360,7 @@ function Cronograma() {
   };
 
   return (
-    <div className="contenedor vista-cronograma" style={{ maxWidth: '1350px', margin: '0 auto', padding: '20px 15px' }}>
+    <div className="contenedor vista-cronograma" style={{ maxWidth: '100%', width: '100%', margin: '0 auto', padding: '10px 18px', boxSizing: 'border-box' }}>
       {/* ==========================================================
           HEADER INSTITUCIONAL Y ACCIONES SUPERIORES (NO-PRINT)
           ========================================================== */}
@@ -371,44 +371,44 @@ function Cronograma() {
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: '#1e293b',
-          padding: '18px 24px',
-          borderRadius: '12px',
-          border: '1.5px solid #334155',
-          marginBottom: '20px',
+          padding: '10px 16px',
+          borderRadius: '8px',
+          border: '1px solid #334155',
+          marginBottom: '10px',
           flexWrap: 'wrap',
-          gap: '16px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          gap: '10px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
         }}
       >
         <div>
-          <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '22px', fontWeight: '800' }}>
+          <h2 style={{ margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px', fontWeight: '800' }}>
             <FaCalendarAlt color="#38bdf8" /> Cronograma de Mantenimiento Preventivo {selectedAnio} {isNonAdmin && userInstitucion ? `- ${userInstitucion}` : ''}
           </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13.5px' }}>
+          <p style={{ margin: '2px 0 0 0', color: '#94a3b8', fontSize: '12px' }}>
             Planificación y programación periódica de mantenimientos de equipos biomédicos por meses.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={exportarExcel}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               backgroundColor: '#059669',
               color: '#ffffff',
               border: '1px solid #10b981',
-              padding: '9px 18px',
-              borderRadius: '8px',
+              padding: '6px 13px',
+              borderRadius: '6px',
               fontWeight: '700',
-              fontSize: '13.5px',
+              fontSize: '12.5px',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
             }}
             title="Exportar cronograma filtrado a archivo Excel (.xlsx)"
           >
-            <FaFileExcel size={15} /> Exportar Excel (.xlsx)
+            <FaFileExcel size={14} /> Exportar Excel (.xlsx)
           </button>
 
           <button
@@ -416,20 +416,20 @@ function Cronograma() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               backgroundColor: '#0284c7',
               color: '#ffffff',
               border: '1px solid #38bdf8',
-              padding: '9px 18px',
-              borderRadius: '8px',
+              padding: '6px 13px',
+              borderRadius: '6px',
               fontWeight: '700',
-              fontSize: '13.5px',
+              fontSize: '12.5px',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
             }}
             title="Imprimir formato oficial de cronograma institucional"
           >
-            <FaPrint size={15} /> Imprimir Cronograma
+            <FaPrint size={14} /> Imprimir Cronograma
           </button>
         </div>
       </div>
@@ -441,30 +441,30 @@ function Cronograma() {
         className="no-print"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '14px',
-          marginBottom: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '10px',
+          marginBottom: '10px',
         }}
       >
         <div
           style={{
             backgroundColor: '#1e293b',
             border: '1px solid #334155',
-            borderRadius: '10px',
-            padding: '14px 18px',
+            borderRadius: '8px',
+            padding: '8px 14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '14px',
+            gap: '10px',
           }}
         >
-          <div style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '12px', borderRadius: '10px', color: '#38bdf8' }}>
-            <FaLayerGroup size={24} />
+          <div style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '8px', borderRadius: '6px', color: '#38bdf8' }}>
+            <FaLayerGroup size={16} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
               Equipos Programados
             </div>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#f8fafc' }}>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#f8fafc', lineHeight: 1.1 }}>
               {estadisticas.total}
             </div>
           </div>
@@ -474,21 +474,21 @@ function Cronograma() {
           style={{
             backgroundColor: '#1e293b',
             border: '1px solid #334155',
-            borderRadius: '10px',
-            padding: '14px 18px',
+            borderRadius: '8px',
+            padding: '8px 14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '14px',
+            gap: '10px',
           }}
         >
-          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', padding: '12px', borderRadius: '10px', color: '#10b981' }}>
-            <FaCalendarAlt size={24} />
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', padding: '8px', borderRadius: '6px', color: '#10b981' }}>
+            <FaCalendarAlt size={16} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
               Mttos. en {estadisticas.mesFocoNombre}
             </div>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#10b981' }}>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#10b981', lineHeight: 1.1 }}>
               {estadisticas.esteMesCount}
             </div>
           </div>
@@ -498,21 +498,21 @@ function Cronograma() {
           style={{
             backgroundColor: '#1e293b',
             border: '1px solid #334155',
-            borderRadius: '10px',
-            padding: '14px 18px',
+            borderRadius: '8px',
+            padding: '8px 14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '14px',
+            gap: '10px',
           }}
         >
-          <div style={{ backgroundColor: 'rgba(168, 85, 247, 0.15)', padding: '12px', borderRadius: '10px', color: '#c084fc' }}>
-            <FaTools size={24} />
+          <div style={{ backgroundColor: 'rgba(168, 85, 247, 0.15)', padding: '8px', borderRadius: '6px', color: '#c084fc' }}>
+            <FaTools size={16} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
               Semestrales / Trimestrales
             </div>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: '#f8fafc' }}>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#f8fafc', lineHeight: 1.1 }}>
               {estadisticas.semestrales} / {estadisticas.trimestrales}
             </div>
           </div>
@@ -527,16 +527,16 @@ function Cronograma() {
         style={{
           backgroundColor: '#1e293b',
           border: '1px solid #334155',
-          borderRadius: '10px',
-          padding: '16px 20px',
-          marginBottom: '20px',
+          borderRadius: '8px',
+          padding: '8px 12px',
+          marginBottom: '10px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '14px',
+          gap: '6px',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+          <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <FaFilter /> Filtros del Cronograma:
           </div>
           {(selectedIps || selectedServicio || selectedMes || selectedPeriodicidad || buscar) && (
@@ -553,9 +553,9 @@ function Cronograma() {
                 backgroundColor: 'transparent',
                 border: '1px solid #475569',
                 color: '#94a3b8',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
+                padding: '3px 8px',
+                borderRadius: '5px',
+                fontSize: '11.5px',
                 cursor: 'pointer',
               }}
             >
@@ -567,21 +567,21 @@ function Cronograma() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '12px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: '8px',
           }}
         >
           {/* 1. Filtro IPS */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Institución / IPS:
             </label>
             {isNonAdmin ? (
               <div
                 className="input-report"
                 style={{
-                  padding: '8px 12px',
-                  fontSize: '13px',
+                  padding: '5px 8px',
+                  fontSize: '12px',
                   backgroundColor: '#0f172a',
                   color: '#38bdf8',
                   fontWeight: '700',
@@ -603,7 +603,7 @@ function Cronograma() {
                   setCurrentPage(1);
                 }}
                 className="input-report"
-                style={{ padding: '8px 12px', fontSize: '13px' }}
+                style={{ padding: '5px 8px', fontSize: '12px' }}
               >
                 <option value="">-- Todas las Instituciones / IPS --</option>
                 {ipsDisponibles.map((nombreIps) => (
@@ -617,7 +617,7 @@ function Cronograma() {
 
           {/* 2. Filtro Servicio */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Servicio / Área:
             </label>
             <select
@@ -627,7 +627,7 @@ function Cronograma() {
                 setCurrentPage(1);
               }}
               className="input-report"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{ padding: '5px 8px', fontSize: '12px' }}
             >
               <option value="">-- Todos los Servicios --</option>
               {serviciosDisponibles.map((srv) => (
@@ -640,7 +640,7 @@ function Cronograma() {
 
           {/* 3. Filtro Mes */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Mes de Mantenimiento:
             </label>
             <select
@@ -650,7 +650,7 @@ function Cronograma() {
                 setCurrentPage(1);
               }}
               className="input-report"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{ padding: '5px 8px', fontSize: '12px' }}
             >
               <option value="">-- Todos los Meses --</option>
               {MESES_DEL_ANIO.map((mes) => (
@@ -663,7 +663,7 @@ function Cronograma() {
 
           {/* 4. Filtro Periodicidad */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Periodicidad:
             </label>
             <select
@@ -673,7 +673,7 @@ function Cronograma() {
                 setCurrentPage(1);
               }}
               className="input-report"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{ padding: '5px 8px', fontSize: '12px' }}
             >
               <option value="">-- Todas las Periodicidades --</option>
               <option value="MENSUAL">MENSUAL</option>
@@ -687,14 +687,14 @@ function Cronograma() {
 
           {/* 5. Filtro Año */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Año del Cronograma:
             </label>
             <select
               value={selectedAnio}
               onChange={(e) => setSelectedAnio(e.target.value)}
               className="input-report"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{ padding: '5px 8px', fontSize: '12px' }}
             >
               <option value="2024">2024</option>
               <option value="2025">2025</option>
@@ -706,14 +706,14 @@ function Cronograma() {
 
           {/* 6. Buscador de Texto */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', marginBottom: '2px' }}>
               Búsqueda Rápida:
             </label>
             <div style={{ position: 'relative' }}>
               <GoSearch
                 style={{
                   position: 'absolute',
-                  left: '10px',
+                  left: '8px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: '#64748b',
@@ -728,7 +728,7 @@ function Cronograma() {
                   setCurrentPage(1);
                 }}
                 className="input-report"
-                style={{ paddingLeft: '32px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', fontSize: '13px' }}
+                style={{ paddingLeft: '28px', paddingRight: '8px', paddingTop: '5px', paddingBottom: '5px', fontSize: '12px' }}
               />
             </div>
           </div>
@@ -788,14 +788,14 @@ function Cronograma() {
         <table className="table tabla-cronograma-completa">
           <thead>
             <tr>
-              <th style={{ width: '3%', textAlign: 'center' }}>#</th>
-              <th style={{ width: '18%' }}>EQUIPO</th>
-              <th style={{ width: '10%' }}>MARCA</th>
-              <th style={{ width: '10%' }}>MODELO</th>
-              <th style={{ width: '10%' }}>SERIE</th>
-              <th style={{ width: '12%' }}>INSTITUCIÓN</th>
-              <th style={{ width: '11%' }}>SERVICIO</th>
-              <th style={{ width: '9%', textAlign: 'center' }}>PERIODICIDAD</th>
+              <th style={{ width: '36px', minWidth: '36px', textAlign: 'center' }}>#</th>
+              <th style={{ minWidth: '140px' }}>EQUIPO</th>
+              <th style={{ minWidth: '85px' }}>MARCA</th>
+              <th style={{ minWidth: '85px' }}>MODELO</th>
+              <th style={{ minWidth: '85px' }}>SERIE</th>
+              <th style={{ minWidth: '120px' }}>INSTITUCIÓN</th>
+              <th style={{ minWidth: '95px' }}>SERVICIO</th>
+              <th style={{ minWidth: '90px', textAlign: 'center' }}>PERIODICIDAD</th>
               {/* 12 Meses Matriz con texto en orientación vertical hacia arriba */}
               {MESES_ABREV.map((abrev) => (
                 <th
@@ -805,10 +805,10 @@ function Cronograma() {
                     width: '28px',
                     minWidth: '26px',
                     maxWidth: '30px',
-                    padding: '6px 1px',
+                    padding: '4px 1px',
                     textAlign: 'center',
                     verticalAlign: 'bottom',
-                    height: '48px',
+                    height: '42px',
                     borderLeft: '1px solid #334155',
                   }}
                 >
@@ -820,7 +820,7 @@ function Cronograma() {
                       display: 'inline-block',
                       margin: '0 auto',
                       fontWeight: '800',
-                      fontSize: '10px',
+                      fontSize: '9.5px',
                       letterSpacing: '0.5px',
                       lineHeight: '1',
                     }}
@@ -829,8 +829,8 @@ function Cronograma() {
                   </span>
                 </th>
               ))}
-              <th style={{ width: '12%' }}>RESPONSABLE</th>
-              <th className="no-print" style={{ width: '6%', minWidth: '76px', textAlign: 'center' }}>ACCIONES</th>
+              <th style={{ minWidth: '110px' }}>RESPONSABLE</th>
+              <th className="no-print" style={{ minWidth: '70px', textAlign: 'center' }}>ACCIONES</th>
             </tr>
           </thead>
           <tbody>
@@ -988,7 +988,7 @@ function Cronograma() {
       </div>
 
       {/* Paginación (Oculta en Impresión) */}
-      <div className="no-print" style={{ marginTop: '16px' }}>
+      <div className="no-print" style={{ marginTop: '10px', marginBottom: '10px' }}>
         <Pagination
           totalItems={filteredEquipos.length}
           itemsPerPage={itemsPerPage}

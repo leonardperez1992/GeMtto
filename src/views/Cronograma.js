@@ -782,7 +782,18 @@ function Cronograma() {
                 </th>
               ))}
               <th style={{ width: '9.5%' }}>RESPONSABLE</th>
-              <th className="no-print" style={{ width: isNonAdmin ? '45px' : '60px', minWidth: isNonAdmin ? '42px' : '58px', textAlign: 'center', padding: '6px 2px' }}>ACCIONES</th>
+              <th
+                className="no-print"
+                style={{
+                  width: isNonAdmin ? '75px' : '78px',
+                  minWidth: '70px',
+                  textAlign: 'center',
+                  padding: '6px 2px',
+                  fontSize: '10px',
+                }}
+              >
+                HOJA DE VIDA
+              </th>
             </tr>
           </thead>
           <tbody>

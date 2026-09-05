@@ -785,14 +785,14 @@ function Cronograma() {
               <th
                 className="no-print"
                 style={{
-                  width: isNonAdmin ? '75px' : '78px',
-                  minWidth: '70px',
+                  width: isNonAdmin ? '75px' : '65px',
+                  minWidth: isNonAdmin ? '70px' : '60px',
                   textAlign: 'center',
                   padding: '6px 2px',
-                  fontSize: '10px',
+                  fontSize: isNonAdmin ? '10px' : '11px',
                 }}
               >
-                HOJA DE VIDA
+                {isNonAdmin ? 'HOJA DE VIDA' : 'ACCIONES'}
               </th>
             </tr>
           </thead>

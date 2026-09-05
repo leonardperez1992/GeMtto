@@ -40,6 +40,16 @@ function ReporteService() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  const storedUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+  const cronogramaUrl = storedUser && storedUser.rol === 'user' ? '/cronogramauser' : '/cronograma';
+
   const firmaIngRef = useRef({});
   const firmaRecref = useRef({});
 
@@ -370,9 +380,7 @@ function ReporteService() {
       });
       if (response && response.success) {
         alert('¡Reporte de servicio creado exitosamente!');
-        const storedUser = localStorage.getItem('user');
-        const userObj = storedUser ? JSON.parse(storedUser) : null;
-        window.location.href = userObj && userObj.rol !== 'admin' ? './inventariouser' : './inventarioua';
+        window.location.href = storedUser && storedUser.rol === 'user' ? './cronogramauser' : './cronograma';
       } else {
         alert(`${response?.message || 'Verifique que todos los campos requeridos estén diligenciados'}`);
       }
@@ -412,7 +420,7 @@ function ReporteService() {
             </p>
           </div>
           <Link
-            to="/inventarioua"
+            to={cronogramaUrl}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -428,7 +436,7 @@ function ReporteService() {
               transition: 'all 0.2s',
             }}
           >
-            <FaArrowLeft size={13} /> Volver al Inventario
+            <FaArrowLeft size={13} /> Volver al Cronograma
           </Link>
         </div>
 
@@ -1098,7 +1106,7 @@ function ReporteService() {
           {/* Final Submit Actions */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginBottom: '40px' }}>
             <Link
-              to="/inventarioua"
+              to={cronogramaUrl}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

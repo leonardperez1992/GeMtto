@@ -157,7 +157,7 @@ function EditFichaTecnica() {
       }
       formData.append('marca', ficha.marca.trim().toUpperCase());
       formData.append('modelo', ficha.modelo.trim().toUpperCase());
-      formData.append('clas_biomedica', ficha.clas_biomedica || '');
+      formData.append('clas_biomedica', '');
       formData.append('tecnologia', ficha.tecnologia || '');
       formData.append('voltaje', ficha.voltaje || '');
       formData.append('amperaje', ficha.amperaje || '');
@@ -395,18 +395,6 @@ function EditFichaTecnica() {
                     value={ficha.modelo || ''}
                     onChange={handleSave}
                     required
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>
-                    CLASIFICACIÓN BIOMÉDICA:
-                  </label>
-                  <input
-                    className="input-report"
-                    name="clas_biomedica"
-                    type="text"
-                    value={ficha.clas_biomedica || ''}
-                    onChange={handleSave}
                   />
                 </div>
                 <div>

@@ -85,7 +85,6 @@ function FichasTecnicas() {
                 <tr>
                   <th>MARCA</th>
                   <th>MODELO</th>
-                  <th>RIESGO</th>
                   <th>TECNOLOGÍA</th>
                   <th>ACCIÓN</th>
                 </tr>
@@ -96,7 +95,6 @@ function FichasTecnicas() {
                     <tr>
                       <td>{item?.marca}</td>
                       <td>{item?.modelo}</td>
-                      <td>{item?.clas_biomedica}</td>
                       <td>{item?.tecnologia}</td>
                       <td>
                         <Link

@@ -547,10 +547,7 @@ function HojaDeVidaUser() {
               </td>
             </tr>
             <tr>
-              <td colSpan={2}>
-                <span className="label-bold">CLASIFICACIÓN BIOMÉDICA:</span> {ficha?.clas_biomedica || '-'}
-              </td>
-              <td colSpan={2}>
+              <td colSpan={4}>
                 <span className="label-bold">TECNOLOGÍA PREDOMINANTE:</span> {ficha?.tecnologia || '-'}
               </td>
             </tr>

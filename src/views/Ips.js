@@ -7,11 +7,11 @@ import {
   FaPlus,
   FaSync,
   FaCity,
-  FaIdCard,
   FaEdit,
   FaTrash,
   FaFolderOpen,
   FaFilePdf,
+  FaGoogleDrive,
 } from 'react-icons/fa';
 import { GoSearch } from 'react-icons/go';
 
@@ -210,6 +210,7 @@ function Ips() {
                         (item.plan_capacitacion ? 1 : 0) +
                         (item.protocolos ? 1 : 0) +
                         (Array.isArray(item.documentos_adicionales) ? item.documentos_adicionales.length : 0);
+                      const driveCount = Array.isArray(item.enlaces_drive) ? item.enlaces_drive.length : 0;
 
                       return (
                         <tr key={item._id || idx}>
@@ -233,66 +234,91 @@ function Ips() {
                                         minWidth: '34px',
                                         height: '28px',
                                         boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                                        flexShrink: 0,
                                       }}
                                     >
                                       <img
                                         src={logoUrl}
-                                        alt="Logo"
-                                        style={{ maxHeight: '24px', maxWidth: '36px', objectFit: 'contain' }}
+                                        alt={item.ips}
+                                        style={{ maxHeight: '24px', maxWidth: '48px', objectFit: 'contain' }}
                                       />
                                     </div>
                                   );
                                 }
-                                return <FaHospital color="#38bdf8" size={16} style={{ flexShrink: 0 }} />;
+                                return (
+                                  <div
+                                    style={{
+                                      width: '28px',
+                                      height: '28px',
+                                      borderRadius: '6px',
+                                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                    }}
+                                  >
+                                    <FaHospital size={14} color="#38bdf8" />
+                                  </div>
+                                );
                               })()}
-                              <strong style={{ color: '#f8fafc', fontSize: '13.5px' }}>{item?.ips}</strong>
+                              <span style={{ fontWeight: '700', color: '#f8fafc' }}>{item.ips}</span>
                             </div>
                           </td>
 
                           {/* 2. NIT */}
-                          <td style={{ color: '#cbd5e1', fontFamily: 'monospace', fontSize: '13px' }}>
-                            {item?.nit ? (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <FaIdCard color="#94a3b8" size={13} /> {item.nit}
-                              </span>
-                            ) : (
-                              <span style={{ color: '#64748b' }}>Sin NIT</span>
-                            )}
-                          </td>
+                          <td>{item.nit || <span style={{ color: '#64748b' }}>Sin registrar</span>}</td>
 
                           {/* 3. Ciudad */}
-                          <td style={{ color: '#38bdf8', fontWeight: '600', fontSize: '13px' }}>
-                            {item?.ciudad ? (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <FaCity color="#38bdf8" size={13} /> {item.ciudad}
+                          <td>
+                            {item.ciudad ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <FaCity size={12} color="#38bdf8" /> {item.ciudad}
                               </span>
                             ) : (
                               <span style={{ color: '#64748b' }}>No especificada</span>
                             )}
                           </td>
 
-                          {/* 4. Documentos PDF */}
+                          {/* 4. Documentos PDF & Drive */}
                           <td>
                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                              {docsCount > 0 ? (
+                              {docsCount > 0 || driveCount > 0 ? (
                                 <>
-                                  <span
-                                    style={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '4px',
-                                      padding: '2px 8px',
-                                      borderRadius: '6px',
-                                      fontSize: '11px',
-                                      fontWeight: '800',
-                                      backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                                      color: '#34d399',
-                                      border: '1px solid rgba(16, 185, 129, 0.4)',
-                                    }}
-                                  >
-                                    <FaFilePdf size={11} color="#ef4444" /> {docsCount} PDF{docsCount > 1 ? 's' : ''}
-                                  </span>
+                                  {docsCount > 0 && (
+                                    <span
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '2px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: '800',
+                                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                        color: '#34d399',
+                                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                                      }}
+                                    >
+                                      <FaFilePdf size={11} color="#ef4444" /> {docsCount} PDF{docsCount > 1 ? 's' : ''}
+                                    </span>
+                                  )}
+                                  {driveCount > 0 && (
+                                    <span
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '2px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: '800',
+                                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                                        color: '#38bdf8',
+                                        border: '1px solid rgba(56, 189, 248, 0.4)',
+                                      }}
+                                    >
+                                      <FaGoogleDrive size={11} color="#38bdf8" /> {driveCount} Drive
+                                    </span>
+                                  )}
                                   {item.plan_mantenimiento && (
                                     <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>• Plan Mtto</span>
                                   )}

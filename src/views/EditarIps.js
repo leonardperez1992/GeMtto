@@ -7,6 +7,8 @@ import {
   apiUploadDocIps,
   apiDeleteDocIps,
   apiVerDocIps,
+  apiAddEnlaceDriveIps,
+  apiDeleteEnlaceDriveIps,
 } from '../utils/api';
 import request from '../utils/request';
 import {
@@ -24,6 +26,10 @@ import {
   FaSpinner,
   FaCamera,
   FaImage,
+  FaGoogleDrive,
+  FaExternalLinkAlt,
+  FaCopy,
+  FaCheck,
 } from 'react-icons/fa';
 
 function EditarIps() {
@@ -48,12 +54,20 @@ function EditarIps() {
     plan_capacitacion: null,
     protocolos: null,
     documentos_adicionales: [],
+    enlaces_drive: [],
   });
 
   // Modal / Inputs para documento adicional
   const [nuevoTitulo, setNuevoTitulo] = useState('');
   const [nuevaCategoria, setNuevaCategoria] = useState('Habilitación');
   const fileInputRefAdicional = useRef(null);
+
+  // Estados para Enlaces de Google Drive
+  const [nuevoDriveTitulo, setNuevoDriveTitulo] = useState('');
+  const [nuevoDriveUrl, setNuevoDriveUrl] = useState('');
+  const [nuevoDriveDescripcion, setNuevoDriveDescripcion] = useState('');
+  const [guardandoDrive, setGuardandoDrive] = useState(false);
+  const [copiadoId, setCopiadoId] = useState(null);
 
   const fileInputPlanMtto = useRef(null);
   const fileInputPlanCap = useRef(null);
@@ -94,6 +108,7 @@ function EditarIps() {
           plan_capacitacion: inst.plan_capacitacion || null,
           protocolos: inst.protocolos || null,
           documentos_adicionales: Array.isArray(inst.documentos_adicionales) ? inst.documentos_adicionales : [],
+          enlaces_drive: Array.isArray(inst.enlaces_drive) ? inst.enlaces_drive : [],
         });
       } else {
         alert('No se pudo encontrar la institución.');
@@ -260,6 +275,92 @@ function EditarIps() {
       console.error(err);
       alert('Error de conexión al eliminar documento.');
     }
+  };
+
+  // Guardar nuevo enlace de Google Drive
+  const handleGuardarDrive = async (e) => {
+    if (e) e.preventDefault();
+    if (!ipsData._id) {
+      alert('Identificador de la IPS no disponible.');
+      return;
+    }
+    if (!nuevoDriveTitulo.trim()) {
+      alert('Por favor ingresa un título para el enlace de Drive.');
+      return;
+    }
+    if (!nuevoDriveUrl.trim()) {
+      alert('Por favor ingresa la URL o enlace de Google Drive.');
+      return;
+    }
+
+    setGuardandoDrive(true);
+    try {
+      const response = await request({
+        link: apiAddEnlaceDriveIps,
+        method: 'POST',
+        body: {
+          id: ipsData._id,
+          ips: ipsData.ips,
+          titulo: nuevoDriveTitulo.trim(),
+          url: nuevoDriveUrl.trim(),
+          descripcion: nuevoDriveDescripcion.trim(),
+        },
+      });
+
+      if (response && response.success) {
+        alert('¡Enlace de Google Drive vinculado exitosamente a la IPS!');
+        setNuevoDriveTitulo('');
+        setNuevoDriveUrl('');
+        setNuevoDriveDescripcion('');
+        cargarIps();
+      } else {
+        alert(response?.message || 'Error al agregar enlace de Drive');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al guardar el enlace de Drive.');
+    } finally {
+      setGuardandoDrive(false);
+    }
+  };
+
+  // Eliminar un enlace de Google Drive
+  const handleEliminarDrive = async (enlaceId, titulo) => {
+    const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar el enlace de Drive "${titulo || ''}"?`);
+    if (!confirmacion) return;
+
+    try {
+      const response = await request({
+        link: apiDeleteEnlaceDriveIps,
+        method: 'POST',
+        body: {
+          id: ipsData._id,
+          ips: ipsData.ips,
+          enlace_id: enlaceId,
+        },
+      });
+
+      if (response && response.success) {
+        alert('Enlace de Google Drive eliminado correctamente.');
+        cargarIps();
+      } else {
+        alert(response?.message || 'Error al eliminar enlace de Drive');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al eliminar enlace de Drive.');
+    }
+  };
+
+  // Copiar enlace al portapapeles
+  const handleCopiarDrive = (url, id) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiadoId(id);
+      setTimeout(() => setCopiadoId(null), 2500);
+    }).catch(() => {
+      alert('No se pudo copiar el enlace al portapapeles.');
+    });
   };
 
   const formatearFecha = (fechaStr) => {
@@ -1097,6 +1198,244 @@ function EditarIps() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Sección 3: Carpetas y Enlaces de Google Drive */}
+        <div
+          style={{
+            backgroundColor: '#1e293b',
+            borderRadius: '12px',
+            padding: '22px',
+            border: '1.5px solid #334155',
+            marginBottom: '26px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h3 style={{ margin: 0, color: '#38bdf8', fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaGoogleDrive color="#10b981" size={18} /> 3. Carpetas y Enlaces de Google Drive
+              </h3>
+              <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13px' }}>
+                Vincula carpetas compartidas de Google Drive con manuales, fotos o certificados para los usuarios de esta IPS.
+              </p>
+            </div>
+            {guardandoDrive && (
+              <span style={{ color: '#38bdf8', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <FaSpinner className="spin" size={14} /> Guardando enlace de Drive...
+              </span>
+            )}
+          </div>
+
+          {/* Formulario para agregar enlace Drive */}
+          <form
+            onSubmit={handleGuardarDrive}
+            style={{
+              backgroundColor: '#0f172a',
+              padding: '16px',
+              borderRadius: '10px',
+              border: '1px solid #334155',
+              marginBottom: '20px',
+            }}
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ display: 'block', color: '#38bdf8', fontSize: '12px', fontWeight: '700', marginBottom: '5px' }}>
+                  TÍTULO O NOMBRE DEL ENLACE *:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Carpeta General de Manuales y Guías Técnicas"
+                  value={nuevoDriveTitulo}
+                  onChange={(e) => setNuevoDriveTitulo(e.target.value)}
+                  className="input-report"
+                  style={{ width: '100%', fontSize: '13px' }}
+                  required
+                  disabled={guardandoDrive}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', color: '#38bdf8', fontSize: '12px', fontWeight: '700', marginBottom: '5px' }}>
+                  ENLACE O URL DE GOOGLE DRIVE *:
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  value={nuevoDriveUrl}
+                  onChange={(e) => setNuevoDriveUrl(e.target.value)}
+                  className="input-report"
+                  style={{ width: '100%', fontSize: '13px' }}
+                  required
+                  disabled={guardandoDrive}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: '700', marginBottom: '5px' }}>
+                DESCRIPCIÓN O NOTAS (OPCIONAL):
+              </label>
+              <input
+                type="text"
+                placeholder="Breve descripción del contenido de la carpeta en la nube..."
+                value={nuevoDriveDescripcion}
+                onChange={(e) => setNuevoDriveDescripcion(e.target.value)}
+                className="input-report"
+                style={{ width: '100%', fontSize: '13px' }}
+                disabled={guardandoDrive}
+              />
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <button
+                type="submit"
+                disabled={guardandoDrive}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: '#059669',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: '6px',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  cursor: guardandoDrive ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 2px 8px rgba(5, 150, 105, 0.35)',
+                }}
+              >
+                {guardandoDrive ? (
+                  <>
+                    <FaSpinner className="spin" size={13} /> Guardando...
+                  </>
+                ) : (
+                  <>
+                    <FaPlus size={11} /> Vincular Enlace Drive
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Lista de enlaces existentes */}
+          {ipsData.enlaces_drive.length === 0 ? (
+            <div style={{ color: '#94a3b8', fontSize: '12.5px', fontStyle: 'italic', padding: '10px 0' }}>
+              No hay carpetas ni enlaces de Google Drive vinculados para esta IPS.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+              {ipsData.enlaces_drive.map((item, idx) => (
+                <div
+                  key={item._id || idx}
+                  style={{
+                    backgroundColor: '#0f172a',
+                    padding: '14px',
+                    borderRadius: '8px',
+                    border: '1px solid #334155',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: '700', color: '#f8fafc', fontSize: '13.5px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <FaGoogleDrive color="#10b981" size={15} /> {item.titulo}
+                    </div>
+                    {item.descripcion && (
+                      <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '6px', lineHeight: '1.3' }}>
+                        {item.descripcion}
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        backgroundColor: '#1e293b',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        color: '#38bdf8',
+                        fontSize: '11px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginBottom: '10px',
+                        border: '1px solid #334155',
+                      }}
+                      title={item.url}
+                    >
+                      🔗 {item.url}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        backgroundColor: '#0284c7',
+                        color: '#fff',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        fontSize: '11.5px',
+                        fontWeight: '700',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <FaExternalLinkAlt size={11} /> Abrir
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleCopiarDrive(item.url, item._id || idx)}
+                      style={{
+                        backgroundColor: '#334155',
+                        color: copiadoId === (item._id || idx) ? '#34d399' : '#f8fafc',
+                        border: '1px solid #475569',
+                        padding: '5px 8px',
+                        borderRadius: '5px',
+                        fontSize: '11.5px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                      title="Copiar enlace"
+                    >
+                      {copiadoId === (item._id || idx) ? (
+                        <>
+                          <FaCheck size={10} color="#34d399" /> Copiado
+                        </>
+                      ) : (
+                        <>
+                          <FaCopy size={10} /> Copiar
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarDrive(item._id, item.titulo)}
+                      style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        color: '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        padding: '5px 8px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        marginLeft: 'auto',
+                      }}
+                      title="Eliminar enlace"
+                    >
+                      <FaTrash size={11} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

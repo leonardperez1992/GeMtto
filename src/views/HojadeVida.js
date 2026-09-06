@@ -686,7 +686,7 @@ function HojaDeVida() {
             </tr>
             <tr>
               <td colSpan={4}>
-                <span className="label-bold">FECHA DE FABRICACIÓN:</span> {equipo?.fecha_fabricacion || 'N/A'}
+                <span className="label-bold">AÑO DE FABRICACIÓN:</span> {(equipo?.fecha_fabricacion ? String(equipo.fecha_fabricacion).split('-')[0] : '') || 'N/A'}
               </td>
             </tr>
             <tr>

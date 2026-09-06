@@ -181,7 +181,7 @@ function Inventario() {
       'RESPONSABLE': eq.responsable || '',
       'FORMA ADQUISICIÓN': eq.forma_adquisicion || '',
       'FECHA INSTALACIÓN': eq.fecha_instalacion || '',
-      'FECHA FABRICACIÓN': eq.fecha_fabricacion || '',
+      'AÑO DE FABRICACIÓN': (eq.fecha_fabricacion ? String(eq.fecha_fabricacion).split('-')[0] : '') || '',
     }));
 
     const wb = XLSX.utils.book_new();
@@ -205,7 +205,7 @@ function Inventario() {
       { wch: 22 }, // RESPONSABLE
       { wch: 18 }, // FORMA ADQUISICION
       { wch: 18 }, // FECHA INSTALACION
-      { wch: 18 }, // FECHA FABRICACION
+      { wch: 18 }, // AÑO FABRICACION
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, 'Inventario');

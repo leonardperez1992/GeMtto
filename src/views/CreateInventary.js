@@ -377,11 +377,13 @@ function CreateInventary() {
                       className="input-report"
                     />
                   </td>
-                  <th>FECHA FABRICACIÓN:</th>
+                  <th>AÑO DE FABRICACIÓN:</th>
                   <td>
                     <input
                       name="fecha_fabricacion"
-                      type="date"
+                      type="text"
+                      placeholder="Ej: 2024"
+                      maxLength={4}
                       value={inventary.fecha_fabricacion}
                       onChange={handleSave}
                       className="input-report"

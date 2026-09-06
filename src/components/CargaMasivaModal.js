@@ -184,7 +184,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         MESES_MANTENIMIENTO: 'ENERO, JULIO',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2023-05-15',
-        FECHA_FABRICACION: '2023-01-10',
+        ANO_FABRICACION: '2023',
       },
       {
         INSTITUCION: 'HOSPITAL SAN JOSE',
@@ -203,7 +203,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         MESES_MANTENIMIENTO: 'ENERO, ABRIL, JULIO, OCTUBRE',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2024-02-10',
-        FECHA_FABRICACION: '2023-11-20',
+        ANO_FABRICACION: '2023',
       },
       {
         INSTITUCION: 'CLINICA LAS AMERICAS',
@@ -222,7 +222,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         MESES_MANTENIMIENTO: 'MARZO, SEPTIEMBRE',
         FORMA_ADQUISICION: 'COMODATO',
         FECHA_INSTALACION: '2023-08-01',
-        FECHA_FABRICACION: '2022-10-15',
+        ANO_FABRICACION: '2022',
       },
       {
         INSTITUCION: 'CLINICA LAS AMERICAS',
@@ -241,7 +241,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
         MESES_MANTENIMIENTO: 'ENERO, MAYO, SEPTIEMBRE',
         FORMA_ADQUISICION: 'COMPRA',
         FECHA_INSTALACION: '2023-10-05',
-        FECHA_FABRICACION: '2023-04-12',
+        ANO_FABRICACION: '2023',
       },
     ];
 
@@ -265,7 +265,7 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
       { wch: 30 }, // MESES_MANTENIMIENTO
       { wch: 18 }, // FORMA_ADQUISICION
       { wch: 18 }, // FECHA_INSTALACION
-      { wch: 18 }, // FECHA_FABRICACION
+      { wch: 18 }, // ANO_FABRICACION
     ];
 
     const wb = XLSX.utils.book_new();
@@ -364,8 +364,9 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
               item.forma_adquisicion = val;
             } else if (norm.includes('instalacion')) {
               item.fecha_instalacion = formatExcelDate(val);
-            } else if (norm.includes('fabricacion')) {
-              item.fecha_fabricacion = formatExcelDate(val);
+            } else if (norm.includes('fabricacion') || norm.includes('anofabricacion') || norm.includes('añofabricacion')) {
+              const rawVal = formatExcelDate(val);
+              item.fecha_fabricacion = rawVal ? String(rawVal).split('-')[0] : '';
             }
 
             // Chequeo si vienen columnas de meses individuales (ENE..DIC)
@@ -757,10 +758,10 @@ function CargaMasivaModal({ isOpen, onClose, onSuccess }) {
                   <span style={{ color: '#f8fafc', fontWeight: '600' }}>EQUIPO</span> y{' '}
                   <span style={{ color: '#f8fafc', fontWeight: '600' }}>SERIE</span>.{' '}
                   <span>
-                    La <strong style={{ color: '#34d399' }}>Fecha de Instalación</strong> y{' '}
-                    <strong style={{ color: '#34d399' }}>Fecha de Fabricación</strong> son{' '}
-                    <strong style={{ color: '#38bdf8' }}>100% OPCIONALES</strong>. Si no cuentas con ellas en tu archivo,
-                    puedes dejarlas en blanco o no incluir esas columnas.
+                    La <strong style={{ color: '#34d399' }}>Fecha de Instalación</strong> y el{' '}
+                    <strong style={{ color: '#34d399' }}>Año de Fabricación</strong> son{' '}
+                    <strong style={{ color: '#38bdf8' }}>100% OPCIONALES</strong>. Si no cuentas con ellos en tu archivo,
+                    puedes dejarlos en blanco o no incluir esas columnas.
                   </span>
                 </div>
               </div>

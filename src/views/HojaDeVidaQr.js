@@ -146,27 +146,41 @@ function HojaDeVidaQr() {
 
   // Consolidado cronológico de reportes internos y externos con observaciones puras
   const todosLosReportes = [
-    ...reportes.map((rep) => ({
-      _id: rep._id,
-      esExterno: false,
-      fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || '-',
-      responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      observaciones: rep.observaciones || '-',
-      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
-      data: rep,
-    })),
-    ...reportesExternos.map((rep) => ({
-      _id: rep._id,
-      esExterno: true,
-      fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || '-',
-      responsable_proveedor: rep.proveedor || 'Proveedor Externo',
-      observaciones: rep.descripcion || '-',
-      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
-      nombre_original: rep.nombre_original,
-      data: rep,
-    })),
+    ...reportes.map((rep) => {
+      const responsableNombre = rep.nombre_ingeniero?.trim() || 'Ingeniero Biomédico / Técnico';
+      return {
+        _id: rep._id,
+        esExterno: false,
+        fecha: rep.fecha || '',
+        tipo_servicio: rep.tipo_servicio || '-',
+        responsable: responsableNombre,
+        responsable_proveedor: responsableNombre,
+        cargo_ingeniero: rep.cargo_ingeniero || '',
+        observaciones: rep.observaciones || '-',
+        numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
+        data: rep,
+      };
+    }),
+    ...reportesExternos.map((rep) => {
+      const responsableNombre =
+        rep.ingeniero?.trim() ||
+        rep.nombre_ingeniero?.trim() ||
+        rep.proveedor ||
+        'Proveedor Externo';
+      return {
+        _id: rep._id,
+        esExterno: true,
+        fecha: rep.fecha || '',
+        tipo_servicio: rep.tipo_servicio || '-',
+        responsable: responsableNombre,
+        responsable_proveedor: responsableNombre,
+        proveedor: rep.proveedor || '',
+        observaciones: rep.descripcion || '-',
+        numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
+        nombre_original: rep.nombre_original,
+        data: rep,
+      };
+    }),
   ].sort((a, b) => {
     if (!a.fecha) return 1;
     if (!b.fecha) return -1;
@@ -624,7 +638,7 @@ function HojaDeVidaQr() {
             <tr style={{ backgroundColor: '#f8fafc', fontWeight: 'bold', fontSize: '12px' }}>
               <th style={{ width: '13%', padding: '8px', textAlign: 'left' }}>FECHA</th>
               <th style={{ width: '18%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
-              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
+              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE</th>
               <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
               <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>Nº REP./CERT.</th>
               <th className="no-print columna-acciones-print" style={{ width: '10%', padding: '8px', textAlign: 'center' }}>VER</th>
@@ -645,9 +659,19 @@ function HojaDeVidaQr() {
                     </span>
                   </td>
                   <td>
-                    <strong style={{ color: rep.esExterno ? '#0369a1' : '#1e293b', fontSize: '12.5px' }}>
-                      {rep.responsable_proveedor}
+                    <strong style={{ color: rep.esExterno ? '#0369a1' : '#1e293b', fontSize: '12.5px', display: 'block' }}>
+                      {rep.responsable || rep.responsable_proveedor}
                     </strong>
+                    {rep.esExterno && rep.proveedor && rep.proveedor !== (rep.responsable || rep.responsable_proveedor) && (
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                        {rep.proveedor}
+                      </div>
+                    )}
+                    {!rep.esExterno && rep.cargo_ingeniero && rep.cargo_ingeniero !== (rep.responsable || rep.responsable_proveedor) && (
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                        {rep.cargo_ingeniero}
+                      </div>
+                    )}
                   </td>
                   <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
                   <td style={{ textAlign: 'center' }}>

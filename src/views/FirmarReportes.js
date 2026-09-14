@@ -73,8 +73,17 @@ function FirmarReportes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
+  const storedUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+
   const [reporte, setReporte] = useState({
-    nombre_ingeniero: '',
+    nombre_ingeniero: storedUser?.name || '',
     cargo_ingeniero: 'INGENIERO BIOMÉDICO',
     nombre_recibe: '',
     cargo_recibe: '',

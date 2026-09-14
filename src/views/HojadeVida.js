@@ -60,6 +60,7 @@ function HojaDeVida() {
   const [subiendoExterno, setSubiendoExterno] = useState(false);
   const [extFile, setExtFile] = useState(null);
   const [extProveedor, setExtProveedor] = useState('');
+  const [extIngeniero, setExtIngeniero] = useState('');
   const [extFecha, setExtFecha] = useState(new Date().toISOString().split('T')[0]);
   const [extTipoServicio, setExtTipoServicio] = useState('Mantenimiento Preventivo');
   const [extNumeroReporte, setExtNumeroReporte] = useState('');
@@ -173,6 +174,8 @@ function HojaDeVida() {
       formData.append('institucion', equipo?.institucion || '');
       formData.append('servicio', equipo?.servicio || '');
       formData.append('proveedor', extProveedor.trim());
+      formData.append('ingeniero', extIngeniero.trim());
+      formData.append('nombre_ingeniero', extIngeniero.trim());
       formData.append('fecha', extFecha);
       formData.append('tipo_servicio', extTipoServicio);
       formData.append('numero_reporte', extNumeroReporte.trim());
@@ -188,6 +191,7 @@ function HojaDeVida() {
         setModalExternoOpen(false);
         setExtFile(null);
         setExtProveedor('');
+        setExtIngeniero('');
         setExtNumeroReporte('');
         setExtDescripcion('');
         if (equipo?.serie) {
@@ -270,27 +274,41 @@ function HojaDeVida() {
   }
 
   const todosLosReportes = [
-    ...reportes.map((rep) => ({
-      _id: rep._id,
-      esExterno: false,
-      fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || '-',
-      responsable_proveedor: rep.nombre_ingeniero || 'Ingeniero Biomédico',
-      observaciones: rep.observaciones || '-',
-      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
-      data: rep,
-    })),
-    ...reportesExternos.map((rep) => ({
-      _id: rep._id,
-      esExterno: true,
-      fecha: rep.fecha || '',
-      tipo_servicio: rep.tipo_servicio || '-',
-      responsable_proveedor: rep.proveedor || 'Proveedor Externo',
-      observaciones: rep.descripcion || '-',
-      numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
-      nombre_original: rep.nombre_original,
-      data: rep,
-    })),
+    ...reportes.map((rep) => {
+      const responsableNombre = rep.nombre_ingeniero?.trim() || 'Ingeniero Biomédico / Técnico';
+      return {
+        _id: rep._id,
+        esExterno: false,
+        fecha: rep.fecha || '',
+        tipo_servicio: rep.tipo_servicio || '-',
+        responsable: responsableNombre,
+        responsable_proveedor: responsableNombre,
+        cargo_ingeniero: rep.cargo_ingeniero || '',
+        observaciones: rep.observaciones || '-',
+        numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : '-',
+        data: rep,
+      };
+    }),
+    ...reportesExternos.map((rep) => {
+      const responsableNombre =
+        rep.ingeniero?.trim() ||
+        rep.nombre_ingeniero?.trim() ||
+        rep.proveedor ||
+        'Proveedor Externo';
+      return {
+        _id: rep._id,
+        esExterno: true,
+        fecha: rep.fecha || '',
+        tipo_servicio: rep.tipo_servicio || '-',
+        responsable: responsableNombre,
+        responsable_proveedor: responsableNombre,
+        proveedor: rep.proveedor || '',
+        observaciones: rep.descripcion || '-',
+        numero_documento: rep.numero_reporte ? `#${rep.numero_reporte}` : 'Doc. PDF',
+        nombre_original: rep.nombre_original,
+        data: rep,
+      };
+    }),
   ].sort((a, b) => {
     if (!a.fecha) return 1;
     if (!b.fecha) return -1;
@@ -834,7 +852,7 @@ function HojaDeVida() {
             <tr style={{ backgroundColor: '#f8fafc', fontWeight: 'bold', fontSize: '12px' }}>
               <th style={{ width: '13%', padding: '8px', textAlign: 'left' }}>FECHA</th>
               <th style={{ width: '18%', padding: '8px', textAlign: 'left' }}>TIPO DE SERVICIO</th>
-              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE / PROVEEDOR</th>
+              <th style={{ width: '22%', padding: '8px', textAlign: 'left' }}>RESPONSABLE</th>
               <th style={{ width: '27%', padding: '8px', textAlign: 'left' }}>OBSERVACIONES</th>
               <th style={{ width: '10%', padding: '8px', textAlign: 'center' }}>Nº REP./CERT.</th>
               <th className="no-print columna-acciones-print" style={{ width: '10%', padding: '8px', textAlign: 'center' }}>VER</th>
@@ -855,9 +873,19 @@ function HojaDeVida() {
                     </span>
                   </td>
                   <td>
-                    <strong style={{ color: rep.esExterno ? '#0369a1' : '#1e293b', fontSize: '12.5px' }}>
-                      {rep.responsable_proveedor}
+                    <strong style={{ color: rep.esExterno ? '#0369a1' : '#1e293b', fontSize: '12.5px', display: 'block' }}>
+                      {rep.responsable || rep.responsable_proveedor}
                     </strong>
+                    {rep.esExterno && rep.proveedor && rep.proveedor !== (rep.responsable || rep.responsable_proveedor) && (
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                        {rep.proveedor}
+                      </div>
+                    )}
+                    {!rep.esExterno && rep.cargo_ingeniero && rep.cargo_ingeniero !== (rep.responsable || rep.responsable_proveedor) && (
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                        {rep.cargo_ingeniero}
+                      </div>
+                    )}
                   </td>
                   <td style={{ fontSize: '12px' }}>{rep.observaciones}</td>
                   <td style={{ textAlign: 'center' }}>
@@ -1399,6 +1427,29 @@ function HojaDeVida() {
                   placeholder="Ej. GE Healthcare, Metrología del Caribe S.A.S., Philips..."
                   value={extProveedor}
                   onChange={(e) => setExtProveedor(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Engineer / Technician Name */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: '600', marginBottom: '6px', color: '#e2e8f0' }}>
+                  Ingeniero / Técnico Responsable que ejecutó el servicio
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Ing. Carlos Pérez, Tec. Andrés Gómez..."
+                  value={extIngeniero}
+                  onChange={(e) => setExtIngeniero(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '9px 12px',

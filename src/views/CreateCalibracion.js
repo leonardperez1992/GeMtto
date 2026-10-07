@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
 import {
   apiCrearCalibracion,
   apiSiguienteConsecutivoCalibracion,
+  apiIps,
   apiGetIps,
   apiInventario,
   apiPatrones,
@@ -30,6 +31,22 @@ import {
   FaFlask,
 } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
+
+const normalizeText = (str) =>
+  String(str || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const matchesInstitucion = (eqInst, targetInst) => {
+  if (!eqInst || !targetInst) return false;
+  const n1 = normalizeText(eqInst);
+  const n2 = normalizeText(targetInst);
+  if (!n1 || !n2) return false;
+  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+};
 
 export default function CreateCalibracion() {
   const navigate = useNavigate();
@@ -222,32 +239,90 @@ export default function CreateCalibracion() {
 
   // Cargar datos iniciales
   useEffect(() => {
+    let active = true;
     const init = async () => {
       setLoading(true);
-      // Consecutivo
-      const resCons = await request({ link: apiSiguienteConsecutivoCalibracion });
-      if (resCons?.success && resCons.consecutivo) {
-        setConsecutivo(resCons.consecutivo);
+      try {
+        const [resIps, resInv, resPat, resCons] = await Promise.all([
+          request({ link: apiIps, method: 'GET' }).catch((err) => {
+            console.error('Error cargando IPS:', err);
+            return null;
+          }),
+          request({ link: apiInventario, method: 'GET' }).catch((err) => {
+            console.error('Error cargando Inventario:', err);
+            return null;
+          }),
+          request({ link: apiPatrones, method: 'GET' }).catch((err) => {
+            console.error('Error cargando Patrones:', err);
+            return null;
+          }),
+          request({ link: apiSiguienteConsecutivoCalibracion, method: 'GET' }).catch((err) => {
+            console.error('Error consecutivo:', err);
+            return null;
+          }),
+        ]);
+
+        if (active) {
+          if (resIps?.success && Array.isArray(resIps.ips)) {
+            setListaIps(resIps.ips);
+          } else {
+            // Reintentar con apiGetIps por compatibilidad
+            const fallbackIps = await request({ link: apiGetIps, method: 'GET' }).catch(() => null);
+            if (fallbackIps?.success && Array.isArray(fallbackIps.ips)) {
+              setListaIps(fallbackIps.ips);
+            }
+          }
+
+          if (resInv?.success && Array.isArray(resInv.inventario)) {
+            setListaEquipos(resInv.inventario);
+          }
+
+          if (resPat?.success && Array.isArray(resPat.patrones)) {
+            setListaPatrones(resPat.patrones);
+          }
+
+          if (resCons?.success && resCons.consecutivo) {
+            setConsecutivo(resCons.consecutivo);
+          } else {
+            const yr = new Date().getFullYear();
+            setConsecutivo(`CAL-${yr}-0001`);
+          }
+        }
+      } catch (e) {
+        console.error('Error en inicialización:', e);
+      } finally {
+        if (active) setLoading(false);
       }
-      // IPS
-      const resIps = await request({ link: apiGetIps });
-      if (resIps?.success) {
-        setListaIps(resIps.ips || []);
-      }
-      // Patrones
-      const resPat = await request({ link: apiPatrones });
-      if (resPat?.success) {
-        setListaPatrones(resPat.patrones || []);
-      }
-      // Inventario
-      const resInv = await request({ link: apiInventario });
-      if (resInv?.success) {
-        setListaEquipos(resInv.inventario || []);
-      }
-      setLoading(false);
     };
+
     init();
+    return () => {
+      active = false;
+    };
   }, []);
+
+  // Lista combinada y ordenada de IPS disponibles (desde colección de IPS e inventario)
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    listaEquipos.forEach((eq) => {
+      if (eq.institucion && typeof eq.institucion === 'string' && eq.institucion.trim()) {
+        set.add(eq.institucion.trim());
+      }
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, listaEquipos]);
+
+  // Lista de equipos filtrados según la IPS elegida
+  const equiposFiltrados = useMemo(() => {
+    if (!ipsSeleccionada) return listaEquipos;
+    return listaEquipos.filter((eq) => matchesInstitucion(eq.institucion, ipsSeleccionada));
+  }, [listaEquipos, ipsSeleccionada]);
 
   // Al cambiar la plantilla, ajustar procedimiento y unidades
   useEffect(() => {
@@ -271,17 +346,32 @@ export default function CreateCalibracion() {
 
   // Al cambiar IPS
   const handleIpsChange = (e) => {
-    const ipsId = e.target.value;
-    setIpsSeleccionada(ipsId);
-    const ipsObj = listaIps.find((i) => i._id === ipsId);
-    if (ipsObj) {
+    const nombreIps = e.target.value;
+    setIpsSeleccionada(nombreIps);
+    setEquipoSeleccionadoId('');
+
+    if (nombreIps) {
+      const ipsObj = listaIps.find((item) => {
+        const name = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+        return matchesInstitucion(name, nombreIps);
+      });
+
       setDatosCliente({
-        nombre: ipsObj.nombre || '',
-        nit: ipsObj.nit || '',
-        sede: ipsObj.sede || '',
-        direccion: ipsObj.direccion || '',
-        ciudad: ipsObj.ciudad || '',
-        telefono: ipsObj.telefono || '',
+        nombre: nombreIps,
+        nit: ipsObj?.nit || '',
+        sede: ipsObj?.sede || ipsObj?.ciudad || '',
+        direccion: ipsObj?.direccion || '',
+        ciudad: ipsObj?.ciudad || '',
+        telefono: ipsObj?.telefono || '',
+      });
+    } else {
+      setDatosCliente({
+        nombre: '',
+        nit: '',
+        sede: '',
+        direccion: '',
+        ciudad: '',
+        telefono: '',
       });
     }
   };
@@ -299,9 +389,26 @@ export default function CreateCalibracion() {
         modelo: eq.modelo || '',
         serie: eq.serie || '',
         placaInventario: eq.inventario || eq.placa || '',
-        ubicacion: eq.ubicacion || '',
+        ubicacion: eq.ubicacion || eq.servicio || '',
         servicio: eq.servicio || '',
       }));
+
+      // Autocompletar la IPS si no estaba seleccionada
+      if (eq.institucion && (!ipsSeleccionada || !matchesInstitucion(ipsSeleccionada, eq.institucion))) {
+        setIpsSeleccionada(eq.institucion);
+        const ipsObj = listaIps.find((item) => {
+          const name = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+          return matchesInstitucion(name, eq.institucion);
+        });
+        setDatosCliente({
+          nombre: eq.institucion,
+          nit: ipsObj?.nit || '',
+          sede: ipsObj?.sede || eq.ubicacion || '',
+          direccion: ipsObj?.direccion || '',
+          ciudad: ipsObj?.ciudad || '',
+          telefono: ipsObj?.telefono || '',
+        });
+      }
     }
   };
 
@@ -691,17 +798,17 @@ export default function CreateCalibracion() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Seleccionar IPS / Cliente
+                Seleccionar IPS / Cliente {ipsDisponibles.length > 0 ? `(${ipsDisponibles.length})` : ''}
               </label>
               <select
                 value={ipsSeleccionada}
                 onChange={handleIpsChange}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
               >
-                <option value="">-- Seleccione una IPS --</option>
-                {listaIps.map((ips) => (
-                  <option key={ips._id} value={ips._id}>
-                    {ips.nombre} - {ips.sede}
+                <option value="">-- Todas las IPS / Clientes --</option>
+                {ipsDisponibles.map((nombreIps) => (
+                  <option key={nombreIps} value={nombreIps}>
+                    {nombreIps}
                   </option>
                 ))}
               </select>
@@ -709,21 +816,19 @@ export default function CreateCalibracion() {
 
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Seleccionar Equipo de Inventario (Opcional)
+                Seleccionar Equipo de Inventario ({equiposFiltrados.length} disponibles)
               </label>
               <select
                 value={equipoSeleccionadoId}
                 onChange={handleEquipoChange}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
               >
-                <option value="">-- Cargar de inventario --</option>
-                {listaEquipos
-                  .filter((eq) => !ipsSeleccionada || eq.institucion === datosCliente.nombre)
-                  .map((eq) => (
-                    <option key={eq._id} value={eq._id}>
-                      {eq.equipo} - SN: {eq.serie || 'S/N'} ({eq.marca})
-                    </option>
-                  ))}
+                <option value="">-- Seleccionar Equipo del Inventario --</option>
+                {equiposFiltrados.map((eq) => (
+                  <option key={eq._id} value={eq._id}>
+                    {eq.equipo} - SN: {eq.serie || 'S/N'} {eq.marca ? `(${eq.marca})` : ''} {!ipsSeleccionada && eq.institucion ? `[${eq.institucion}]` : ''}
+                  </option>
+                ))}
               </select>
             </div>
 

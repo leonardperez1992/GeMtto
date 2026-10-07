@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { apiCalibraciones, apiEliminarCalibracion, apiGetIps } from '../utils/api';
+import { apiCalibraciones, apiEliminarCalibracion, apiIps, apiGetIps } from '../utils/api';
 import request from '../utils/request';
 import {
   FaPlus,
@@ -23,11 +23,30 @@ export default function Calibraciones() {
   const [loading, setLoading] = useState(true);
 
   const cargarIps = async () => {
-    const res = await request({ link: apiGetIps });
-    if (res?.success) {
-      setListaIps(res.ips || []);
+    const res = await request({ link: apiIps, method: 'GET' });
+    if (res?.success && Array.isArray(res.ips)) {
+      setListaIps(res.ips);
+    } else {
+      const fallback = await request({ link: apiGetIps, method: 'GET' });
+      if (fallback?.success && Array.isArray(fallback.ips)) {
+        setListaIps(fallback.ips);
+      }
     }
   };
+
+  const ipsDisponibles = useMemo(() => {
+    const set = new Set();
+    listaIps.forEach((item) => {
+      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
+      if (val && typeof val === 'string' && val.trim()) {
+        set.add(val.trim());
+      }
+    });
+    certificados.forEach((c) => {
+      if (c.datosCliente?.nombre) set.add(c.datosCliente.nombre.trim());
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [listaIps, certificados]);
 
   const cargarCertificados = async () => {
     setLoading(true);
@@ -267,9 +286,9 @@ export default function Calibraciones() {
             }}
           >
             <option value="TODAS">Todas las IPS</option>
-            {listaIps.map((ips) => (
-              <option key={ips._id} value={ips._id}>
-                {ips.nombre} - {ips.sede}
+            {ipsDisponibles.map((nombreIps) => (
+              <option key={nombreIps} value={nombreIps}>
+                {nombreIps}
               </option>
             ))}
           </select>

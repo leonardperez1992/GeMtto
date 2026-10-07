@@ -119,12 +119,88 @@ export const calcularPuntoTensiometro = ({
   };
 };
 
+/**
+ * Determina las pesas que componen una carga nominal dada y calcula la incertidumbre combinada de las pesas patrón.
+ * En metrología (EURAMET cg-18 / OIML R 76): u_pat = sqrt( sum( (U_i / k_i)^2 ) )
+ */
+export const calcularIncertidumbrePesasParaCarga = (cargaNominal, listaPesas = []) => {
+  const carga = Number(cargaNominal) || 0;
+  if (!listaPesas || listaPesas.length === 0 || carga <= 0) {
+    return {
+      descripcionPesas: `${carga} kg`,
+      pesadasUsadas: [],
+      uPat: 0.001,
+      incertidumbreExpandida: 0.002,
+      factorK: 2,
+    };
+  }
+
+  // Ordenar de mayor valor nominal a menor
+  const ordenadas = [...listaPesas].sort(
+    (a, b) => (Number(b.valorNominal) || 0) - (Number(a.valorNominal) || 0)
+  );
+
+  let rem = carga;
+  const usadas = [];
+
+  for (const p of ordenadas) {
+    const val = Number(p.valorNominal) || 0;
+    if (val > 0 && val <= rem + 0.0001) {
+      usadas.push(p);
+      rem = Number((rem - val).toFixed(4));
+    }
+  }
+
+  // Si no hubo coincidencia o la carga excede las pesas disponibles
+  if (usadas.length === 0) {
+    const base = ordenadas[0] || { incertidumbreExpandida: 0.0032, valorNominal: 20, factorK: 2 };
+    const ratio = carga / (Number(base.valorNominal) || 20);
+    const uPat =
+      ((Number(base.incertidumbreExpandida) || 0.0032) / (Number(base.factorK) || 2)) *
+      Math.sqrt(Math.max(1, ratio));
+    return {
+      descripcionPesas: `${carga} kg (Proporcional a ${base.nombre || 'Patrón'})`,
+      pesadasUsadas: [],
+      uPat: Number(uPat.toFixed(6)),
+      incertidumbreExpandida: Number((uPat * 2).toFixed(4)),
+      factorK: 2,
+    };
+  }
+
+  // Incertidumbre combinada de las pesas sumadas: u_pat = sqrt( sum( (U_i / k_i)^2 ) )
+  let sumSq = 0;
+  usadas.forEach((p) => {
+    const ui = (Number(p.incertidumbreExpandida) || 0.001) / (Number(p.factorK) || 2);
+    sumSq += Math.pow(ui, 2);
+  });
+
+  if (rem > 0.0001) {
+    const uiRem = (0.001 * (rem / 5)) / 2;
+    sumSq += Math.pow(uiRem, 2);
+  }
+
+  const uPat = Math.sqrt(sumSq);
+  const U_expandida = Number((uPat * 2).toFixed(4));
+  const desc =
+    usadas.map((p) => `${p.valorNominal} kg`).join(' + ') +
+    (rem > 0.0001 ? ` (+${rem} kg)` : '');
+
+  return {
+    descripcionPesas: desc,
+    pesadasUsadas: usadas,
+    uPat: Number(uPat.toFixed(6)),
+    incertidumbreExpandida: U_expandida,
+    factorK: 2,
+  };
+};
+
 // 5. Básculas y Balanzas: Cálculo de exactitud por punto
 export const calcularPuntoBascula = ({
   valorPatron = 0,
   lecturas = [],
   resolucionEquipo = 0.1,
   patronInfo = {},
+  patronesLista = null,
   errorExcentricidadMax = 0,
   desvRepetibilidad = 0,
   emp = 0.5,
@@ -138,8 +214,16 @@ export const calcularPuntoBascula = ({
   const sFinal = desvRepetibilidad > 0 ? desvRepetibilidad : s;
   const uA = valid.length > 1 ? sFinal / Math.sqrt(valid.length) : sFinal;
 
-  // Tipo B1: Incertidumbre pesas patrón
-  const uPat = (Number(patronInfo.incertidumbreExpandida) || 0.005) / (Number(patronInfo.factorK) || 2);
+  // Tipo B1: Incertidumbre pesas patrón (individual o combinada según juego de pesas)
+  let uPat = 0.001;
+  let infoPesasDesc = '';
+  if (Array.isArray(patronesLista) && patronesLista.length > 0) {
+    const resPesas = calcularIncertidumbrePesasParaCarga(valorPatron, patronesLista);
+    uPat = resPesas.uPat;
+    infoPesasDesc = resPesas.descripcionPesas;
+  } else {
+    uPat = (Number(patronInfo.incertidumbreExpandida) || 0.005) / (Number(patronInfo.factorK) || 2);
+  }
 
   // Tipo B2: Resolución del equipo
   const uRes = (Number(resolucionEquipo) || 0.1) / (2 * Math.sqrt(3));
@@ -158,6 +242,7 @@ export const calcularPuntoBascula = ({
 
   return {
     valorPatron: Number(valorPatron),
+    pesasUtilizadas: infoPesasDesc,
     lecturas: valid,
     promedio: Number(prom.toFixed(3)),
     error: Number(error.toFixed(3)),

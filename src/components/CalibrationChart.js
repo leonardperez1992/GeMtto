@@ -5,13 +5,14 @@ import React from 'react';
  * Dibuja la curva de Error vs Valor Nominal,
  * incluyendo las Barras de Incertidumbre Expandida (± U)
  * y los Límites de Error Máximo Permisible (± EMP).
+ * Totalmente compatible con visualización en pantalla y exportación PDF de alta definición.
  */
 export default function CalibrationChart({
   puntos = [],
   unidad = '',
   titulo = 'Curva de Error vs. Valor Patrón con Incertidumbre (k=2)',
   width = 620,
-  height = 280,
+  height = 270,
 }) {
   if (!puntos || puntos.length === 0) {
     return (
@@ -34,49 +35,65 @@ export default function CalibrationChart({
     );
   }
 
-  const padding = { top: 35, right: 35, bottom: 45, left: 55 };
+  const padding = { top: 35, right: 35, bottom: 45, left: 60 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
-  // Filtrar puntos válidos
-  const validPuntos = puntos.filter(
-    (p) =>
-      typeof p.valorPatron === 'number' ||
-      typeof p.nominal === 'number' ||
-      typeof p.valorNominal === 'number'
-  );
+  // Filtrar puntos válidos asegurando conversión numérica segura
+  const validPuntos = puntos.filter((p) => {
+    if (!p) return false;
+    const rawVal = p.valorPatron ?? p.nominal ?? p.valorNominal;
+    return rawVal !== undefined && rawVal !== null && rawVal !== '' && !isNaN(Number(rawVal));
+  });
 
   if (validPuntos.length === 0) return null;
 
   // Extraer valores X e Y
   const data = validPuntos.map((p) => {
-    const x = p.valorPatron ?? p.nominal ?? p.valorNominal ?? 0;
-    const y = p.error ?? p.errorSistematico ?? 0;
-    const u = p.incertidumbreExpandida ?? 0;
-    const emp = p.emp ?? (p.empSistematicoPct ? (p.empSistematicoPct * x) / 100 : 0);
+    const rawX = p.valorPatron ?? p.nominal ?? p.valorNominal ?? 0;
+    const x = Number(rawX);
+    const rawY = p.error ?? p.errorSistematico ?? 0;
+    const y = Number(rawY) || 0;
+    const u = Number(p.incertidumbreExpandida) || 0;
+    const rawEmp =
+      p.emp !== undefined
+        ? Number(p.emp)
+        : p.empSistematicoPct
+        ? (Number(p.empSistematicoPct) * x) / 100
+        : 0;
+    const emp = isNaN(rawEmp) ? 0 : rawEmp;
     return { x, y, u, emp };
   });
 
   const xValues = data.map((d) => d.x);
   const minX = Math.min(...xValues);
   const maxX = Math.max(...xValues);
-  const rangeX = maxX - minX || 1;
+  const rangeX = maxX - minX || (maxX > 0 ? maxX : 1);
 
-  // Determinar rango en Y considerando el error, la incertidumbre y el EMP
-  const yUpper = data.map((d) => Math.max(d.y + d.u, d.emp || 0));
-  const yLower = data.map((d) => Math.min(d.y - d.u, -(d.emp || 0)));
-  const maxY = Math.max(Math.max(...yUpper), 0.5);
-  const minY = Math.min(Math.min(...yLower), -0.5);
-  const absMaxY = Math.max(Math.abs(maxY), Math.abs(minY)) * 1.25;
+  // Determinar rango en Y adaptado matemáticamente según la escala (Masa kg, Presión mmHg o Volumen µL)
+  const maxDelta = Math.max(
+    ...data.map((d) => Math.max(Math.abs(d.y) + (d.u || 0), Math.abs(d.emp || 0))),
+    0.005
+  );
+  const absMaxY = Number((maxDelta * 1.35).toFixed(4)) || 0.05;
+
+  const formatVal = (v) => {
+    if (absMaxY < 0.05) return Number(v).toFixed(4);
+    if (absMaxY < 0.5) return Number(v).toFixed(3);
+    if (absMaxY < 5) return Number(v).toFixed(2);
+    return Number(v).toFixed(1);
+  };
 
   // Funciones de escala
   const getXPos = (val) => {
-    if (data.length === 1) return padding.left + plotWidth / 2;
-    return padding.left + ((val - minX) / rangeX) * plotWidth;
+    if (data.length === 1 || rangeX === 0) return padding.left + plotWidth / 2;
+    // Margen interno del 6% para que el primer y último punto no toquen los bordes
+    const innerPad = plotWidth * 0.06;
+    const available = plotWidth - innerPad * 2;
+    return padding.left + innerPad + ((val - minX) / rangeX) * available;
   };
 
   const getYPos = (val) => {
-    // 0 está en el centro
     return padding.top + plotHeight / 2 - (val / absMaxY) * (plotHeight / 2);
   };
 
@@ -85,11 +102,11 @@ export default function CalibrationChart({
 
   // Ticks para eje Y
   const yTicks = [
-    Number(absMaxY.toFixed(2)),
-    Number((absMaxY / 2).toFixed(2)),
+    absMaxY,
+    absMaxY / 2,
     0,
-    Number((-absMaxY / 2).toFixed(2)),
-    Number((-absMaxY).toFixed(2)),
+    -absMaxY / 2,
+    -absMaxY,
   ];
 
   return (
@@ -116,8 +133,11 @@ export default function CalibrationChart({
       </div>
 
       <svg
+        xmlns="http://www.w3.org/2000/svg"
         viewBox={`0 0 ${width} ${height}`}
-        style={{ width: '100%', height: 'auto', display: 'block' }}
+        width={width}
+        height={height}
+        style={{ width: '100%', maxWidth: width, height: 'auto', display: 'block', margin: '0 auto' }}
       >
         {/* Fondo del área de trazado */}
         <rect
@@ -148,11 +168,11 @@ export default function CalibrationChart({
                 x={padding.left - 8}
                 y={y + 3.5}
                 textAnchor="end"
-                fontSize="10"
+                fontSize="9.5"
                 fill={val === 0 ? '#059669' : '#64748b'}
-                fontWeight={val === 0 ? '600' : '400'}
+                fontWeight={val === 0 ? '700' : '500'}
               >
-                {val > 0 ? `+${val}` : val}
+                {val > 0 ? `+${formatVal(val)}` : formatVal(val)}
               </text>
             </g>
           );
@@ -191,12 +211,14 @@ export default function CalibrationChart({
         )}
 
         {/* Línea conectora de errores */}
-        <polyline
-          fill="none"
-          stroke="#0284c7"
-          strokeWidth="2"
-          points={linePoints}
-        />
+        {data.length > 1 && (
+          <polyline
+            fill="none"
+            stroke="#0284c7"
+            strokeWidth="2"
+            points={linePoints}
+          />
+        )}
 
         {/* Barras de Incertidumbre y puntos individuales */}
         {data.map((d, idx) => {
@@ -256,7 +278,7 @@ export default function CalibrationChart({
                 fontWeight="700"
                 fill="#0f172a"
               >
-                {d.y > 0 ? `+${d.y.toFixed(2)}` : d.y.toFixed(2)}
+                {d.y > 0 ? `+${formatVal(d.y)}` : formatVal(d.y)}
               </text>
 
               {/* Etiqueta de X en el eje */}
@@ -266,7 +288,7 @@ export default function CalibrationChart({
                 textAnchor="middle"
                 fontSize="9.5"
                 fill="#475569"
-                fontWeight="500"
+                fontWeight="600"
               >
                 {d.x}
               </text>

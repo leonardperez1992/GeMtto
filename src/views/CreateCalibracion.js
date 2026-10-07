@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
 import {
   apiCrearCalibracion,
   apiSiguienteConsecutivoCalibracion,
-  apiIps,
-  apiGetIps,
-  apiInventario,
   apiPatrones,
 } from '../utils/api';
 import request from '../utils/request';
@@ -32,28 +29,10 @@ import {
 } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 
-const normalizeText = (str) =>
-  String(str || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '');
-
-const matchesInstitucion = (eqInst, targetInst) => {
-  if (!eqInst || !targetInst) return false;
-  const n1 = normalizeText(eqInst);
-  const n2 = normalizeText(targetInst);
-  if (!n1 || !n2) return false;
-  return n1 === n2 || n1.includes(n2) || n2.includes(n1);
-};
-
 export default function CreateCalibracion() {
   const navigate = useNavigate();
 
   // Estados generales de datos
-  const [listaIps, setListaIps] = useState([]);
-  const [listaEquipos, setListaEquipos] = useState([]);
   const [listaPatrones, setListaPatrones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -79,9 +58,7 @@ export default function CreateCalibracion() {
     return d.toISOString().split('T')[0];
   });
 
-  const [ipsSeleccionada, setIpsSeleccionada] = useState('');
-  const [equipoSeleccionadoId, setEquipoSeleccionadoId] = useState('');
-
+  // Datos del Equipo (Entrada 100% manual)
   const [datosEquipo, setDatosEquipo] = useState({
     nombre: '',
     marca: '',
@@ -94,6 +71,7 @@ export default function CreateCalibracion() {
     unidad: 'mmHg',
   });
 
+  // Datos del Cliente / IPS (Entrada 100% manual)
   const [datosCliente, setDatosCliente] = useState({
     nombre: '',
     nit: '',
@@ -112,7 +90,7 @@ export default function CreateCalibracion() {
     presionAtmosferica: 1013,
   });
 
-  // Patrón de Referencia
+  // Patrón Individual de Referencia (Tensiómetros y Micropipetas)
   const [patronSeleccionadoId, setPatronSeleccionadoId] = useState('');
   const [datosPatron, setDatosPatron] = useState({
     codigo: '',
@@ -128,7 +106,59 @@ export default function CreateCalibracion() {
     factorK: 2,
   });
 
-  // Procedimiento
+  // Múltiples Patrones / Juego de Pesas Patrón (Básculas de Masa: 5, 10, 20 kg...)
+  const [patronesLista, setPatronesLista] = useState([
+    {
+      codigo: 'PAT-M-05K',
+      nombre: 'Pesa Patrón 5 kg',
+      valorNominal: 5,
+      unidad: 'kg',
+      claseExactitud: 'M1',
+      serie: 'SN-05K-01',
+      certificadoCalibracion: 'ONAC-M1-5KG-2025',
+      trazabilidad: 'INM / Lab Acreditado ONAC',
+      incertidumbreExpandida: 0.0008,
+      factorK: 2,
+    },
+    {
+      codigo: 'PAT-M-10K',
+      nombre: 'Pesa Patrón 10 kg',
+      valorNominal: 10,
+      unidad: 'kg',
+      claseExactitud: 'M1',
+      serie: 'SN-10K-01',
+      certificadoCalibracion: 'ONAC-M1-10KG-2025',
+      trazabilidad: 'INM / Lab Acreditado ONAC',
+      incertidumbreExpandida: 0.0016,
+      factorK: 2,
+    },
+    {
+      codigo: 'PAT-M-20K-1',
+      nombre: 'Pesa Patrón 20 kg (#1)',
+      valorNominal: 20,
+      unidad: 'kg',
+      claseExactitud: 'M1',
+      serie: 'SN-20K-01',
+      certificadoCalibracion: 'ONAC-M1-20KG-2025-A',
+      trazabilidad: 'INM / Lab Acreditado ONAC',
+      incertidumbreExpandida: 0.0032,
+      factorK: 2,
+    },
+    {
+      codigo: 'PAT-M-20K-2',
+      nombre: 'Pesa Patrón 20 kg (#2)',
+      valorNominal: 20,
+      unidad: 'kg',
+      claseExactitud: 'M1',
+      serie: 'SN-20K-02',
+      certificadoCalibracion: 'ONAC-M1-20KG-2025-B',
+      trazabilidad: 'INM / Lab Acreditado ONAC',
+      incertidumbreExpandida: 0.0032,
+      factorK: 2,
+    },
+  ]);
+
+  // Procedimiento Metrológico
   const [procedimiento, setProcedimiento] = useState(
     'Procedimiento de calibración por comparación directa según recomendación OIML R 16.'
   );
@@ -159,30 +189,30 @@ export default function CreateCalibracion() {
 
   // 2. Datos específicos Báscula
   const [repetibilidadBascula, setRepetibilidadBascula] = useState({
-    cargaNominal: 50,
-    lecturas: [50.0, 50.0, 50.0, 50.0, 50.0],
-    promedio: 50.0,
+    cargaNominal: 20,
+    lecturas: [20.0, 20.0, 20.0, 20.0, 20.0],
+    promedio: 20.0,
     desviacionEstandar: 0,
   });
 
   const [excentricidadBascula, setExcentricidadBascula] = useState({
-    cargaNominal: 50,
-    centro: 50.0,
-    pos1: 50.0,
-    pos2: 50.0,
-    pos3: 50.0,
-    pos4: 50.0,
+    cargaNominal: 20,
+    centro: 20.0,
+    pos1: 20.0,
+    pos2: 20.0,
+    pos3: 20.0,
+    pos4: 20.0,
     errorMaximo: 0,
     emp: 0.2,
     cumple: true,
   });
 
   const [puntosBascula, setPuntosBascula] = useState([
+    { valorPatron: 5, lecturas: [5.0, 5.0, 5.0] },
     { valorPatron: 10, lecturas: [10.0, 10.0, 10.0] },
+    { valorPatron: 20, lecturas: [20.0, 20.0, 20.0] },
     { valorPatron: 30, lecturas: [30.0, 30.0, 30.0] },
     { valorPatron: 50, lecturas: [50.0, 50.0, 50.0] },
-    { valorPatron: 100, lecturas: [100.0, 100.0, 100.0] },
-    { valorPatron: 150, lecturas: [150.0, 150.0, 150.0] },
   ]);
 
   // 3. Datos específicos Micropipeta
@@ -192,8 +222,8 @@ export default function CreateCalibracion() {
     temperaturaAgua: 20,
     presionAtmosferica: 1013,
     factorZ: 1.0029,
-    resolucionBalanza: 0.01, // mg
-    incertBalanza: 0.02, // mg
+    resolucionBalanza: 0.01,
+    incertBalanza: 0.02,
   });
 
   const [puntosMicropipeta, setPuntosMicropipeta] = useState([
@@ -237,46 +267,18 @@ export default function CreateCalibracion() {
     'El instrumento fue calibrado en condiciones ambientales controladas y estables. Los resultados aplican únicamente al ítem calibrado.'
   );
 
-  // Cargar datos iniciales
+  // Cargar consecutivo y patrones
   useEffect(() => {
     let active = true;
     const init = async () => {
       setLoading(true);
       try {
-        const [resIps, resInv, resPat, resCons] = await Promise.all([
-          request({ link: apiIps, method: 'GET' }).catch((err) => {
-            console.error('Error cargando IPS:', err);
-            return null;
-          }),
-          request({ link: apiInventario, method: 'GET' }).catch((err) => {
-            console.error('Error cargando Inventario:', err);
-            return null;
-          }),
-          request({ link: apiPatrones, method: 'GET' }).catch((err) => {
-            console.error('Error cargando Patrones:', err);
-            return null;
-          }),
-          request({ link: apiSiguienteConsecutivoCalibracion, method: 'GET' }).catch((err) => {
-            console.error('Error consecutivo:', err);
-            return null;
-          }),
+        const [resPat, resCons] = await Promise.all([
+          request({ link: apiPatrones, method: 'GET' }).catch(() => null),
+          request({ link: apiSiguienteConsecutivoCalibracion, method: 'GET' }).catch(() => null),
         ]);
 
         if (active) {
-          if (resIps?.success && Array.isArray(resIps.ips)) {
-            setListaIps(resIps.ips);
-          } else {
-            // Reintentar con apiGetIps por compatibilidad
-            const fallbackIps = await request({ link: apiGetIps, method: 'GET' }).catch(() => null);
-            if (fallbackIps?.success && Array.isArray(fallbackIps.ips)) {
-              setListaIps(fallbackIps.ips);
-            }
-          }
-
-          if (resInv?.success && Array.isArray(resInv.inventario)) {
-            setListaEquipos(resInv.inventario);
-          }
-
           if (resPat?.success && Array.isArray(resPat.patrones)) {
             setListaPatrones(resPat.patrones);
           }
@@ -301,29 +303,6 @@ export default function CreateCalibracion() {
     };
   }, []);
 
-  // Lista combinada y ordenada de IPS disponibles (desde colección de IPS e inventario)
-  const ipsDisponibles = useMemo(() => {
-    const set = new Set();
-    listaIps.forEach((item) => {
-      const val = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
-      if (val && typeof val === 'string' && val.trim()) {
-        set.add(val.trim());
-      }
-    });
-    listaEquipos.forEach((eq) => {
-      if (eq.institucion && typeof eq.institucion === 'string' && eq.institucion.trim()) {
-        set.add(eq.institucion.trim());
-      }
-    });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [listaIps, listaEquipos]);
-
-  // Lista de equipos filtrados según la IPS elegida
-  const equiposFiltrados = useMemo(() => {
-    if (!ipsSeleccionada) return listaEquipos;
-    return listaEquipos.filter((eq) => matchesInstitucion(eq.institucion, ipsSeleccionada));
-  }, [listaEquipos, ipsSeleccionada]);
-
   // Al cambiar la plantilla, ajustar procedimiento y unidades
   useEffect(() => {
     if (tipoPlantilla === 'presion_tensiometro') {
@@ -344,75 +323,7 @@ export default function CreateCalibracion() {
     }
   }, [tipoPlantilla]);
 
-  // Al cambiar IPS
-  const handleIpsChange = (e) => {
-    const nombreIps = e.target.value;
-    setIpsSeleccionada(nombreIps);
-    setEquipoSeleccionadoId('');
-
-    if (nombreIps) {
-      const ipsObj = listaIps.find((item) => {
-        const name = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
-        return matchesInstitucion(name, nombreIps);
-      });
-
-      setDatosCliente({
-        nombre: nombreIps,
-        nit: ipsObj?.nit || '',
-        sede: ipsObj?.sede || ipsObj?.ciudad || '',
-        direccion: ipsObj?.direccion || '',
-        ciudad: ipsObj?.ciudad || '',
-        telefono: ipsObj?.telefono || '',
-      });
-    } else {
-      setDatosCliente({
-        nombre: '',
-        nit: '',
-        sede: '',
-        direccion: '',
-        ciudad: '',
-        telefono: '',
-      });
-    }
-  };
-
-  // Al seleccionar un equipo del inventario
-  const handleEquipoChange = (e) => {
-    const eqId = e.target.value;
-    setEquipoSeleccionadoId(eqId);
-    const eq = listaEquipos.find((i) => i._id === eqId);
-    if (eq) {
-      setDatosEquipo((prev) => ({
-        ...prev,
-        nombre: eq.equipo || eq.nombre || '',
-        marca: eq.marca || '',
-        modelo: eq.modelo || '',
-        serie: eq.serie || '',
-        placaInventario: eq.inventario || eq.placa || '',
-        ubicacion: eq.ubicacion || eq.servicio || '',
-        servicio: eq.servicio || '',
-      }));
-
-      // Autocompletar la IPS si no estaba seleccionada
-      if (eq.institucion && (!ipsSeleccionada || !matchesInstitucion(ipsSeleccionada, eq.institucion))) {
-        setIpsSeleccionada(eq.institucion);
-        const ipsObj = listaIps.find((item) => {
-          const name = typeof item === 'string' ? item : item.ips || item.nombre || item.institucion;
-          return matchesInstitucion(name, eq.institucion);
-        });
-        setDatosCliente({
-          nombre: eq.institucion,
-          nit: ipsObj?.nit || '',
-          sede: ipsObj?.sede || eq.ubicacion || '',
-          direccion: ipsObj?.direccion || '',
-          ciudad: ipsObj?.ciudad || '',
-          telefono: ipsObj?.telefono || '',
-        });
-      }
-    }
-  };
-
-  // Al seleccionar un patrón
+  // Al seleccionar un patrón del banco (para tensiómetros o micropipetas)
   const handlePatronChange = (e) => {
     const patId = e.target.value;
     setPatronSeleccionadoId(patId);
@@ -434,7 +345,44 @@ export default function CreateCalibracion() {
     }
   };
 
-  // Recalcular Factor Z de micropipeta automáticamente al cambiar temp o presion
+  // Manejo de pesas patrón para Básculas
+  const agregarPesaPatron = (nominal = 20, nombre = '') => {
+    const idx = patronesLista.length + 1;
+    let uDefault = 0.0032;
+    if (nominal === 5) uDefault = 0.0008;
+    if (nominal === 10) uDefault = 0.0016;
+    if (nominal === 20) uDefault = 0.0032;
+
+    setPatronesLista((prev) => [
+      ...prev,
+      {
+        codigo: `PAT-M-${nominal}K-${idx}`,
+        nombre: nombre || `Pesa Patrón ${nominal} kg`,
+        valorNominal: nominal,
+        unidad: 'kg',
+        claseExactitud: 'M1',
+        serie: `SN-${nominal}K-0${idx}`,
+        certificadoCalibracion: `ONAC-M1-${nominal}KG-2025`,
+        trazabilidad: 'INM / Lab Acreditado ONAC',
+        incertidumbreExpandida: uDefault,
+        factorK: 2,
+      },
+    ]);
+  };
+
+  const eliminarPesaPatron = (idx) => {
+    setPatronesLista((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const actualizarPesaPatron = (idx, campo, valor) => {
+    setPatronesLista((prev) => {
+      const copia = [...prev];
+      copia[idx] = { ...copia[idx], [campo]: valor };
+      return copia;
+    });
+  };
+
+  // Recalcular Factor Z de micropipeta automáticamente
   useEffect(() => {
     const z = calcularFactorZ(
       micropipetaInfo.temperaturaAgua,
@@ -467,7 +415,7 @@ export default function CreateCalibracion() {
     })
   );
 
-  // 2. Puntos calculados Báscula
+  // 2. Puntos calculados Báscula (con juego de múltiples pesas patrón)
   const desvRep = desviacionEstandar(repetibilidadBascula.lecturas);
   const puntosBasculaCalculados = puntosBascula.map((p) =>
     calcularPuntoBascula({
@@ -475,6 +423,7 @@ export default function CreateCalibracion() {
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
       patronInfo: datosPatron,
+      patronesLista: patronesLista,
       errorExcentricidadMax: excentricidadBascula.errorMaximo,
       desvRepetibilidad: desvRep,
       emp: datosEquipo.resolucion * 2,
@@ -525,8 +474,16 @@ export default function CreateCalibracion() {
       alert('Debe tener un número de certificado.');
       return;
     }
+    if (!datosCliente.nombre) {
+      alert('Por favor ingrese el nombre de la institución / IPS / cliente.');
+      return;
+    }
     if (!datosEquipo.nombre) {
-      alert('Seleccione o ingrese los datos del equipo a calibrar.');
+      alert('Por favor ingrese el nombre del instrumento a calibrar.');
+      return;
+    }
+    if (!datosEquipo.serie) {
+      alert('Por favor ingrese el número de serie del instrumento.');
       return;
     }
 
@@ -577,8 +534,8 @@ export default function CreateCalibracion() {
       fechaCalibracion,
       fechaEmision,
       fechaProximaCalibracion,
-      equipoId: equipoSeleccionadoId || null,
-      ipsId: ipsSeleccionada || null,
+      equipoId: null,
+      ipsId: null,
       datosEquipo,
       datosCliente,
       tipoPlantilla,
@@ -587,6 +544,7 @@ export default function CreateCalibracion() {
         patronId: patronSeleccionadoId || null,
         ...datosPatron,
       },
+      patronesLista: tipoPlantilla === 'masa_bascula' ? patronesLista : [],
       procedimiento,
       datosCalibracion,
       dictamenGlobal: dictamenCalculado,
@@ -621,7 +579,7 @@ export default function CreateCalibracion() {
   if (loading) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: '#64748b', fontSize: 15 }}>
-        Cargando formulario y banco de patrones...
+        Cargando formulario y motor de calibración...
       </div>
     );
   }
@@ -747,7 +705,7 @@ export default function CreateCalibracion() {
                   Básculas y Balanzas (Masa)
                 </div>
                 <div style={{ fontSize: 12, color: '#64748b' }}>
-                  Repetibilidad, Excentricidad • OIML R 76
+                  Juego de Pesas 5, 10 y 20 kg • OIML R 76
                 </div>
               </div>
             </button>
@@ -780,7 +738,7 @@ export default function CreateCalibracion() {
           </div>
         </div>
 
-        {/* Sección 1: Datos del Equipo y Cliente */}
+        {/* Sección 1: Datos del Cliente (IPS) y del Instrumento (Entrada 100% Manual) */}
         <div
           style={{
             background: '#ffffff',
@@ -791,287 +749,658 @@ export default function CreateCalibracion() {
             boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
           }}
         >
-          <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-            1. Identificación del Ítem y Cliente
+          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+            1. Identificación del Cliente (IPS) y del Instrumento Calibrado (Entrada Manual)
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Seleccionar IPS / Cliente {ipsDisponibles.length > 0 ? `(${ipsDisponibles.length})` : ''}
-              </label>
-              <select
-                value={ipsSeleccionada}
-                onChange={handleIpsChange}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              >
-                <option value="">-- Todas las IPS / Clientes --</option>
-                {ipsDisponibles.map((nombreIps) => (
-                  <option key={nombreIps} value={nombreIps}>
-                    {nombreIps}
-                  </option>
-                ))}
-              </select>
+          {/* Subsección A: Datos del Cliente */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0369a1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              A. Datos del Cliente / Solicitante (IPS):
             </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Institución / Razón Social *
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.nombre}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, nombre: e.target.value })}
+                  required
+                  placeholder="Ej: Clínica San Rafael S.A.S."
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Seleccionar Equipo de Inventario ({equiposFiltrados.length} disponibles)
-              </label>
-              <select
-                value={equipoSeleccionadoId}
-                onChange={handleEquipoChange}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              >
-                <option value="">-- Seleccionar Equipo del Inventario --</option>
-                {equiposFiltrados.map((eq) => (
-                  <option key={eq._id} value={eq._id}>
-                    {eq.equipo} - SN: {eq.serie || 'S/N'} {eq.marca ? `(${eq.marca})` : ''} {!ipsSeleccionada && eq.institucion ? `[${eq.institucion}]` : ''}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Sede / Área
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.sede}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
+                  placeholder="Ej: Sede Principal / Sede Norte"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  NIT / Identificación
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.nit}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, nit: e.target.value })}
+                  placeholder="Ej: 900.123.456-7"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Ciudad
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.ciudad}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, ciudad: e.target.value })}
+                  placeholder="Ej: Barranquilla / Bogotá"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.direccion}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, direccion: e.target.value })}
+                  placeholder="Ej: Cra. 43 # 84-25"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Teléfono / Contacto
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.telefono}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, telefono: e.target.value })}
+                  placeholder="Ej: 300 123 4567"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
             </div>
+          </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Nombre del Equipo *
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.nombre}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, nombre: e.target.value })}
-                required
-                placeholder="Ej: Tensiómetro aneroide / Báscula digital"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
+          {/* Subsección B: Datos del Instrumento / Equipo */}
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0369a1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              B. Datos del Instrumento / Equipo a Calibrar:
             </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Nombre del Equipo *
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.nombre}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, nombre: e.target.value })}
+                  required
+                  placeholder="Ej: Báscula Digital / Tensiómetro"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Marca
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.marca}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, marca: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Marca
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.marca}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, marca: e.target.value })}
+                  placeholder="Ej: Seca / Welch Allyn"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Modelo
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.modelo}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, modelo: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Modelo
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.modelo}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, modelo: e.target.value })}
+                  placeholder="Ej: 703 / DS58"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Número de Serie *
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.serie}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, serie: e.target.value })}
-                required
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Número de Serie *
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.serie}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, serie: e.target.value })}
+                  required
+                  placeholder="Ej: SN-987654"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Placa / Código de Inventario
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.placaInventario}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, placaInventario: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Placa / Código Interno
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.placaInventario}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, placaInventario: e.target.value })}
+                  placeholder="Ej: ACT-00124"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Ubicación / Servicio
-              </label>
-              <input
-                type="text"
-                value={datosEquipo.ubicacion || datosEquipo.servicio}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, ubicacion: e.target.value })}
-                placeholder="Ej: Urgencias / Laboratorio Clínico"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Ubicación / Servicio
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.ubicacion || datosEquipo.servicio}
+                  onChange={(e) =>
+                    setDatosEquipo({ ...datosEquipo, ubicacion: e.target.value, servicio: e.target.value })
+                  }
+                  placeholder="Ej: Urgencias / Triaje"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Resolución del Equipo ({datosEquipo.unidad})
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={datosEquipo.resolucion}
-                onChange={(e) => setDatosEquipo({ ...datosEquipo, resolucion: Number(e.target.value) })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Resolución del Instrumento
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={datosEquipo.resolucion}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, resolucion: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Fecha de Calibración
-              </label>
-              <input
-                type="date"
-                value={fechaCalibracion}
-                onChange={(e) => setFechaCalibracion(e.target.value)}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Unidad de Medida
+                </label>
+                <input
+                  type="text"
+                  value={datosEquipo.unidad}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, unidad: e.target.value })}
+                  placeholder="kg, mmHg, µL"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Fecha de Emisión
-              </label>
-              <input
-                type="date"
-                value={fechaEmision}
-                onChange={(e) => setFechaEmision(e.target.value)}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha de Calibración
+                </label>
+                <input
+                  type="date"
+                  value={fechaCalibracion}
+                  onChange={(e) => setFechaCalibracion(e.target.value)}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Próxima Calibración Sugerida
-              </label>
-              <input
-                type="date"
-                value={fechaProximaCalibracion}
-                onChange={(e) => setFechaProximaCalibracion(e.target.value)}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha de Emisión
+                </label>
+                <input
+                  type="date"
+                  value={fechaEmision}
+                  onChange={(e) => setFechaEmision(e.target.value)}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Próxima Calibración
+                </label>
+                <input
+                  type="date"
+                  value={fechaProximaCalibracion}
+                  onChange={(e) => setFechaProximaCalibracion(e.target.value)}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Sección 2: Trazabilidad, Patrón y Condiciones Ambientales */}
-        <div
-          style={{
-            background: '#ffffff',
-            borderRadius: 12,
-            border: '1px solid #e2e8f0',
-            padding: 20,
-            marginBottom: 20,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
-          }}
-        >
-          <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-            2. Patrón de Referencia y Condiciones Ambientales
-          </h3>
+        {/* Sección 2: Patrones de Referencia y Condiciones Ambientales */}
+        {tipoPlantilla === 'masa_bascula' ? (
+          /* ==================== SECCIÓN PARA BÁSCULAS (MÚLTIPLES PESAS PATRÓN) ==================== */
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 12,
+              border: '1px solid #e2e8f0',
+              padding: 20,
+              marginBottom: 20,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12,
+                flexWrap: 'wrap',
+                gap: 10,
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                  2. Juego de Pesas Patrón de Referencia (Masas de 5 kg, 10 kg, 20 kg)
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Trazabilidad metrológica e incertidumbre individual de cada masa patrón utilizada para componer las cargas de calibración.
+                </p>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Cargar del Banco de Patrones
-              </label>
-              <select
-                value={patronSeleccionadoId}
-                onChange={handlePatronChange}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              >
-                <option value="">-- Seleccionar Patrón --</option>
-                {listaPatrones.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.codigo} - {p.nombre} ({p.magnitud})
-                  </option>
-                ))}
-              </select>
+              {/* Botones de acción rápida para agregar pesas */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    agregarPesaPatron(5, `Pesa Patrón 5 kg (#${patronesLista.filter((p) => p.valorNominal === 5).length + 1})`)
+                  }
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    color: '#0284c7',
+                    padding: '5px 10px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPlus size={10} /> + Pesa 5 kg
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    agregarPesaPatron(10, `Pesa Patrón 10 kg (#${patronesLista.filter((p) => p.valorNominal === 10).length + 1})`)
+                  }
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    color: '#0284c7',
+                    padding: '5px 10px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPlus size={10} /> + Pesa 10 kg
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    agregarPesaPatron(20, `Pesa Patrón 20 kg (#${patronesLista.filter((p) => p.valorNominal === 20).length + 1})`)
+                  }
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: '#0284c7',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '5px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPlus size={10} /> + Pesa 20 kg
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Nombre del Patrón
-              </label>
-              <input
-                type="text"
-                value={datosPatron.nombre}
-                onChange={(e) => setDatosPatron({ ...datosPatron, nombre: e.target.value })}
-                placeholder="Ej: Manómetro digital patrón"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
+            {/* Tabla de pesas patrón */}
+            <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', color: '#334155' }}>
+                    <th style={{ padding: '8px 8px', textAlign: 'left' }}>Pesa / Identificación</th>
+                    <th style={{ padding: '8px 8px' }}>Valor Nominal (kg)</th>
+                    <th style={{ padding: '8px 8px' }}>Clase</th>
+                    <th style={{ padding: '8px 8px' }}>Nº Serie</th>
+                    <th style={{ padding: '8px 8px' }}>Certificado Calibración</th>
+                    <th style={{ padding: '8px 8px' }}>Trazabilidad / Lab</th>
+                    <th style={{ padding: '8px 8px', background: '#fef3c7' }}>Incertidumbre U (kg)</th>
+                    <th style={{ padding: '8px 8px' }}>Factor k</th>
+                    <th style={{ padding: '8px 8px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patronesLista.map((pesa, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '6px 8px', textAlign: 'left' }}>
+                        <input
+                          type="text"
+                          value={pesa.nombre}
+                          onChange={(e) => actualizarPesaPatron(idx, 'nombre', e.target.value)}
+                          style={{
+                            width: '100%',
+                            minWidth: 140,
+                            padding: '4px 6px',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                            fontSize: 12,
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="number"
+                          step="any"
+                          value={pesa.valorNominal}
+                          onChange={(e) => actualizarPesaPatron(idx, 'valorNominal', Number(e.target.value))}
+                          style={{
+                            width: 65,
+                            textAlign: 'center',
+                            padding: '4px 6px',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                            fontWeight: 700,
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="text"
+                          value={pesa.claseExactitud || 'M1'}
+                          onChange={(e) => actualizarPesaPatron(idx, 'claseExactitud', e.target.value)}
+                          style={{
+                            width: 50,
+                            textAlign: 'center',
+                            padding: '4px 6px',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="text"
+                          value={pesa.serie}
+                          onChange={(e) => actualizarPesaPatron(idx, 'serie', e.target.value)}
+                          placeholder="Serie"
+                          style={{ width: 90, padding: '4px 6px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="text"
+                          value={pesa.certificadoCalibracion}
+                          onChange={(e) => actualizarPesaPatron(idx, 'certificadoCalibracion', e.target.value)}
+                          placeholder="Nº Certificado"
+                          style={{ width: 140, padding: '4px 6px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="text"
+                          value={pesa.trazabilidad}
+                          onChange={(e) => actualizarPesaPatron(idx, 'trazabilidad', e.target.value)}
+                          placeholder="Entidad"
+                          style={{ width: 150, padding: '4px 6px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px', background: '#fffbeb' }}>
+                        <input
+                          type="number"
+                          step="any"
+                          value={pesa.incertidumbreExpandida}
+                          onChange={(e) => actualizarPesaPatron(idx, 'incertidumbreExpandida', Number(e.target.value))}
+                          style={{
+                            width: 75,
+                            textAlign: 'center',
+                            padding: '4px 6px',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                            fontWeight: 700,
+                            color: '#b45309',
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <input
+                          type="number"
+                          value={pesa.factorK || 2}
+                          onChange={(e) => actualizarPesaPatron(idx, 'factorK', Number(e.target.value))}
+                          style={{
+                            width: 45,
+                            textAlign: 'center',
+                            padding: '4px 6px',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        {patronesLista.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => eliminarPesaPatron(idx)}
+                            style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                            title="Eliminar pesa"
+                          >
+                            <FaTrash size={12} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Nº Certificado del Patrón
-              </label>
-              <input
-                type="text"
-                value={datosPatron.certificadoCalibracion}
-                onChange={(e) => setDatosPatron({ ...datosPatron, certificadoCalibracion: e.target.value })}
-                placeholder="Ej: ONAC-CAL-2025"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+            {/* Condiciones Ambientales */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 8 }}>
+                Condiciones Ambientales del Ensayo:
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Temperatura (°C) ± 0.5
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={condiciones.temperatura}
+                    onChange={(e) => setCondiciones({ ...condiciones, temperatura: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Incertidumbre Patrón (U)
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={datosPatron.incertidumbreExpandida}
-                onChange={(e) => setDatosPatron({ ...datosPatron, incertidumbreExpandida: Number(e.target.value) })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Humedad Relativa (%HR) ± 2
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={condiciones.humedadRelativa}
+                    onChange={(e) => setCondiciones({ ...condiciones, humedadRelativa: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Temperatura (°C) ± 0.5
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={condiciones.temperatura}
-                onChange={(e) => setCondiciones({ ...condiciones, temperatura: Number(e.target.value) })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Humedad Relativa (%HR) ± 2
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={condiciones.humedadRelativa}
-                onChange={(e) => setCondiciones({ ...condiciones, humedadRelativa: Number(e.target.value) })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                Presión Atmosférica (hPa)
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={condiciones.presionAtmosferica}
-                onChange={(e) => setCondiciones({ ...condiciones, presionAtmosferica: Number(e.target.value) })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-              />
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Presión Atmosférica (hPa)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={condiciones.presionAtmosferica}
+                    onChange={(e) => setCondiciones({ ...condiciones, presionAtmosferica: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          /* ==================== SECCIÓN PARA TENSIÓMETROS Y MICROPIPETAS ==================== */
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 12,
+              border: '1px solid #e2e8f0',
+              padding: 20,
+              marginBottom: 20,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+              2. Patrón de Referencia y Condiciones Ambientales
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+              {listaPatrones.length > 0 && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Cargar del Banco de Patrones (Opcional)
+                  </label>
+                  <select
+                    value={patronSeleccionadoId}
+                    onChange={handlePatronChange}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  >
+                    <option value="">-- Selección rápida de patrón --</option>
+                    {listaPatrones.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.codigo} - {p.nombre} ({p.magnitud})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Nombre del Patrón *
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.nombre}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, nombre: e.target.value })}
+                  placeholder="Ej: Manómetro digital patrón"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Nº Certificado del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.certificadoCalibracion}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, certificadoCalibracion: e.target.value })}
+                  placeholder="Ej: ONAC-CAL-2025"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Incertidumbre Patrón (U)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={datosPatron.incertidumbreExpandida}
+                  onChange={(e) =>
+                    setDatosPatron({ ...datosPatron, incertidumbreExpandida: Number(e.target.value) })
+                  }
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Temperatura (°C) ± 0.5
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.temperatura}
+                  onChange={(e) => setCondiciones({ ...condiciones, temperatura: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Humedad Relativa (%HR) ± 2
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.humedadRelativa}
+                  onChange={(e) => setCondiciones({ ...condiciones, humedadRelativa: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Presión Atmosférica (hPa)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.presionAtmosferica}
+                  onChange={(e) => setCondiciones({ ...condiciones, presionAtmosferica: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Sección 3: ENTORNO DE MEDICIÓN ESPECÍFICO SEGÚN PLANTILLA */}
 
@@ -1162,7 +1491,10 @@ export default function CreateCalibracion() {
                 onClick={() =>
                   setPuntosTensiometro((prev) => [
                     ...prev,
-                    { valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 50 : 50, lecturas: [0, 0, 0] },
+                    {
+                      valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 50 : 50,
+                      lecturas: [0, 0, 0],
+                    },
                   ])
                 }
                 style={{
@@ -1218,7 +1550,13 @@ export default function CreateCalibracion() {
                                 return n;
                               });
                             }}
-                            style={{ width: 75, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                            style={{
+                              width: 75,
+                              padding: '4px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                            }}
                           />
                         </td>
                         {[0, 1, 2].map((lIdx) => (
@@ -1236,7 +1574,13 @@ export default function CreateCalibracion() {
                                   return n;
                                 });
                               }}
-                              style={{ width: 70, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                              style={{
+                                width: 70,
+                                padding: '4px 6px',
+                                textAlign: 'center',
+                                borderRadius: 4,
+                                border: '1px solid #cbd5e1',
+                              }}
                             />
                           </td>
                         ))}
@@ -1316,11 +1660,18 @@ export default function CreateCalibracion() {
             </h3>
 
             {/* Prueba de Repetibilidad y Excentricidad */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 16, marginBottom: 20 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                gap: 16,
+                marginBottom: 20,
+              }}
+            >
               {/* Repetibilidad */}
               <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, border: '1px solid #e2e8f0' }}>
                 <h4 style={{ margin: '0 0 8px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
-                  A. Prueba de Repetibilidad:
+                  A. Prueba de Repetibilidad (5 pesadas continuas):
                 </h4>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ fontSize: 12, color: '#475569' }}>Carga de Prueba ({datosEquipo.unidad}):</span>
@@ -1348,7 +1699,13 @@ export default function CreateCalibracion() {
                           return { ...prev, lecturas: lects };
                         });
                       }}
-                      style={{ width: 62, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                      style={{
+                        width: 62,
+                        padding: '4px 6px',
+                        textAlign: 'center',
+                        borderRadius: 4,
+                        border: '1px solid #cbd5e1',
+                      }}
                     />
                   ))}
                 </div>
@@ -1398,7 +1755,13 @@ export default function CreateCalibracion() {
                             return updated;
                           });
                         }}
-                        style={{ width: '100%', padding: '4px 4px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                        style={{
+                          width: '100%',
+                          padding: '4px 4px',
+                          textAlign: 'center',
+                          borderRadius: 4,
+                          border: '1px solid #cbd5e1',
+                        }}
                       />
                     </div>
                   ))}
@@ -1412,15 +1775,24 @@ export default function CreateCalibracion() {
 
             {/* C. Prueba de Exactitud / Puntos de Carga */}
             <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-                C. Prueba de Exactitud y Error de Indicación ({datosEquipo.unidad}):
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
+                  C. Prueba de Exactitud y Error de Indicación ({datosEquipo.unidad}):
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  La incertidumbre del patrón se calcula automáticamente según las pesas combinadas (5, 10 y 20 kg).
+                </div>
               </div>
+
               <button
                 type="button"
                 onClick={() =>
                   setPuntosBascula((prev) => [
                     ...prev,
-                    { valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 20 : 20, lecturas: [0, 0, 0] },
+                    {
+                      valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 20 : 20,
+                      lecturas: [0, 0, 0],
+                    },
                   ])
                 }
                 style={{
@@ -1436,7 +1808,7 @@ export default function CreateCalibracion() {
                   cursor: 'pointer',
                 }}
               >
-                <FaPlus size={10} /> Añadir Punto
+                <FaPlus size={10} /> Añadir Punto de Carga
               </button>
             </div>
 
@@ -1446,6 +1818,7 @@ export default function CreateCalibracion() {
                   <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', color: '#334155' }}>
                     <th style={{ padding: '8px 10px' }}>Punto</th>
                     <th style={{ padding: '8px 10px' }}>Carga Patrón ({datosEquipo.unidad})</th>
+                    <th style={{ padding: '8px 10px', background: '#f8fafc' }}>Pesas Combinadas</th>
                     <th style={{ padding: '8px 10px' }}>Lectura 1</th>
                     <th style={{ padding: '8px 10px' }}>Lectura 2</th>
                     <th style={{ padding: '8px 10px' }}>Lectura 3</th>
@@ -1475,8 +1848,18 @@ export default function CreateCalibracion() {
                                 return n;
                               });
                             }}
-                            style={{ width: 80, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                            style={{
+                              width: 80,
+                              padding: '4px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontWeight: 700,
+                            }}
                           />
+                        </td>
+                        <td style={{ padding: '8px 10px', fontSize: 11.5, color: '#0369a1', fontWeight: 600, background: '#f8fafc' }}>
+                          {c?.pesasUtilizadas || `${p.valorPatron} kg`}
                         </td>
                         {[0, 1, 2].map((lIdx) => (
                           <td key={lIdx} style={{ padding: '8px 10px' }}>
@@ -1494,7 +1877,13 @@ export default function CreateCalibracion() {
                                   return n;
                                 });
                               }}
-                              style={{ width: 75, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                              style={{
+                                width: 75,
+                                padding: '4px 6px',
+                                textAlign: 'center',
+                                borderRadius: 4,
+                                border: '1px solid #cbd5e1',
+                              }}
                             />
                           </td>
                         ))}
@@ -1709,7 +2098,13 @@ export default function CreateCalibracion() {
                               return n;
                             });
                           }}
-                          style={{ width: 85, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                          style={{
+                            width: 85,
+                            padding: '4px 6px',
+                            textAlign: 'center',
+                            borderRadius: 4,
+                            border: '1px solid #cbd5e1',
+                          }}
                         />
                       ))}
                     </div>
@@ -1817,7 +2212,13 @@ export default function CreateCalibracion() {
                   placeholder="Nombre del técnico/ingeniero"
                   value={calibro.nombre}
                   onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1', marginBottom: 6 }}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                  }}
                 />
                 <input
                   type="text"
@@ -1866,7 +2267,13 @@ export default function CreateCalibracion() {
                   placeholder="Nombre del responsable técnico"
                   value={aprobo.nombre}
                   onChange={(e) => setAprobo({ ...aprobo, nombre: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1', marginBottom: 6 }}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                  }}
                 />
                 <input
                   type="text"

@@ -70,6 +70,7 @@ export default function CertificadoPdf() {
     tipoPlantilla,
     condicionesAmbientales = {},
     patron = {},
+    patronesLista = [],
     procedimiento,
     declaracionTrazabilidad,
     datosCalibracion = {},
@@ -295,84 +296,180 @@ export default function CertificadoPdf() {
         </div>
 
         {/* Sección: Fechas, Patrón y Condiciones Ambientales */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: 8,
-            marginBottom: 8,
-          }}
-        >
-          {/* Patrón */}
-          <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4 }}>
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: '#0f172a',
-                borderBottom: '1px solid #cbd5e1',
-                paddingBottom: 2,
-                marginBottom: 4,
-                background: '#f1f5f9',
-                padding: '2px 4px',
-              }}
-            >
-              3. PATRÓN DE REFERENCIA (TRAZABILIDAD METROLÓGICA)
+        {patronesLista && patronesLista.length > 0 ? (
+          <div style={{ marginBottom: 8 }}>
+            {/* Tabla de Múltiples Patrones (Juego de Masas 5, 10, 20 kg) */}
+            <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4, marginBottom: 8 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  borderBottom: '1px solid #cbd5e1',
+                  paddingBottom: 2,
+                  marginBottom: 4,
+                  background: '#f1f5f9',
+                  padding: '2px 4px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>3. PATRONES DE REFERENCIA (JUEGO DE MASAS PATRÓN - TRAZABILIDAD METROLÓGICA)</span>
+                <span style={{ fontSize: 8.5, color: '#64748b', fontWeight: 600 }}>
+                  {patronesLista.length} Pesas Patrón Utilizadas (5, 10, 20 kg)
+                </span>
+              </div>
+              <table style={{ width: '100%', fontSize: 8.5, borderCollapse: 'collapse', textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1', color: '#334155' }}>
+                    <th style={{ padding: '3px 4px', textAlign: 'left' }}>Pesa / Identificación</th>
+                    <th style={{ padding: '3px 4px' }}>Valor Nominal</th>
+                    <th style={{ padding: '3px 4px' }}>Clase Exactitud</th>
+                    <th style={{ padding: '3px 4px' }}>Nº Serie</th>
+                    <th style={{ padding: '3px 4px' }}>Nº Certificado Calibración</th>
+                    <th style={{ padding: '3px 4px' }}>Trazabilidad Metrológica</th>
+                    <th style={{ padding: '3px 4px', background: '#fef3c7' }}>Incertidumbre U (k=2)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patronesLista.map((pesa, pIdx) => (
+                    <tr key={pIdx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '3px 4px', textAlign: 'left', fontWeight: 700 }}>
+                        {pesa.nombre || pesa.codigo}
+                      </td>
+                      <td style={{ padding: '3px 4px', fontWeight: 700 }}>
+                        {pesa.valorNominal} {pesa.unidad || 'kg'}
+                      </td>
+                      <td style={{ padding: '3px 4px' }}>{pesa.claseExactitud || 'M1'}</td>
+                      <td style={{ padding: '3px 4px' }}>{pesa.serie || 'S/N'}</td>
+                      <td style={{ padding: '3px 4px' }}>{pesa.certificadoCalibracion || 'CERT-ONAC'}</td>
+                      <td style={{ padding: '3px 4px' }}>{pesa.trazabilidad || 'Lab Acreditado ONAC'}</td>
+                      <td style={{ padding: '3px 4px', fontWeight: 700, color: '#b45309', background: '#fffbeb' }}>
+                        ± {pesa.incertidumbreExpandida} {pesa.unidad || 'kg'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <table style={{ width: '100%', fontSize: 9 }}>
-              <tbody>
-                <tr>
-                  <td style={{ width: 90, fontWeight: 700 }}>Patrón Utilizado:</td>
-                  <td>{patron.nombre || 'Patrón Digital'} ({patron.codigo || 'PAT-01'})</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 700 }}>Certificado / Ente:</td>
-                  <td>{patron.certificadoCalibracion || 'CERT-ONAC'} • {patron.trazabilidad}</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 700 }}>Incertidumbre (U):</td>
-                  <td>± {patron.incertidumbreExpandida} (k={patron.factorK || 2})</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
 
-          {/* Condiciones Ambientales y Fechas */}
-          <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4 }}>
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: '#0f172a',
-                borderBottom: '1px solid #cbd5e1',
-                paddingBottom: 2,
-                marginBottom: 4,
-                background: '#f1f5f9',
-                padding: '2px 4px',
-              }}
-            >
-              4. CONDICIONES AMBIENTALES Y VIGENCIA
+            {/* Condiciones Ambientales y Vigencia */}
+            <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  borderBottom: '1px solid #cbd5e1',
+                  paddingBottom: 2,
+                  marginBottom: 4,
+                  background: '#f1f5f9',
+                  padding: '2px 4px',
+                }}
+              >
+                4. CONDICIONES AMBIENTALES Y VIGENCIA DE LA CALIBRACIÓN
+              </div>
+              <table style={{ width: '100%', fontSize: 9 }}>
+                <tbody>
+                  <tr>
+                    <td style={{ width: 95, fontWeight: 700 }}>Temperatura:</td>
+                    <td>{condicionesAmbientales.temperatura}°C ± {condicionesAmbientales.incertTemperatura}°C</td>
+                    <td style={{ width: 110, fontWeight: 700 }}>Humedad Relativa:</td>
+                    <td>{condicionesAmbientales.humedadRelativa}% HR ± {condicionesAmbientales.incertHumedad}%</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700 }}>Presión Atmosférica:</td>
+                    <td>{condicionesAmbientales.presionAtmosferica || 1013} hPa</td>
+                    <td style={{ fontWeight: 700 }}>Fecha Calibración:</td>
+                    <td>
+                      {fechaCalibracion} • <strong>Próxima:</strong> {fechaProximaCalibracion || 'N/A'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <table style={{ width: '100%', fontSize: 9 }}>
-              <tbody>
-                <tr>
-                  <td style={{ width: 95, fontWeight: 700 }}>Temperatura:</td>
-                  <td>{condicionesAmbientales.temperatura}°C ± {condicionesAmbientales.incertTemperatura}°C</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 700 }}>Humedad Relativa:</td>
-                  <td>{condicionesAmbientales.humedadRelativa}% HR ± {condicionesAmbientales.incertHumedad}%</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 700 }}>Fecha Calibración:</td>
-                  <td>
-                    {fechaCalibracion} • <strong>Próxima:</strong> {fechaProximaCalibracion || 'N/A'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
-        </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr',
+              gap: 8,
+              marginBottom: 8,
+            }}
+          >
+            {/* Patrón */}
+            <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  borderBottom: '1px solid #cbd5e1',
+                  paddingBottom: 2,
+                  marginBottom: 4,
+                  background: '#f1f5f9',
+                  padding: '2px 4px',
+                }}
+              >
+                3. PATRÓN DE REFERENCIA (TRAZABILIDAD METROLÓGICA)
+              </div>
+              <table style={{ width: '100%', fontSize: 9 }}>
+                <tbody>
+                  <tr>
+                    <td style={{ width: 90, fontWeight: 700 }}>Patrón Utilizado:</td>
+                    <td>{patron.nombre || 'Patrón Digital'} ({patron.codigo || 'PAT-01'})</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700 }}>Certificado / Ente:</td>
+                    <td>{patron.certificadoCalibracion || 'CERT-ONAC'} • {patron.trazabilidad}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700 }}>Incertidumbre (U):</td>
+                    <td>± {patron.incertidumbreExpandida} (k={patron.factorK || 2})</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Condiciones Ambientales y Fechas */}
+            <div style={{ border: '1px solid #cbd5e1', padding: '6px 8px', borderRadius: 4 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  borderBottom: '1px solid #cbd5e1',
+                  paddingBottom: 2,
+                  marginBottom: 4,
+                  background: '#f1f5f9',
+                  padding: '2px 4px',
+                }}
+              >
+                4. CONDICIONES AMBIENTALES Y VIGENCIA
+              </div>
+              <table style={{ width: '100%', fontSize: 9 }}>
+                <tbody>
+                  <tr>
+                    <td style={{ width: 95, fontWeight: 700 }}>Temperatura:</td>
+                    <td>{condicionesAmbientales.temperatura}°C ± {condicionesAmbientales.incertTemperatura}°C</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700 }}>Humedad Relativa:</td>
+                    <td>{condicionesAmbientales.humedadRelativa}% HR ± {condicionesAmbientales.incertHumedad}%</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700 }}>Fecha Calibración:</td>
+                    <td>
+                      {fechaCalibracion} • <strong>Próxima:</strong> {fechaProximaCalibracion || 'N/A'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Procedimiento */}
         <div
@@ -516,6 +613,11 @@ export default function CertificadoPdf() {
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1', fontWeight: 600 }}>{idx + 1}</td>
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1', fontWeight: 600 }}>
                     {p.valorNominal ?? p.valorPatron ?? p.nominal}
+                    {p.pesasUtilizadas ? (
+                      <div style={{ fontSize: 7.5, color: '#0369a1', fontWeight: 500, marginTop: 1 }}>
+                        ({p.pesasUtilizadas})
+                      </div>
+                    ) : null}
                   </td>
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1' }}>{p.promedio}</td>
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1', fontWeight: 700 }}>

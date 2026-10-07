@@ -54,4 +54,18 @@ export const apiUploadDocumentoFicha = apiFicha + '/upload-documento';
 export const apiDeleteDocumentoFicha = apiFicha + '/delete-documento';
 export const apiVerDocumentoFicha = apiFicha + '/documento';
 
+// Calibraciones ISO 17025
+export const apiCalibraciones = baseUrl + '/calibraciones';
+export const apiSiguienteConsecutivoCalibracion = apiCalibraciones + '/siguiente-consecutivo';
+export const apiCrearCalibracion = apiCalibraciones + '/crear';
+export const apiEditarCalibracion = apiCalibraciones + '/editar';
+export const apiEliminarCalibracion = apiCalibraciones + '/eliminar';
+export const apiFirmarCalibracion = apiCalibraciones + '/firmar';
+
+// Banco de Patrones
+export const apiPatrones = baseUrl + '/patrones';
+export const apiCrearPatron = apiPatrones + '/crear';
+export const apiEditarPatron = apiPatrones + '/editar';
+export const apiEliminarPatron = apiPatrones + '/eliminar';
+
 

@@ -33,6 +33,11 @@ import Cronograma from './views/Cronograma';
 import Usuarios from './views/Usuarios';
 import EditarIps from './views/EditarIps';
 import DocumentosIps from './views/DocumentosIps';
+import Calibraciones from './views/Calibraciones';
+import CreateCalibracion from './views/CreateCalibracion';
+import EditCalibracion from './views/EditCalibracion';
+import CertificadoPdf from './views/CertificadoPdf';
+import PatronesCalibracion from './views/PatronesCalibracion';
 
 const RouterContainer = () => {
   const [verify, setVerify] = useState(false);
@@ -88,6 +93,11 @@ const RouterContainer = () => {
           <Route path="/informes" element={<Informes />} />
           <Route path="/alertas" element={<AlertasMtto />} />
           <Route path="/usuarios" element={<Usuarios />} />
+          <Route path="/calibraciones" element={<Calibraciones />} />
+          <Route path="/crearcalibracion" element={<CreateCalibracion />} />
+          <Route path="/editarcalibracion" element={<EditCalibracion />} />
+          <Route path="/certificadocalibracion" element={<CertificadoPdf />} />
+          <Route path="/patrones" element={<PatronesCalibracion />} />
         </Routes>
 
       </Router>

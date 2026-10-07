@@ -13,7 +13,8 @@ import {
   FaSignOutAlt,
   FaCalendarAlt,
   FaUsers,
-  FaFolderOpen 
+  FaFolderOpen,
+  FaBalanceScale
 } from 'react-icons/fa';
 
 function Navbar() {
@@ -101,6 +102,11 @@ function Navbar() {
               </Link>
             </li>
             <li>
+              <Link to="/calibraciones" style={linkStyle('/calibraciones')}>
+                <FaBalanceScale size={13} /> Calibraciones
+              </Link>
+            </li>
+            <li>
               <Link to="/fichastecnicas" style={linkStyle('/fichastecnicas')}>
                 <FaFileMedical size={13} /> Ficha Téc.
               </Link>
@@ -169,6 +175,11 @@ function Navbar() {
             <li>
               <Link to="/documentosips" style={linkStyle('/documentosips')}>
                 <FaFolderOpen size={13} /> Documentación
+              </Link>
+            </li>
+            <li>
+              <Link to="/calibraciones" style={linkStyle('/calibraciones')}>
+                <FaBalanceScale size={13} /> Calibraciones
               </Link>
             </li>
             <li className="nav-item-logout">

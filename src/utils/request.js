@@ -3,8 +3,11 @@ export default async ({ link, body, method }) => {
   try {
     let requestOptions = {
       body: null,
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
       },
       method: method || (body ? 'POST' : 'GET'),
     };

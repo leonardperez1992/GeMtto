@@ -216,7 +216,7 @@ export default function EditCalibracion() {
       if (!certId) return;
       setLoading(true);
 
-      const resCert = await request({ link: `${apiCalibraciones}/${certId}` });
+      const resCert = await request({ link: `${apiCalibraciones}/${certId}?_t=${Date.now()}` });
 
       if (resCert?.success && resCert.certificado) {
         const c = resCert.certificado;
@@ -225,17 +225,17 @@ export default function EditCalibracion() {
         setFechaEmision(c.fechaEmision || '');
         setFechaProximaCalibracion(c.fechaProximaCalibracion || '');
         setTipoPlantilla(c.tipoPlantilla || 'presion_tensiometro');
-        if (c.datosEquipo) setDatosEquipo(c.datosEquipo);
-        if (c.datosCliente) setDatosCliente(c.datosCliente);
-        if (c.condicionesAmbientales) setCondiciones(c.condicionesAmbientales);
-        if (c.patron) setDatosPatron(c.patron);
+        if (c.datosEquipo) setDatosEquipo((prev) => ({ ...prev, ...c.datosEquipo }));
+        if (c.datosCliente) setDatosCliente((prev) => ({ ...prev, ...c.datosCliente }));
+        if (c.condicionesAmbientales) setCondiciones((prev) => ({ ...prev, ...c.condicionesAmbientales }));
+        if (c.patron) setDatosPatron((prev) => ({ ...prev, ...c.patron }));
         if (c.patronesLista && c.patronesLista.length > 0) {
           setPatronesLista(c.patronesLista);
         }
         if (c.procedimiento) setProcedimiento(c.procedimiento);
         if (c.observaciones) setObservaciones(c.observaciones);
-        if (c.calibro) setCalibro(c.calibro);
-        if (c.aprobo) setAprobo(c.aprobo);
+        if (c.calibro) setCalibro((prev) => ({ ...prev, ...c.calibro }));
+        if (c.aprobo) setAprobo((prev) => ({ ...prev, ...c.aprobo }));
 
         const dc = c.datosCalibracion || {};
 
@@ -244,10 +244,19 @@ export default function EditCalibracion() {
           if (dc.errorCero) setErrorCero(dc.errorCero);
           if (dc.puntos && dc.puntos.length > 0) {
             setPuntosTensiometro(
-              dc.puntos.map((p) => ({
-                valorPatron: p.valorNominal ?? p.valorPatron,
-                lecturas: p.lecturas || [p.promedio, p.promedio, p.promedio],
-              }))
+              dc.puntos.map((p) => {
+                const valPat =
+                  p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== ''
+                    ? Number(p.valorPatron)
+                    : Number(p.valorNominal || 0);
+                return {
+                  valorPatron: valPat,
+                  lecturas:
+                    Array.isArray(p.lecturas) && p.lecturas.length > 0
+                      ? p.lecturas
+                      : [p.promedio || 0, p.promedio || 0, p.promedio || 0],
+                };
+              })
             );
           }
         } else if (c.tipoPlantilla === 'masa_bascula') {
@@ -255,23 +264,50 @@ export default function EditCalibracion() {
           if (dc.excentricidadBascula) setExcentricidadBascula(dc.excentricidadBascula);
           if (dc.puntos && dc.puntos.length > 0) {
             setPuntosBascula(
-              dc.puntos.map((p) => ({
-                valorPatron: p.valorNominal ?? p.valorPatron,
-                lecturas: p.lecturas || [p.promedio, p.promedio, p.promedio],
-              }))
+              dc.puntos.map((p) => {
+                const valPat =
+                  p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== ''
+                    ? Number(p.valorPatron)
+                    : Number(p.valorNominal || 0);
+                return {
+                  valorPatron: valPat,
+                  lecturas:
+                    Array.isArray(p.lecturas) && p.lecturas.length > 0
+                      ? p.lecturas
+                      : [p.promedio || 0, p.promedio || 0, p.promedio || 0],
+                };
+              })
             );
           }
         } else if (c.tipoPlantilla === 'volumen_micropipeta') {
           if (dc.micropipetaInfo) setMicropipetaInfo(dc.micropipetaInfo);
           if (dc.puntos && dc.puntos.length > 0) {
             setPuntosMicropipeta(
-              dc.puntos.map((p) => ({
-                nominal: p.nominal ?? p.valorNominal,
-                porcentaje: p.porcentajeNominal ?? p.porcentaje,
-                lecturasMasa: p.lecturasMasa || [p.promedio, p.promedio, p.promedio],
-                empSistematicoPct: p.empSistematicoPct || 1.0,
-                empAleatorioPct: p.empAleatorioPct || 0.5,
-              }))
+              dc.puntos.map((p) => {
+                const nom =
+                  p.nominal !== undefined && p.nominal !== null && p.nominal !== ''
+                    ? Number(p.nominal)
+                    : (p.valorNominal !== undefined && p.valorNominal !== null && p.valorNominal !== ''
+                        ? Number(p.valorNominal)
+                        : Number(p.valorPatron || 0));
+                const pct =
+                  p.porcentajeNominal !== undefined && p.porcentajeNominal !== null
+                    ? Number(p.porcentajeNominal)
+                    : Number(p.porcentaje || 100);
+                const lects =
+                  Array.isArray(p.lecturasMasa) && p.lecturasMasa.length > 0
+                    ? p.lecturasMasa
+                    : (Array.isArray(p.lecturas) && p.lecturas.length > 0
+                        ? p.lecturas
+                        : [p.promedio || 0, p.promedio || 0, p.promedio || 0]);
+                return {
+                  nominal: nom,
+                  porcentaje: pct,
+                  lecturasMasa: lects,
+                  empSistematicoPct: p.empSistematicoPct || 1.0,
+                  empAleatorioPct: p.empAleatorioPct || 0.5,
+                };
+              })
             );
           }
         }
@@ -393,14 +429,28 @@ export default function EditCalibracion() {
       firmaAproboFinal = firmaAproboRef.current.toDataURL();
     }
 
+    let puntosMapeados = [];
     let datosCalibracion = {};
+
     if (tipoPlantilla === 'presion_tensiometro') {
+      puntosMapeados = puntosTensiometroCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        valorNominal: p.valorPatron,
+        valorPatron: p.valorPatron,
+      }));
       datosCalibracion = {
         hermeticidad,
         errorCero,
-        puntos: puntosTensiometroCalculados,
+        puntos: puntosMapeados,
       };
     } else if (tipoPlantilla === 'masa_bascula') {
+      puntosMapeados = puntosBasculaCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        valorNominal: p.valorPatron,
+        valorPatron: p.valorPatron,
+      }));
       datosCalibracion = {
         repetibilidadBascula: {
           ...repetibilidadBascula,
@@ -408,16 +458,31 @@ export default function EditCalibracion() {
           desviacionEstandar: desvRep,
         },
         excentricidadBascula,
-        puntos: puntosBasculaCalculados,
+        puntos: puntosMapeados,
       };
     } else if (tipoPlantilla === 'volumen_micropipeta') {
+      puntosMapeados = puntosMicropipetaCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        nominal: p.nominal,
+        valorNominal: p.nominal,
+        valorPatron: p.nominal,
+        porcentajeNominal: p.porcentaje,
+      }));
       datosCalibracion = {
         micropipetaInfo,
-        puntos: puntosMicropipetaCalculados,
+        puntos: puntosMapeados,
       };
     }
 
+    const patronPayload = { ...datosPatron };
+    if (!patronPayload.patronId || patronPayload.patronId === '') {
+      delete patronPayload.patronId;
+    }
+
     const payload = {
+      _id: certId,
+      id: certId,
       numeroCertificado: consecutivo,
       fechaCalibracion,
       fechaEmision,
@@ -426,7 +491,7 @@ export default function EditCalibracion() {
       datosCliente,
       tipoPlantilla,
       condicionesAmbientales: condiciones,
-      patron: datosPatron,
+      patron: patronPayload,
       patronesLista: tipoPlantilla === 'masa_bascula' ? patronesLista : [],
       procedimiento,
       datosCalibracion,
@@ -442,11 +507,20 @@ export default function EditCalibracion() {
       },
     };
 
-    const res = await request({
+    let res = await request({
       link: `${apiEditarCalibracion}/${certId}`,
       body: payload,
       method: 'PUT',
     });
+
+    // Fallback con POST en caso de restricciones de red o proxy
+    if (!res?.success) {
+      res = await request({
+        link: `${apiEditarCalibracion}/${certId}`,
+        body: payload,
+        method: 'POST',
+      });
+    }
 
     setGuardando(false);
 

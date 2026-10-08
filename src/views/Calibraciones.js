@@ -50,7 +50,7 @@ export default function Calibraciones() {
 
   const cargarCertificados = async () => {
     setLoading(true);
-    let link = `${apiCalibraciones}?`;
+    let link = `${apiCalibraciones}?_t=${Date.now()}&`;
     if (filtroIps !== 'TODAS') link += `ips=${filtroIps}&`;
     if (filtroPlantilla !== 'TODAS') link += `tipoPlantilla=${filtroPlantilla}&`;
     if (search.trim()) link += `search=${encodeURIComponent(search.trim())}&`;

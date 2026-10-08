@@ -5,7 +5,7 @@ import { apiCalibraciones } from '../utils/api';
 import request from '../utils/request';
 import CalibrationChart from '../components/CalibrationChart';
 import { SlPrinter } from 'react-icons/sl';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit } from 'react-icons/fa';
 
 export default function CertificadoPdf() {
   const location = useLocation();
@@ -20,7 +20,7 @@ export default function CertificadoPdf() {
     const fetchCert = async () => {
       if (!certId) return;
       setLoading(true);
-      const res = await request({ link: `${apiCalibraciones}/${certId}` });
+      const res = await request({ link: `${apiCalibraciones}/${certId}?_t=${Date.now()}` });
       if (res?.success && res.certificado) {
         setCertificado(res.certificado);
       }
@@ -116,6 +116,25 @@ export default function CertificadoPdf() {
         </Link>
 
         <div style={{ display: 'flex', gap: 10 }}>
+          <Link
+            to={`/editarcalibracion?id=${certId}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: '#ffffff',
+              color: '#0284c7',
+              padding: '9px 18px',
+              borderRadius: 8,
+              border: '1px solid #0284c7',
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <FaEdit size={14} /> Editar Certificado
+          </Link>
           <button
             onClick={() => generatePDF(targetRef, pdfOptions)}
             style={{
@@ -612,7 +631,7 @@ export default function CertificadoPdf() {
                 <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1', fontWeight: 600 }}>{idx + 1}</td>
                   <td style={{ padding: '4px 6px', border: '1px solid #cbd5e1', fontWeight: 600 }}>
-                    {p.valorNominal ?? p.valorPatron ?? p.nominal}
+                    {(p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== '') ? p.valorPatron : (p.valorNominal ?? p.nominal ?? 0)}
                     {p.pesasUtilizadas ? (
                       <div style={{ fontSize: 7.5, color: '#0369a1', fontWeight: 500, marginTop: 1 }}>
                         ({p.pesasUtilizadas})

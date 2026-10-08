@@ -504,14 +504,24 @@ export default function CreateCalibracion() {
     let datosCalibracion = {};
 
     if (tipoPlantilla === 'presion_tensiometro') {
-      puntosParaGuardar = puntosTensiometroCalculados;
+      puntosParaGuardar = puntosTensiometroCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        valorNominal: p.valorPatron,
+        valorPatron: p.valorPatron,
+      }));
       datosCalibracion = {
         hermeticidad,
         errorCero,
         puntos: puntosParaGuardar,
       };
     } else if (tipoPlantilla === 'masa_bascula') {
-      puntosParaGuardar = puntosBasculaCalculados;
+      puntosParaGuardar = puntosBasculaCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        valorNominal: p.valorPatron,
+        valorPatron: p.valorPatron,
+      }));
       datosCalibracion = {
         repetibilidadBascula: {
           ...repetibilidadBascula,
@@ -522,7 +532,14 @@ export default function CreateCalibracion() {
         puntos: puntosParaGuardar,
       };
     } else if (tipoPlantilla === 'volumen_micropipeta') {
-      puntosParaGuardar = puntosMicropipetaCalculados;
+      puntosParaGuardar = puntosMicropipetaCalculados.map((p, idx) => ({
+        ...p,
+        puntoNumero: idx + 1,
+        nominal: p.nominal,
+        valorNominal: p.nominal,
+        valorPatron: p.nominal,
+        porcentajeNominal: p.porcentaje,
+      }));
       datosCalibracion = {
         micropipetaInfo,
         puntos: puntosParaGuardar,

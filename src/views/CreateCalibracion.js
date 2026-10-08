@@ -16,6 +16,7 @@ import {
   desviacionEstandar,
 } from '../utils/metrologyEngine';
 import CalibrationChart from '../components/CalibrationChart';
+import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
 import {
   FaArrowLeft,
   FaSave,
@@ -1733,59 +1734,72 @@ export default function CreateCalibracion() {
 
               {/* Excentricidad */}
               <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
-                  B. Prueba de Excentricidad (Carga en Esquinas):
+                <h4 style={{ margin: '0 0 10px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
+                  B. Prueba de Excentricidad (Carga en Esquinas - OIML R 76-1):
                 </h4>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                  <span style={{ fontSize: 12, color: '#475569' }}>Carga ({datosEquipo.unidad}):</span>
-                  <input
-                    type="number"
-                    value={excentricidadBascula.cargaNominal}
-                    onChange={(e) =>
-                      setExcentricidadBascula({ ...excentricidadBascula, cargaNominal: Number(e.target.value) })
-                    }
-                    style={{ width: 75, padding: '4px 6px', borderRadius: 4, border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-                  {['centro', 'pos1', 'pos2', 'pos3', 'pos4'].map((pos, i) => (
-                    <div key={pos} style={{ textAlign: 'center' }}>
-                      <span style={{ fontSize: 10, color: '#64748b' }}>
-                        {pos === 'centro' ? 'Centro' : `Esq ${i}`}
-                      </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, alignItems: 'center' }}>
+                  <div>
+                    <ExcentricidadDiagram
+                      excentricidad={excentricidadBascula}
+                      unidad={datosEquipo.unidad}
+                      width={350}
+                      height={205}
+                    />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+                      <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Carga ({datosEquipo.unidad}):</span>
                       <input
                         type="number"
-                        step="any"
-                        value={excentricidadBascula[pos]}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setExcentricidadBascula((prev) => {
-                            const updated = { ...prev, [pos]: val };
-                            const diffs = [
-                              Math.abs(updated.pos1 - updated.centro),
-                              Math.abs(updated.pos2 - updated.centro),
-                              Math.abs(updated.pos3 - updated.centro),
-                              Math.abs(updated.pos4 - updated.centro),
-                            ];
-                            updated.errorMaximo = Number(Math.max(...diffs).toFixed(4));
-                            updated.cumple = updated.errorMaximo <= (updated.emp || 0.2);
-                            return updated;
-                          });
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '4px 4px',
-                          textAlign: 'center',
-                          borderRadius: 4,
-                          border: '1px solid #cbd5e1',
-                        }}
+                        value={excentricidadBascula.cargaNominal}
+                        onChange={(e) =>
+                          setExcentricidadBascula({ ...excentricidadBascula, cargaNominal: Number(e.target.value) })
+                        }
+                        style={{ width: 80, padding: '4px 6px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 700 }}
                       />
                     </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 12, color: '#334155' }}>
-                  Diferencia máxima: <strong>{excentricidadBascula.errorMaximo} {datosEquipo.unidad}</strong> (
-                  {excentricidadBascula.cumple ? '✓ Cumple' : '✗ Falla'})
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+                      {['centro', 'pos1', 'pos2', 'pos3', 'pos4'].map((pos, i) => (
+                        <div key={pos} style={{ textAlign: 'center' }}>
+                          <span style={{ fontSize: 9.5, color: '#64748b', fontWeight: 700, display: 'block', marginBottom: 2 }}>
+                            {pos === 'centro' ? '1. Centro' : pos === 'pos1' ? '2. Del-Izq' : pos === 'pos2' ? '5. Del-Der' : pos === 'pos3' ? '4. Det-Der' : '3. Det-Izq'}
+                          </span>
+                          <input
+                            type="number"
+                            step="any"
+                            value={excentricidadBascula[pos]}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setExcentricidadBascula((prev) => {
+                                const updated = { ...prev, [pos]: val };
+                                const diffs = [
+                                  Math.abs(updated.pos1 - updated.centro),
+                                  Math.abs(updated.pos2 - updated.centro),
+                                  Math.abs(updated.pos3 - updated.centro),
+                                  Math.abs(updated.pos4 - updated.centro),
+                                ];
+                                updated.errorMaximo = Number(Math.max(...diffs).toFixed(4));
+                                updated.cumple = updated.errorMaximo <= (updated.emp || 0.2);
+                                return updated;
+                              });
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '5px 4px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontWeight: 700,
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: 10, fontSize: 11.5, color: '#334155', background: '#ffffff', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}>
+                      <div>Diferencia máxima: <strong>{excentricidadBascula.errorMaximo} {datosEquipo.unidad}</strong></div>
+                      <div style={{ marginTop: 2 }}>Tolerancia EMP: <strong>±{excentricidadBascula.emp || 0.2} {datosEquipo.unidad}</strong> → <span style={{ fontWeight: 800, color: excentricidadBascula.cumple ? '#15803d' : '#dc2626' }}>{excentricidadBascula.cumple ? '✓ Conforme (Cumple)' : '✗ No Conforme'}</span></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

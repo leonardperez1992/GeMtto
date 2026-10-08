@@ -121,9 +121,9 @@ export default function CalibrationChart({
     >
       <div
         style={{
-          fontSize: 12.5,
-          fontWeight: 700,
-          color: '#1e293b',
+          fontSize: 13.5,
+          fontWeight: 800,
+          color: '#0f172a',
           marginBottom: 6,
           textAlign: 'center',
           letterSpacing: 0.2,
@@ -168,9 +168,9 @@ export default function CalibrationChart({
                 x={padding.left - 8}
                 y={y + 3.5}
                 textAnchor="end"
-                fontSize="9.5"
-                fill={val === 0 ? '#059669' : '#64748b'}
-                fontWeight={val === 0 ? '700' : '500'}
+                fontSize="10.5"
+                fill={val === 0 ? '#059669' : '#475569'}
+                fontWeight={val === 0 ? '800' : '600'}
               >
                 {val > 0 ? `+${formatVal(val)}` : formatVal(val)}
               </text>
@@ -274,8 +274,8 @@ export default function CalibrationChart({
                 x={cx}
                 y={cy - 7}
                 textAnchor="middle"
-                fontSize="9"
-                fontWeight="700"
+                fontSize="10"
+                fontWeight="800"
                 fill="#0f172a"
               >
                 {d.y > 0 ? `+${formatVal(d.y)}` : formatVal(d.y)}
@@ -286,9 +286,9 @@ export default function CalibrationChart({
                 x={cx}
                 y={padding.top + plotHeight + 16}
                 textAnchor="middle"
-                fontSize="9.5"
-                fill="#475569"
-                fontWeight="600"
+                fontSize="10.5"
+                fill="#334155"
+                fontWeight="700"
               >
                 {d.x}
               </text>
@@ -301,9 +301,9 @@ export default function CalibrationChart({
           x={padding.left + plotWidth / 2}
           y={height - 8}
           textAnchor="middle"
-          fontSize="10"
-          fill="#334155"
-          fontWeight="600"
+          fontSize="11"
+          fill="#0f172a"
+          fontWeight="700"
         >
           Valor Patrón {unidad ? `(${unidad})` : ''}
         </text>
@@ -313,9 +313,9 @@ export default function CalibrationChart({
           y="15"
           transform="rotate(-90)"
           textAnchor="middle"
-          fontSize="10"
-          fill="#334155"
-          fontWeight="600"
+          fontSize="11"
+          fill="#0f172a"
+          fontWeight="700"
         >
           Error de Indicación {unidad ? `(${unidad})` : ''}
         </text>
@@ -328,8 +328,9 @@ export default function CalibrationChart({
           justifyContent: 'center',
           gap: 16,
           marginTop: 6,
-          fontSize: 10.5,
-          color: '#475569',
+          fontSize: 11,
+          color: '#334155',
+          fontWeight: 600,
           flexWrap: 'wrap',
         }}
       >

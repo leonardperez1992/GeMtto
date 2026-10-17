@@ -93,9 +93,9 @@ export default function CertificadoPdf() {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '135px 1fr 185px',
+        gridTemplateColumns: '145px 1fr 190px',
         border: '2px solid #0f172a',
-        padding: '7px 12px',
+        padding: '8px 14px',
         alignItems: 'center',
         marginBottom: 10,
         background: '#ffffff',
@@ -105,7 +105,7 @@ export default function CertificadoPdf() {
         <img
           src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
           alt="GEMTTO"
-          style={{ maxHeight: 52, maxWidth: 130, objectFit: 'contain' }}
+          style={{ maxHeight: 58, maxWidth: 140, objectFit: 'contain' }}
         />
       </div>
 
@@ -114,31 +114,31 @@ export default function CertificadoPdf() {
           textAlign: 'center',
           borderLeft: '1.5px solid #0f172a',
           borderRight: '1.5px solid #0f172a',
-          padding: '0 10px',
+          padding: '0 12px',
         }}
       >
-        <div style={{ fontSize: 13.5, fontWeight: 900, color: '#0f172a', letterSpacing: 0.5 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 900, color: '#0f172a', letterSpacing: 0.6 }}>
           {titulo}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 800, color: '#0284c7', marginTop: 2 }}>
+        <div style={{ fontSize: 11.8, fontWeight: 800, color: '#0284c7', marginTop: 2 }}>
           {subtitulo}
         </div>
-        <div style={{ fontSize: 9, color: '#475569', marginTop: 2, letterSpacing: 0.3, fontWeight: 600 }}>
+        <div style={{ fontSize: 9.8, color: '#475569', marginTop: 2, letterSpacing: 0.3, fontWeight: 700 }}>
           CONFORME A LA NORMA INTERNACIONAL ISO/IEC 17025:2017
         </div>
       </div>
 
-      <div style={{ textAlign: 'right', fontSize: 10, paddingLeft: 8, lineHeight: 1.35 }}>
+      <div style={{ textAlign: 'right', fontSize: 10.5, paddingLeft: 8, lineHeight: 1.4 }}>
         <div>
           <strong style={{ color: '#475569' }}>Certificado Nº:</strong>
         </div>
-        <div style={{ color: '#0284c7', fontWeight: 900, fontSize: 13.5 }}>
+        <div style={{ color: '#0284c7', fontWeight: 900, fontSize: 15 }}>
           {numeroCertificado}
         </div>
         <div style={{ marginTop: 2 }}>
           <strong>Emisión:</strong> {fechaEmision || fechaCalibracion}
         </div>
-        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 10.5 }}>
+        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 11.5 }}>
           Página {paginaNum} de {totalPaginas}
         </div>
       </div>
@@ -151,21 +151,21 @@ export default function CertificadoPdf() {
       style={{
         marginTop: 'auto',
         paddingTop: 8,
-        borderTop: '1.5px solid #cbd5e1',
+        borderTop: '2px solid #0f172a',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        fontSize: 9.5,
+        fontSize: 10,
         color: '#475569',
       }}
     >
       <div>
-        <strong style={{ color: '#0f172a' }}>GEMTTO S.A.S.</strong> • Metrología Biomédica • Certificado Nº {numeroCertificado}
+        <strong style={{ color: '#0f172a', fontSize: 10.5 }}>GEMTTO S.A.S.</strong> • Metrología Biomédica • Certificado Nº {numeroCertificado}
       </div>
-      <div style={{ fontStyle: 'italic', fontSize: 8.5 }}>
+      <div style={{ fontStyle: 'italic', fontSize: 9.2 }}>
         {leyendaPersonalizada || 'Prohibida la reproducción parcial de este documento sin autorización previa escrita del laboratorio.'}
       </div>
-      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 10 }}>
+      <div style={{ fontWeight: 900, color: '#0f172a', fontSize: 11 }}>
         Página {paginaNum} de {totalPaginas}
       </div>
     </div>
@@ -178,12 +178,14 @@ export default function CertificadoPdf() {
         @media print {
           @page {
             size: letter portrait;
-            margin: 8mm;
+            margin: 7mm 8mm;
           }
           body, html {
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
@@ -191,18 +193,21 @@ export default function CertificadoPdf() {
           .certificado-hoja {
             page-break-after: always !important;
             break-after: page !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
             box-shadow: none !important;
             border: none !important;
             margin: 0 !important;
-            padding: 8px 12px !important;
+            padding: 2mm 3mm !important;
             width: 100% !important;
             max-width: 100% !important;
-            min-height: 98vh !important;
-            max-height: 98vh !important;
+            height: 264mm !important;
+            min-height: 264mm !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
+            overflow: hidden !important;
           }
           .html2pdf__page-break {
             page-break-after: always !important;
@@ -212,13 +217,13 @@ export default function CertificadoPdf() {
         @media screen {
           .certificado-hoja {
             width: 100%;
-            max-width: 860px;
-            min-height: 1100px;
+            max-width: 890px;
+            min-height: 1150px;
             background: #ffffff;
             padding: 24px 30px;
             margin: 0 auto 30px auto;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
+            border: 1.5px solid #cbd5e1;
             border-radius: 4px;
             box-sizing: border-box;
             display: flex;
@@ -226,8 +231,8 @@ export default function CertificadoPdf() {
             justify-content: space-between;
             font-family: Arial, Helvetica, sans-serif;
             color: #0f172a;
-            font-size: 11px;
-            line-height: 1.4;
+            font-size: 11.5px;
+            line-height: 1.45;
           }
         }
       `}</style>
@@ -340,29 +345,29 @@ export default function CertificadoPdf() {
                 {renderEncabezado(1, 2, 'CERTIFICADO DE CALIBRACIÓN', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
 
                 {/* Fila 1: Cliente & Ítem a Calibrar */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
                   {/* DATOS GENERALES DEL CLIENTE */}
                   <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                       DATOS GENERALES DEL CLIENTE
                     </div>
-                    <div style={{ padding: '6px 8px' }}>
-                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
                         <tbody>
                           <tr>
-                            <td style={{ width: 90, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Solicitante:</td>
+                            <td style={{ width: 95, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Solicitante:</td>
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Dirección:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Dirección:</td>
                             <td>{datosCliente.direccion || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ciudad:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ciudad:</td>
                             <td>{datosCliente.ciudad || 'Colombia'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Contacto:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Contacto:</td>
                             <td>{datosCliente.telefono || datosCliente.contacto || 'N/A'}</td>
                           </tr>
                         </tbody>
@@ -372,38 +377,38 @@ export default function CertificadoPdf() {
 
                   {/* DATOS GENERALES DEL ÍTEM A CALIBRAR */}
                   <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                       DATOS GENERALES DEL ÍTEM A CALIBRAR
                     </div>
-                    <div style={{ padding: '6px 8px' }}>
-                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
                         <tbody>
                           <tr>
-                            <td style={{ width: 100, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ítem:</td>
+                            <td style={{ width: 115, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ítem:</td>
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Marca / Modelo:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Marca / Modelo:</td>
                             <td>{datosEquipo.marca || 'N/A'} / {datosEquipo.modelo || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Serie:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Serie:</td>
                             <td style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>No. de Activo:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>No. de Activo:</td>
                             <td>{datosEquipo.nroActivo || datosEquipo.placaInventario || 'No presenta'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha recepción:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha recepción:</td>
                             <td>{datosEquipo.fechaRecepcion || fechaCalibracion}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Intervalo / Res.:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Intervalo / Res.:</td>
                             <td>0 a 300 mmHg / {datosEquipo.resolucion || 2} mmHg</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ubicación:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ubicación:</td>
                             <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Servicio Médico'}</td>
                           </tr>
                         </tbody>
@@ -413,39 +418,39 @@ export default function CertificadoPdf() {
                 </div>
 
                 {/* Fila 2: Datos de Calibración & Patrones */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.18fr 1fr', gap: 12, marginBottom: 10 }}>
                   {/* DATOS GENERALES DE LA CALIBRACIÓN */}
                   <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                       DATOS GENERALES DE LA CALIBRACIÓN
                     </div>
-                    <div style={{ padding: '6px 8px' }}>
-                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
                         <tbody>
                           <tr>
-                            <td style={{ width: 125, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha de calibración:</td>
+                            <td style={{ width: 140, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha de calibración:</td>
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{fechaCalibracion}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Lugar de calibración:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Lugar de calibración:</td>
                             <td>{condicionesAmbientales.lugarCalibracion || 'Ingeniería / In situ'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Procedimiento:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Procedimiento:</td>
                             <td>{procedimiento || 'MC-DT-I-008 Calibración de Esfigmomanómetros'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Método de calibración:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Método de calibración:</td>
                             <td>{condicionesAmbientales.metodoCalibracion || 'Comparación directa'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Condiciones ambientales:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Condiciones ambientales:</td>
                             <td>
                               Temp: <strong>{condicionesAmbientales.temperatura || 22.4} °C ± {condicionesAmbientales.incertTemperatura || 0.6} °C</strong> | HR: <strong>{condicionesAmbientales.humedadRelativa || 55.0} % ± {condicionesAmbientales.incertHumedad || 0.5} %</strong>
                             </td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Presión atmosférica:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Presión atmosférica:</td>
                             <td>{condicionesAmbientales.presionAtmosferica || 1013} hPa</td>
                           </tr>
                         </tbody>
@@ -455,34 +460,34 @@ export default function CertificadoPdf() {
 
                   {/* DATOS DE LOS PATRONES UTILIZADOS */}
                   <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                       DATOS DE LOS PATRONES UTILIZADOS
                     </div>
-                    <div style={{ padding: '6px 8px' }}>
-                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
                         <tbody>
                           <tr>
-                            <td style={{ width: 110, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Descripción:</td>
+                            <td style={{ width: 125, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Descripción:</td>
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{patron.nombre || 'Módulo de Presión'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Marca / Modelo:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Marca / Modelo:</td>
                             <td>{patron.marca || 'FLUKE'} / {patron.modelo || '2700G-BG100K'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Serie:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Serie:</td>
                             <td style={{ fontWeight: 700 }}>{patron.serie || '4023109'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>No. Certificado:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>No. Certificado:</td>
                             <td>{patron.certificadoCalibracion || 'DE1805-25'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha calibración:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha calibración:</td>
                             <td>{patron.fechaCalibracion || '2025-05-18'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Trazabilidad:</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Trazabilidad:</td>
                             <td>{patron.trazabilidad || 'Fluke Calibration / ONAC / INM'}</td>
                           </tr>
                         </tbody>
@@ -492,21 +497,21 @@ export default function CertificadoPdf() {
                 </div>
 
                 {/* TABLA 1: DATOS DE CALIBRACIÓN */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                     DATOS DE CALIBRACIÓN
                   </div>
-                  <div style={{ padding: '4px 6px' }}>
-                    <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse', textAlign: 'center' }}>
+                  <div style={{ padding: '5px 8px' }}>
+                    <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', textAlign: 'center' }}>
                       <thead>
-                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#1e293b' }}>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Prueba</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Referencia</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Unidad</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 1</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 2</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 3</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 4</th>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#0f172a' }}>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Prueba</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Referencia</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Unidad</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Medición 1</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Medición 2</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Medición 3</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Medición 4</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -518,14 +523,14 @@ export default function CertificadoPdf() {
                               ? [...p.lecturas, p.lecturas[2]]
                               : [refVal, refVal, refVal, refVal];
                           return (
-                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#fafafa' }}>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 800 }}>{refVal}</td>
-                              <td style={{ padding: '3.5px 6px', color: '#64748b' }}>mmHg</td>
-                              <td style={{ padding: '3.5px 6px' }}>{lects[0] !== undefined ? lects[0] : '-'}</td>
-                              <td style={{ padding: '3.5px 6px' }}>{lects[1] !== undefined ? lects[1] : '-'}</td>
-                              <td style={{ padding: '3.5px 6px' }}>{lects[2] !== undefined ? lects[2] : '-'}</td>
-                              <td style={{ padding: '3.5px 6px' }}>{lects[3] !== undefined ? lects[3] : '-'}</td>
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                              <td style={{ padding: '5px 8px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
+                              <td style={{ padding: '5px 8px', fontWeight: 800 }}>{refVal}</td>
+                              <td style={{ padding: '5px 8px', color: '#64748b' }}>mmHg</td>
+                              <td style={{ padding: '5px 8px', fontWeight: 600 }}>{lects[0] !== undefined ? lects[0] : '-'}</td>
+                              <td style={{ padding: '5px 8px', fontWeight: 600 }}>{lects[1] !== undefined ? lects[1] : '-'}</td>
+                              <td style={{ padding: '5px 8px', fontWeight: 600 }}>{lects[2] !== undefined ? lects[2] : '-'}</td>
+                              <td style={{ padding: '5px 8px', fontWeight: 600 }}>{lects[3] !== undefined ? lects[3] : '-'}</td>
                             </tr>
                           );
                         })}
@@ -535,22 +540,22 @@ export default function CertificadoPdf() {
                 </div>
 
                 {/* TABLA 2: RESULTADO - TABLA DE INCERTIDUMBRE */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
                     RESULTADO - TABLA DE INCERTIDUMBRE
                   </div>
-                  <div style={{ padding: '4px 6px' }}>
-                    <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse', textAlign: 'center' }}>
+                  <div style={{ padding: '5px 8px' }}>
+                    <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', textAlign: 'center' }}>
                       <thead>
-                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#1e293b' }}>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Prueba</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#f0f9ff' }}>Presión Referencia</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Unidad</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Indicación IBC</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#f0f9ff' }}>Corrección</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#fffbeb', color: '#92400e' }}>Incertidumbre (mmHg)</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Factor de Cobertura</th>
-                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Conformidad</th>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#0f172a' }}>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Prueba</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#f0f9ff' }}>Presión Referencia</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Unidad</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Indicación IBC</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#f0f9ff' }}>Corrección</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#fffbeb', color: '#92400e' }}>Incertidumbre (mmHg)</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Factor Cobertura</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Conformidad</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -561,20 +566,20 @@ export default function CertificadoPdf() {
                           const uExp = p.incertidumbreExpandida ?? 0.62;
                           const corrStr = corr > 0 ? `+${corr}` : `${corr}`;
                           return (
-                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#fafafa' }}>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 800, background: '#f0f9ff' }}>{presRef}</td>
-                              <td style={{ padding: '3.5px 6px', color: '#64748b' }}>mmHg</td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 800 }}>{refVal}</td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 800, background: '#f0f9ff', color: corr >= 0 ? '#0369a1' : '#d97706' }}>
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                              <td style={{ padding: '5px 7px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
+                              <td style={{ padding: '5px 7px', fontWeight: 800, background: '#f0f9ff' }}>{presRef}</td>
+                              <td style={{ padding: '5px 7px', color: '#64748b' }}>mmHg</td>
+                              <td style={{ padding: '5px 7px', fontWeight: 800 }}>{refVal}</td>
+                              <td style={{ padding: '5px 7px', fontWeight: 800, background: '#f0f9ff', color: corr >= 0 ? '#0369a1' : '#d97706' }}>
                                 {corrStr}
                               </td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
+                              <td style={{ padding: '5px 7px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
                                 ± {uExp}
                               </td>
-                              <td style={{ padding: '3.5px 6px', fontWeight: 700 }}>2</td>
-                              <td style={{ padding: '3.5px 6px' }}>
-                                <span style={{ padding: '2px 6px', borderRadius: 3, fontSize: 8.5, fontWeight: 800, background: p.cumple ? '#dcfce7' : '#fee2e2', color: p.cumple ? '#15803d' : '#b91c1c' }}>
+                              <td style={{ padding: '5px 7px', fontWeight: 700 }}>k = 2</td>
+                              <td style={{ padding: '5px 7px' }}>
+                                <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 9.5, fontWeight: 800, background: p.cumple ? '#dcfce7' : '#fee2e2', color: p.cumple ? '#15803d' : '#b91c1c' }}>
                                   {p.cumple ? 'CONFORME' : 'NO CONFORME'}
                                 </span>
                               </td>
@@ -587,11 +592,11 @@ export default function CertificadoPdf() {
                 </div>
 
                 {/* OBSERVACIONES */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '6px 8px', fontSize: 8.5, color: '#334155', lineHeight: 1.35, background: '#f8fafc' }}>
-                  <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 2 }}>OBSERVACIONES:</div>
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '8px 12px', fontSize: 10.2, color: '#1e293b', lineHeight: 1.45, background: '#f8fafc' }}>
+                  <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 4, fontSize: 11 }}>OBSERVACIONES METROLÓGICAS:</div>
                   <div>• Los resultados de las calibraciones expresados en este certificado son válidos en el momento y bajo las condiciones en que se realizaron las mediciones.</div>
-                  <div>• El factor de cobertura corresponde a un nivel de confianza de aproximadamente 95.45%.</div>
-                  <div>• La corrección se calcula como: Presión Referencia - Indicación IBC.</div>
+                  <div>• El factor de cobertura k = 2 corresponde a un nivel de confianza de aproximadamente el 95.45%.</div>
+                  <div>• La corrección metrológica se calcula formalmente como: Presión Referencia - Indicación IBC.</div>
                   <div>
                     • * La prueba de hermeticidad realizada al esfigmomanómetro no hace parte del alcance de la acreditación. Razón de cambio calculada: <strong>{hermeticidad.fugaRazonCambio || hermeticidad.caidaPresion || 17.27} mmHg/min</strong> (Límite máximo permitido según OIML 148-2 Edition 2020: ≤ 4.0 mmHg/min) → <strong style={{ color: hermeticidad.cumple ? '#15803d' : '#dc2626' }}>{hermeticidad.cumple ? 'CUMPLE' : 'NO CUMPLE'}</strong>.
                   </div>
@@ -612,11 +617,11 @@ export default function CertificadoPdf() {
               <div>
                 {renderEncabezado(2, 2, 'CERTIFICADO DE CALIBRACIÓN', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
 
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '12px 14px', marginBottom: 20, background: '#f8fafc' }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', marginBottom: 10, letterSpacing: 0.3 }}>
-                    DECLARACIÓN:
+                <div style={{ border: '1.5px solid #0f172a', borderRadius: 4, padding: '14px 18px', marginBottom: 16, background: '#ffffff' }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 900, color: '#0f172a', marginBottom: 12, letterSpacing: 0.5 }}>
+                    DECLARACIONES METROLÓGICAS GENERALES (ISO/IEC 17025:2017):
                   </div>
-                  <div style={{ fontSize: 9.5, color: '#334155', lineHeight: 1.5, textAlign: 'justify', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 11, color: '#1e293b', lineHeight: 1.55, textAlign: 'justify', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div>
                       <strong>1. Incertidumbre de medición:</strong> La incertidumbre reportada es la incertidumbre de medición expandida, la cual se ha determinado multiplicando la incertidumbre típica combinada por el factor de cobertura k = 2, que para una distribución normal corresponde a una probabilidad de cobertura de aproximadamente el 95.45%. La incertidumbre de medición fue calculada conforme a la Guía para la Expresión de la Incertidumbre de Medida (JCGM 100:2008 - GUM).
                     </div>
@@ -638,30 +643,44 @@ export default function CertificadoPdf() {
                   </div>
                 </div>
 
+                {/* Recuadro de Normas de Referencia */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 20, background: '#f8fafc' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a', marginBottom: 5 }}>
+                    DOCUMENTOS Y NORMAS METROLÓGICAS DE REFERENCIA:
+                  </div>
+                  <div style={{ fontSize: 10.5, color: '#334155', lineHeight: 1.5 }}>
+                    • <strong>ISO/IEC 17025:2017:</strong> Requisitos generales para la competencia de los laboratorios de ensayo y de calibración.<br />
+                    • <strong>OIML R 148-2 Edition 2020:</strong> Non-invasive non-automated sphygmomanometers - Part 2: Test methods.<br />
+                    • <strong>ILAC-G8:09/2019:</strong> Guidelines on Decision Rules and Statements of Conformity.<br />
+                    • <strong>JCGM 100:2008 (GUM):</strong> Evaluation of measurement data — Guide to the expression of uncertainty in measurement.<br />
+                    • <strong>MC-DT-I-008:</strong> Procedimiento técnico específico para la calibración de esfigmomanómetros de presión arterial.
+                  </div>
+                </div>
+
                 {/* SECCIÓN DE FIRMAS METROLÓGICAS */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center', marginTop: 30, marginBottom: 30 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'center', marginTop: 30, marginBottom: 24 }}>
                   {/* Revisado y autorizado por */}
-                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 8 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
                       Revisado y autorizado por:
                     </div>
                     {aprobo.firma ? (
                       <img
                         src={aprobo.firma}
                         alt="Firma Director Técnico"
-                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
+                        style={{ height: 60, maxWidth: 220, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 50 }} />
+                      <div style={{ height: 60 }} />
                     )}
-                    <div style={{ fontWeight: 900, fontSize: 11.5, color: '#0f172a', marginTop: 4 }}>
+                    <div style={{ fontWeight: 900, fontSize: 13.5, color: '#0f172a', marginTop: 6 }}>
                       {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
                     </div>
-                    <div style={{ fontSize: 10, color: '#334155', fontWeight: 700 }}>
+                    <div style={{ fontSize: 11.5, color: '#0284c7', fontWeight: 800 }}>
                       {aprobo.cargo || 'Director Técnico'}
                     </div>
                     {aprobo.tarjetaProfesional && (
-                      <div style={{ fontSize: 9, color: '#64748b' }}>
+                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
                         T.P. Nº {aprobo.tarjetaProfesional}
                       </div>
                     )}
@@ -669,27 +688,27 @@ export default function CertificadoPdf() {
 
                   {/* Ejecutado por: Recuadro con código */}
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 8 }}>
                       Ejecutado por:
                     </div>
                     <div
                       style={{
                         display: 'inline-block',
-                        border: '2px solid #0f172a',
-                        padding: '8px 24px',
-                        borderRadius: 4,
+                        border: '2.5px solid #0f172a',
+                        padding: '10px 28px',
+                        borderRadius: 6,
                         background: '#f8fafc',
-                        minWidth: 140,
+                        minWidth: 160,
                       }}
                     >
-                      <div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
-                        CÓDIGO TÉCNICO
+                      <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
+                        CÓDIGO TÉCNICO AUTORIZADO
                       </div>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, margin: '2px 0' }}>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '4px 0' }}>
                         {calibro.codigo || 'TSC31'}
                       </div>
                       {calibro.nombre && (
-                        <div style={{ fontSize: 9.5, color: '#334155', fontWeight: 600 }}>
+                        <div style={{ fontSize: 11, color: '#334155', fontWeight: 700 }}>
                           {calibro.nombre}
                         </div>
                       )}
@@ -701,14 +720,15 @@ export default function CertificadoPdf() {
                 <div
                   style={{
                     textAlign: 'center',
-                    fontSize: 10.5,
+                    fontSize: 12,
                     fontWeight: 900,
                     color: '#0f172a',
-                    letterSpacing: 1,
+                    letterSpacing: 1.5,
                     marginTop: 35,
+                    marginBottom: 10,
                   }}
                 >
-                  --- FIN DEL INFORME ---
+                  --- FIN DEL INFORME METROLÓGICO OFICIAL ---
                 </div>
               </div>
 
@@ -726,8 +746,8 @@ export default function CertificadoPdf() {
                 {renderEncabezado(1, 1, 'GRÁFICAS DE DESEMPEÑO', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
 
                 {/* Sub-encabezado con datos del cliente e instrumento */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '8px 12px', marginBottom: 12, background: '#f8fafc' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 6, fontSize: 10 }}>
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
                     <div><strong>Solicitante:</strong> {datosCliente.nombre || 'N/A'}</div>
                     <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'N/A'} - {datosCliente.ciudad || 'Colombia'}</div>
                     <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</div>
@@ -737,85 +757,91 @@ export default function CertificadoPdf() {
                 </div>
 
                 {/* PRUEBA DE PARÁMETROS */}
-                <div style={{ border: '1.5px solid #0f172a', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+                <div style={{ border: '2px solid #0f172a', borderRadius: 6, overflow: 'hidden', marginBottom: 14, background: '#ffffff' }}>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: 900,
                       color: '#ffffff',
                       background: '#0f172a',
-                      padding: '6px 12px',
+                      padding: '8px 14px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
                   >
                     <span>PRUEBA DE PARÁMETROS: ERROR DE INDICACIÓN vs. PRESIÓN PATRÓN</span>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: '#e0f2fe' }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: '#e0f2fe' }}>
                       Límites EMP: ±3.00 mmHg (OIML 148-2)
                     </span>
                   </div>
 
-                  <div style={{ padding: '10px 8px 4px 8px', background: '#ffffff' }}>
+                  <div style={{ padding: '12px 10px 6px 10px', background: '#ffffff' }}>
                     <CalibrationChart
                       puntos={puntos}
                       unidad="mmHg"
                       tipoPlantilla="presion_tensiometro"
                       esPresion={true}
                       titulo="PRUEBA DE PARÁMETROS"
-                      height={320}
+                      height={360}
                     />
                   </div>
 
-                  <div style={{ borderTop: '1px solid #e2e8f0', background: '#f8fafc', padding: '8px 12px', fontSize: 9.5, color: '#475569', lineHeight: 1.4 }}>
-                    <strong>Criterio Normativo de Evaluación:</strong> Para la prueba de parámetros y desempeño se toma como referencia la recomendación internacional <strong>OIML 148-2 Edition 2020</strong>, cuyo error máximo permitido (EMP) para esfigmomanómetros es de <strong>±3.00 mmHg</strong>. La línea roja superior (+3.00 mmHg) e inferior (-3.00 mmHg) representan las tolerancias límite permisibles; la línea central representa el cero metrológico (0.00 mmHg).
+                  <div style={{ borderTop: '1.5px solid #e2e8f0', background: '#f8fafc', padding: '10px 14px', fontSize: 10.8, color: '#334155', lineHeight: 1.5 }}>
+                    <strong>Criterio Normativo de Evaluación:</strong> Para la prueba de parámetros y desempeño se toma como referencia la recomendación internacional <strong>OIML 148-2 Edition 2020</strong>, cuyo error máximo permitido (EMP) para esfigmomanómetros es de <strong>±3.00 mmHg</strong>. La línea roja superior (+3.00 mmHg) e inferior (-3.00 mmHg) representan las tolerancias límite permisibles; la línea central discontinua representa el cero metrológico (0.00 mmHg).
                   </div>
                 </div>
 
                 {/* Firmas en Hoja 3 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center', marginTop: 18, marginBottom: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'center', marginTop: 24, marginBottom: 10 }}>
                   {/* Revisado y autorizado por */}
-                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 6 }}>
-                    <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475569', marginBottom: 2 }}>
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Revisado y autorizado por:
                     </div>
                     {aprobo.firma ? (
                       <img
                         src={aprobo.firma}
                         alt="Firma Director Técnico"
-                        style={{ height: 40, maxWidth: 180, objectFit: 'contain' }}
+                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 40 }} />
+                      <div style={{ height: 50 }} />
                     )}
-                    <div style={{ fontWeight: 900, fontSize: 11, color: '#0f172a' }}>
+                    <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
                       {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
                     </div>
-                    <div style={{ fontSize: 9.5, color: '#334155', fontWeight: 600 }}>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
                       {aprobo.cargo || 'Director Técnico'}
                     </div>
                   </div>
 
                   {/* Ejecutado por */}
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
                       Ejecutado por:
                     </div>
                     <div
                       style={{
                         display: 'inline-block',
                         border: '2px solid #0f172a',
-                        padding: '6px 20px',
-                        borderRadius: 4,
+                        padding: '8px 24px',
+                        borderRadius: 5,
                         background: '#f8fafc',
+                        minWidth: 140,
                       }}
                     >
-                      <div style={{ fontSize: 8.5, fontWeight: 800, color: '#64748b' }}>
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b' }}>
                         CÓDIGO TÉCNICO
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5 }}>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '2px 0' }}>
                         {calibro.codigo || 'TSC31'}
                       </div>
+                      {calibro.nombre && (
+                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
+                          {calibro.nombre}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -849,13 +875,7 @@ export default function CertificadoPdf() {
                     1. DATOS DEL CLIENTE / SOLICITANTE
                   </div>
                   <div style={{ padding: '7px 10px' }}>
-                  letterSpacing: 0.3,
-                }}
-              >
-                1. DATOS DEL CLIENTE / SOLICITANTE
-              </div>
-              <div style={{ padding: '7px 10px' }}>
-                <table style={{ width: '100%', fontSize: 10.5, borderCollapse: 'collapse' }}>
+                    <table style={{ width: '100%', fontSize: 10.5, borderCollapse: 'collapse' }}>
                   <tbody>
                     <tr>
                       <td style={{ width: 120, fontWeight: 700, color: '#334155', padding: '3px 0' }}>Razón Social:</td>

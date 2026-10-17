@@ -190,11 +190,11 @@ export default function CalibrationChart({
               />
               <text
                 x={padding.left - 8}
-                y={y + 3.5}
+                y={y + 4}
                 textAnchor="end"
-                fontSize="10"
-                fill={isEmpLimit ? '#dc2626' : isZero ? '#0f172a' : '#475569'}
-                fontWeight={isEmpLimit || isZero ? '800' : '600'}
+                fontSize={isEmpLimit ? '12' : '11.5'}
+                fill={isEmpLimit ? '#dc2626' : isZero ? '#0f172a' : '#334155'}
+                fontWeight={isEmpLimit || isZero ? '900' : '700'}
               >
                 {formatVal(val)}
               </text>
@@ -285,10 +285,10 @@ export default function CalibrationChart({
               <circle
                 cx={cx}
                 cy={cy}
-                r={isPresion ? '5' : '4.5'}
+                r={isPresion ? '6' : '4.5'}
                 fill={isPresion ? '#000000' : '#0284c7'}
                 stroke={isPresion ? '#000000' : '#ffffff'}
-                strokeWidth={isPresion ? '1' : '1.5'}
+                strokeWidth={isPresion ? '1.5' : '1.5'}
               />
 
               {/* Etiqueta de valor del punto (solo en básculas/micropipetas para no recargar) */}
@@ -297,7 +297,7 @@ export default function CalibrationChart({
                   x={cx}
                   y={cy - 7}
                   textAnchor="middle"
-                  fontSize="10"
+                  fontSize="10.5"
                   fontWeight="800"
                   fill="#0f172a"
                 >
@@ -308,11 +308,11 @@ export default function CalibrationChart({
               {/* Etiqueta de X en el eje */}
               <text
                 x={cx}
-                y={padding.top + plotHeight + 18}
+                y={padding.top + plotHeight + 20}
                 textAnchor="middle"
-                fontSize="11"
+                fontSize="12"
                 fill="#0f172a"
-                fontWeight="700"
+                fontWeight="800"
               >
                 {d.x}
               </text>
@@ -323,11 +323,11 @@ export default function CalibrationChart({
         {/* Título de ejes */}
         <text
           x={padding.left + plotWidth / 2}
-          y={height - 8}
+          y={height - 6}
           textAnchor="middle"
-          fontSize="11.5"
+          fontSize="12.5"
           fill="#0f172a"
-          fontWeight="800"
+          fontWeight="900"
         >
           {isPresion ? 'Presión (mmHg)' : `Valor Patrón ${unidad ? `(${unidad})` : ''}`}
         </text>
@@ -337,9 +337,9 @@ export default function CalibrationChart({
           y="18"
           transform="rotate(-90)"
           textAnchor="middle"
-          fontSize="11.5"
+          fontSize="12.5"
           fill="#0f172a"
-          fontWeight="800"
+          fontWeight="900"
         >
           {isPresion ? 'Error ± Incertidumbre (mmHg)' : `Error de Indicación ${unidad ? `(${unidad})` : ''}`}
         </text>

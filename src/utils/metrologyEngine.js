@@ -246,66 +246,112 @@ export const calcularIncertidumbrePesasParaCarga = (cargaNominal, listaPesas = [
   };
 };
 
-// 5. Básculas y Balanzas: Cálculo de exactitud por punto
+// 5. Básculas y Balanzas: Cálculo de exactitud por punto según SIM MWG7-cg-01/v.00 y OIML R 76
 export const calcularPuntoBascula = ({
+  cargaNominal = 0,
   valorPatron = 0,
+  valorMasaConvencional = null,
   lecturas = [],
   resolucionEquipo = 0.1,
   patronInfo = {},
   patronesLista = null,
   errorExcentricidadMax = 0,
   desvRepetibilidad = 0,
-  emp = 0.5,
+  emp = null,
 }) => {
+  const carga = Number(cargaNominal || valorPatron || 0);
+  const masaConv =
+    valorMasaConvencional !== null && valorMasaConvencional !== undefined && valorMasaConvencional !== ''
+      ? Number(valorMasaConvencional)
+      : Number(valorPatron || carga);
+
   const valid = lecturas.map((x) => Number(x)).filter((x) => !isNaN(x));
   const prom = promedio(valid);
-  const error = valid.length > 0 ? prom - Number(valorPatron) : 0;
+  const indicacionPromedio = valid.length > 0 ? Number(prom.toFixed(2)) : carga;
+  const error = valid.length > 0 ? Number((indicacionPromedio - masaConv).toFixed(2)) : 0;
   const s = desviacionEstandar(valid);
 
-  // Tipo A: Puede ser la repetibilidad previa o la de este punto
+  // Tipo A: Repetibilidad de las lecturas
   const sFinal = desvRepetibilidad > 0 ? desvRepetibilidad : s;
-  const uA = valid.length > 1 ? sFinal / Math.sqrt(valid.length) : sFinal;
+  const uA = valid.length > 1 ? sFinal / Math.sqrt(valid.length) : (sFinal > 0 ? sFinal : 0.001);
 
   // Tipo B1: Incertidumbre pesas patrón (individual o combinada según juego de pesas)
   let uPat = 0.001;
   let infoPesasDesc = '';
   if (Array.isArray(patronesLista) && patronesLista.length > 0) {
-    const resPesas = calcularIncertidumbrePesasParaCarga(valorPatron, patronesLista);
+    const resPesas = calcularIncertidumbrePesasParaCarga(carga, patronesLista);
     uPat = resPesas.uPat;
     infoPesasDesc = resPesas.descripcionPesas;
   } else {
     uPat = (Number(patronInfo.incertidumbreExpandida) || 0.005) / (Number(patronInfo.factorK) || 2);
   }
 
-  // Tipo B2: Resolución del equipo
-  const uRes = (Number(resolucionEquipo) || 0.1) / (2 * Math.sqrt(3));
+  // Tipo B2: Resolución del equipo uRes = d / (2 * sqrt(3))
+  const resEq = Number(resolucionEquipo) || 0.1;
+  const uRes = resEq / (2 * Math.sqrt(3));
 
-  // Tipo B3: Excentricidad si aplica
+  // Tipo B3: Excentricidad
   const uEcc = (Number(errorExcentricidadMax) || 0) / (2 * Math.sqrt(3));
+
+  // Tipo B4: Empuje del aire y deriva según Guía SIM MWG7-cg-01/v.00
+  const uAire = (carga * 1.5e-5) / Math.sqrt(3);
 
   // Incertidumbre Combinada
   const uc = Math.sqrt(
-    Math.pow(uA, 2) + Math.pow(uPat, 2) + Math.pow(uRes, 2) + Math.pow(uEcc, 2)
+    Math.pow(uA, 2) + Math.pow(uPat, 2) + Math.pow(uRes, 2) + Math.pow(uEcc, 2) + Math.pow(uAire, 2)
   );
 
   const U = 2 * uc;
-  const empVal = Number(emp) > 0 ? Number(emp) : Number(resolucionEquipo) * 3;
+  const U_rounded = U < 0.1 ? Number(U.toFixed(3)) : Number(U.toFixed(2));
+
+  // EMP según OIML R 76-1 Clase III (Instrumentos de funcionamiento no automático):
+  // 0 a 500 e: EMP = ± 1 e (para d=0.1 kg, e=0.1 kg -> 0 a 50 kg: ± 0.1 kg)
+  // > 500 e a 2000 e: EMP = ± 2 e (50 kg a 200 kg: ± 0.2 kg)
+  let empCalculado = 0.2;
+  const eVal = resEq;
+  if (carga <= 500 * eVal) {
+    empCalculado = 1 * eVal;
+  } else if (carga <= 2000 * eVal) {
+    empCalculado = 2 * eVal;
+  } else {
+    empCalculado = 3 * eVal;
+  }
+  const empVal = Number(emp) > 0 ? Number(emp) : empCalculado;
   const cumple = Math.abs(error) <= empVal;
 
   return {
-    valorPatron: Number(valorPatron),
+    valorNominal: carga,
+    cargaNominal: carga,
+    valorPatron: masaConv,
+    valorMasaConvencional: masaConv,
+    indicacionPromedio,
+    promedio: indicacionPromedio,
     pesasUtilizadas: infoPesasDesc,
     lecturas: valid,
-    promedio: Number(prom.toFixed(3)),
-    error: Number(error.toFixed(3)),
+    error,
     desviacionEstandar: Number(s.toFixed(4)),
     incertidumbreTipoA: Number(uA.toFixed(4)),
     incertidumbreTipoB: Number(Math.sqrt(Math.pow(uPat, 2) + Math.pow(uRes, 2) + Math.pow(uEcc, 2)).toFixed(4)),
     incertidumbreCombinada: Number(uc.toFixed(4)),
-    incertidumbreExpandida: Number(U.toFixed(3)),
+    incertidumbreExpandida: U_rounded,
     factorK: 2,
     emp: empVal,
     cumple,
+  };
+};
+
+export const calcularRepetibilidadBascula = (lecturas = []) => {
+  const valid = lecturas.map((x) => Number(x)).filter((x) => !isNaN(x));
+  if (valid.length === 0) return { promedio: 0, desviacionEstandar: 0, deltaMax: 0 };
+  const prom = promedio(valid);
+  const s = desviacionEstandar(valid);
+  const minVal = Math.min(...valid);
+  const maxVal = Math.max(...valid);
+  const deltaMax = Number((maxVal - minVal).toFixed(2));
+  return {
+    promedio: Number(prom.toFixed(2)),
+    desviacionEstandar: Number(s.toFixed(4)),
+    deltaMax,
   };
 };
 

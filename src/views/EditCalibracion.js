@@ -59,6 +59,11 @@ export default function EditCalibracion() {
     servicio: '',
     resolucion: 2,
     unidad: 'mmHg',
+    divisionEscala: '0,1 kg',
+    cargaMinima: '2 kg',
+    cargaMaxima: '150 kg',
+    claseExactitud: 'III',
+    fechaGeneracionCertificado: '',
   });
 
   // Datos del Cliente / IPS (Entrada manual)
@@ -100,50 +105,32 @@ export default function EditCalibracion() {
   // Múltiples Patrones / Juego de Pesas (Básculas)
   const [patronesLista, setPatronesLista] = useState([
     {
-      codigo: 'PAT-M-05K',
-      nombre: 'Pesa Patrón 5 kg',
-      valorNominal: 5,
-      unidad: 'kg',
+      codigo: 'SET-M1-01',
+      nombre: '(1, 2, 2*, 5, 10, 20, 20*, 50, 100, 200, 500) g y (1, 2, 2*, 5) kg - (A,B,C,D,E,F Y G)',
       claseExactitud: 'M1',
-      serie: 'SN-05K-01',
-      certificadoCalibracion: 'ONAC-M1-5KG-2025',
-      trazabilidad: 'INM / Lab Acreditado ONAC',
+      certificadoCalibracion: 'LM-0002-25 / LM-0045-25 / LM-0195-24 / CL225292 / LM-0043-25 y LM-0198-24',
+      fechaCalibracion: '2025-01-16 / 2025-04-16 / 2024-09-05 / 2024-08-19 / 2025-04-01 y 2024-09-11',
+      trazabilidad: 'Acreditado ANAB / INM',
       incertidumbreExpandida: 0.0008,
       factorK: 2,
     },
     {
       codigo: 'PAT-M-10K',
-      nombre: 'Pesa Patrón 10 kg',
-      valorNominal: 10,
-      unidad: 'kg',
+      nombre: '10 kg - (A,B,C,D,E,F Y G)',
       claseExactitud: 'M1',
-      serie: 'SN-10K-01',
-      certificadoCalibracion: 'ONAC-M1-10KG-2025',
-      trazabilidad: 'INM / Lab Acreditado ONAC',
+      certificadoCalibracion: 'M24-323 / CL229780 / CL228025 y CL228451',
+      fechaCalibracion: '2024-06-17 / 2025-05-29 / 2025-02-17 y 2025-03-19',
+      trazabilidad: 'Acreditado ANAB / INM',
       incertidumbreExpandida: 0.0016,
       factorK: 2,
     },
     {
-      codigo: 'PAT-M-20K-1',
-      nombre: 'Pesa Patrón 20 kg (#1)',
-      valorNominal: 20,
-      unidad: 'kg',
+      codigo: 'PAT-M-20K',
+      nombre: '20 kg - (A,B,C,D,E,F Y G)',
       claseExactitud: 'M1',
-      serie: 'SN-20K-01',
-      certificadoCalibracion: 'ONAC-M1-20KG-2025-A',
-      trazabilidad: 'INM / Lab Acreditado ONAC',
-      incertidumbreExpandida: 0.0032,
-      factorK: 2,
-    },
-    {
-      codigo: 'PAT-M-20K-2',
-      nombre: 'Pesa Patrón 20 kg (#2)',
-      valorNominal: 20,
-      unidad: 'kg',
-      claseExactitud: 'M1',
-      serie: 'SN-20K-02',
-      certificadoCalibracion: 'ONAC-M1-20KG-2025-B',
-      trazabilidad: 'INM / Lab Acreditado ONAC',
+      certificadoCalibracion: 'M24-324 / CL229781 / CL228027 / CL228453 / M241524 / M241524 y M241524',
+      fechaCalibracion: '2024-06-17 / 2025-05-29 / 2025-02-17 / 2025-03-19 / 2024-08-15 / 2024-08-15 y 2024-08-15',
+      trazabilidad: 'Acreditado ANAB / INM',
       incertidumbreExpandida: 0.0032,
       factorK: 2,
     },
@@ -168,22 +155,27 @@ export default function EditCalibracion() {
 
   const [puntosTensiometro, setPuntosTensiometro] = useState([]);
 
-  // 2. Báscula
+  // 2. Báscula (Modelo Acreditado ISO 17025 / SIM MWG7)
   const [repetibilidadBascula, setRepetibilidadBascula] = useState({
-    cargaNominal: 20,
-    lecturas: [20.0, 20.0, 20.0, 20.0, 20.0],
-    promedio: 20.0,
+    cargaNominal: 75,
+    lecturas: [75.2, 75.2, 75.2, 75.2, 75.2],
+    promedio: 75.2,
     desviacionEstandar: 0,
+    deltaMax: 0.0,
+    deltaMaxRep: 0.0,
   });
 
   const [excentricidadBascula, setExcentricidadBascula] = useState({
-    cargaNominal: 20,
-    centro: 20.0,
-    pos1: 20.0,
-    pos2: 20.0,
-    pos3: 20.0,
-    pos4: 20.0,
-    errorMaximo: 0,
+    cargaNominal: 50,
+    centro: 50.1,
+    pos1: 50.0,
+    pos2: 50.3,
+    pos3: 50.1,
+    pos4: 50.1,
+    pos5: 50.1,
+    deltaMax: 0.2,
+    deltaMaxExc: 0.2,
+    errorMaximo: 0.2,
     emp: 0.2,
     cumple: true,
   });
@@ -291,8 +283,18 @@ export default function EditCalibracion() {
                   p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== ''
                     ? Number(p.valorPatron)
                     : Number(p.valorNominal || 0);
+                const cargaNom =
+                  p.cargaNominal !== undefined && p.cargaNominal !== null
+                    ? Number(p.cargaNominal)
+                    : (p.valorNominal !== undefined && p.valorNominal !== null ? Number(p.valorNominal) : valPat);
+                const valMasaConv =
+                  p.valorMasaConvencional !== undefined && p.valorMasaConvencional !== null
+                    ? Number(p.valorMasaConvencional)
+                    : valPat;
                 return {
+                  cargaNominal: cargaNom,
                   valorPatron: valPat,
+                  valorMasaConvencional: valMasaConv,
                   lecturas:
                     Array.isArray(p.lecturas) && p.lecturas.length > 0
                       ? p.lecturas
@@ -417,7 +419,10 @@ export default function EditCalibracion() {
   const desvRep = desviacionEstandar(repetibilidadBascula.lecturas);
   const puntosBasculaCalculados = puntosBascula.map((p) =>
     calcularPuntoBascula({
+      cargaNominal: p.cargaNominal ?? p.valorPatron,
+      valorNominal: p.cargaNominal ?? p.valorPatron,
       valorPatron: p.valorPatron,
+      valorMasaConvencional: p.valorMasaConvencional ?? p.valorPatron,
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
       patronInfo: datosPatron,
@@ -484,19 +489,31 @@ export default function EditCalibracion() {
         puntos: puntosMapeados,
       };
     } else if (tipoPlantilla === 'masa_bascula') {
+      const minRep = Math.min(...repetibilidadBascula.lecturas);
+      const maxRep = Math.max(...repetibilidadBascula.lecturas);
+      const deltaRep = Number((maxRep - minRep).toFixed(4));
+
       puntosMapeados = puntosBasculaCalculados.map((p, idx) => ({
         ...p,
         puntoNumero: idx + 1,
-        valorNominal: p.valorPatron,
+        valorNominal: p.cargaNominal ?? p.valorPatron,
         valorPatron: p.valorPatron,
+        cargaNominal: p.cargaNominal ?? p.valorPatron,
+        valorMasaConvencional: p.valorMasaConvencional ?? p.valorPatron,
       }));
       datosCalibracion = {
         repetibilidadBascula: {
           ...repetibilidadBascula,
           promedio: promedio(repetibilidadBascula.lecturas),
           desviacionEstandar: desvRep,
+          deltaMax: repetibilidadBascula.deltaMax ?? deltaRep,
+          deltaMaxRep: repetibilidadBascula.deltaMaxRep ?? deltaRep,
         },
-        excentricidadBascula,
+        excentricidadBascula: {
+          ...excentricidadBascula,
+          deltaMax: excentricidadBascula.errorMaximo,
+          deltaMaxExc: excentricidadBascula.errorMaximo,
+        },
         puntos: puntosMapeados,
       };
     } else if (tipoPlantilla === 'volumen_micropipeta') {
@@ -827,6 +844,62 @@ export default function EditCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              {tipoPlantilla === 'masa_bascula' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      División de Escala (d / e)
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.divisionEscala || '0,1 kg'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, divisionEscala: e.target.value })}
+                      placeholder="Ej: 0,1 kg"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Carga Mínima (Min)
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.cargaMinima || '2 kg'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, cargaMinima: e.target.value })}
+                      placeholder="Ej: 2 kg"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Carga Máxima (Max)
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.cargaMaxima || '150 kg'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, cargaMaxima: e.target.value })}
+                      placeholder="Ej: 150 kg"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Clase de Exactitud (OIML R 76)
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.claseExactitud || 'III'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, claseExactitud: e.target.value })}
+                      placeholder="Ej: III / IIII"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>

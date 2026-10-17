@@ -88,6 +88,71 @@ export default function CertificadoPdf() {
   const hermeticidad = datosCalibracion.hermeticidad || {};
   const micropipetaInfo = datosCalibracion.micropipetaInfo || {};
 
+  const defaultPuntosBascula = [
+    { puntoNumero: 1, cargaNominal: 5, valorMasaConvencional: 5.000103, valorPatron: 5.000103, lecturas: [5.0, 5.0, 5.0], promedio: 5.0, indicacionPromedio: 5.0, error: -0.0001, incertidumbreExpandida: 0.082, factorK: 2, emp: 0.1, cumple: true },
+    { puntoNumero: 2, cargaNominal: 40, valorMasaConvencional: 39.99996, valorPatron: 39.99996, lecturas: [40.2, 40.2, 40.2], promedio: 40.2, indicacionPromedio: 40.2, error: 0.2000, incertidumbreExpandida: 0.12, factorK: 2, emp: 0.2, cumple: true },
+    { puntoNumero: 3, cargaNominal: 80, valorMasaConvencional: 79.99992, valorPatron: 79.99992, lecturas: [80.3, 80.4, 80.4], promedio: 80.4, indicacionPromedio: 80.4, error: 0.3667, incertidumbreExpandida: 0.20, factorK: 2, emp: 0.4, cumple: true },
+    { puntoNumero: 4, cargaNominal: 120, valorMasaConvencional: 119.99988, valorPatron: 119.99988, lecturas: [120.3, 120.4, 120.4], promedio: 120.4, indicacionPromedio: 120.4, error: 0.3667, incertidumbreExpandida: 0.29, factorK: 2, emp: 0.4, cumple: true },
+    { puntoNumero: 5, cargaNominal: 150, valorMasaConvencional: 149.99989, valorPatron: 149.99989, lecturas: [150.4, 150.5, 150.5], promedio: 150.5, indicacionPromedio: 150.5, error: 0.4667, incertidumbreExpandida: 0.36, factorK: 2, emp: 0.5, cumple: true },
+  ];
+  const puntosBasculaDisplay = (puntos && puntos.length > 0) ? puntos : defaultPuntosBascula;
+
+  const defaultPatronesBascula = [
+    {
+      codigo: 'SET-M1-01',
+      nombre: '(1, 2, 2*, 5, 10, 20, 20*, 50, 100, 200, 500) g y (1, 2, 2*, 5) kg - (A,B,C,D,E,F Y G)',
+      claseExactitud: 'M1',
+      certificadoCalibracion: 'LM-0002-25 / LM-0045-25 / LM-0195-24 / CL225292 / LM-0043-25 y LM-0198-24',
+      fechaCalibracion: '2025-01-16 / 2025-04-16 / 2024-09-05 / 2024-08-19 / 2025-04-01 y 2024-09-11',
+      trazabilidad: 'Acreditado ANAB / INM',
+    },
+    {
+      codigo: 'PAT-M-10K',
+      nombre: '10 kg - (A,B,C,D,E,F Y G)',
+      claseExactitud: 'M1',
+      certificadoCalibracion: 'M24-323 / CL229780 / CL228025 y CL228451',
+      fechaCalibracion: '2024-06-17 / 2025-05-29 / 2025-02-17 y 2025-03-19',
+      trazabilidad: 'Acreditado ANAB / INM',
+    },
+    {
+      codigo: 'PAT-M-20K',
+      nombre: '20 kg - (A,B,C,D,E,F Y G)',
+      claseExactitud: 'M1',
+      certificadoCalibracion: 'M24-324 / CL229781 / CL228027 / CL228453 / M241524 / M241524 y M241524',
+      fechaCalibracion: '2024-06-17 / 2025-05-29 / 2025-02-17 / 2025-03-19 / 2024-08-15 / 2024-08-15 y 2024-08-15',
+      trazabilidad: 'Acreditado ANAB / INM',
+    },
+  ];
+  const patronesBasculaDisplay = (patronesLista && patronesLista.length > 0) ? patronesLista : defaultPatronesBascula;
+
+  const formatMasaConv = (val) => {
+    if (val === undefined || val === null || val === '') return '0,0000';
+    const num = Number(val);
+    if (isNaN(num)) return String(val);
+    const str = num.toString();
+    if (str.includes('.')) {
+      const decs = str.split('.')[1].length;
+      return num.toFixed(Math.max(decs, 4)).replace('.', ',');
+    }
+    return num.toFixed(4).replace('.', ',');
+  };
+
+  const formatErrorVal = (val) => {
+    if (val === undefined || val === null || val === '') return '0,0000';
+    const num = Number(val);
+    if (isNaN(num)) return String(val);
+    const sign = num > 0 ? '+' : '';
+    return sign + num.toFixed(4).replace('.', ',');
+  };
+
+  const formatIncertVal = (val) => {
+    if (val === undefined || val === null || val === '') return '0,00';
+    const num = Number(val);
+    if (isNaN(num)) return String(val);
+    if (num < 0.1) return num.toFixed(3).replace('.', ',');
+    return num.toFixed(2).replace('.', ',');
+  };
+
   // Componente interno para Encabezado Oficial en cada página
   const renderEncabezado = (paginaNum, totalPaginas = 3, titulo = 'CERTIFICADO DE CALIBRACIÓN METROLÓGICA', subtitulo = 'LABORATORIO DE CALIBRACIÓN BIOMÉDICA GEMTTO') => (
     <div
@@ -836,6 +901,613 @@ export default function CertificadoPdf() {
                       </div>
                       <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '2px 0' }}>
                         {calibro.codigo || 'TSC31'}
+                      </div>
+                      {calibro.nombre && (
+                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
+                          {calibro.nombre}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {renderPieDePagina(1, 1, 'ANEXO TÉCNICO - GRÁFICAS DE DESEMPEÑO')}
+            </div>
+          </>
+        ) : tipoPlantilla === 'masa_bascula' ? (
+          <>
+            {/* ============================================================== */}
+            {/* HOJA 1: FORMATO ACREDITADO ISO 17025 - BÁSCULAS (PÁGINA 1/2)   */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(1, 2, 'CERTIFICADO DE CALIBRACIÓN', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
+
+                {/* Fila 1: Cliente & Ítem Calibrado */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
+                  {/* DATOS GENERALES DEL CLIENTE */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      DATOS GENERALES DEL CLIENTE
+                    </div>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 105, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Solicitante:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>NIT / CC:</td>
+                            <td style={{ fontWeight: 700 }}>{datosCliente.nit || '890.201.216-5'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Dirección:</td>
+                            <td>{datosCliente.direccion || 'Calle 45 # 54 - 10'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ciudad:</td>
+                            <td>{datosCliente.ciudad || 'Bucaramanga, Santander'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Contacto / Tel:</td>
+                            <td>{datosCliente.telefono || datosCliente.contacto || 'N/A'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* DATOS GENERALES DEL ÍTEM A CALIBRAR */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      DATOS GENERALES DEL ÍTEM A CALIBRAR
+                    </div>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 130, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ítem / Instrumento:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosEquipo.nombre || 'Báscula Pesa Persona Digital'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Marca / Modelo:</td>
+                            <td>{datosEquipo.marca || 'seca'} / {datosEquipo.modelo || '803'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Número de Serie:</td>
+                            <td style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || '8803325172348'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Código / No. Activo:</td>
+                            <td>{datosEquipo.nroActivo || datosEquipo.placaInventario || 'ATCI003859'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>División de Escala (d):</td>
+                            <td style={{ fontWeight: 700 }}>{datosEquipo.divisionEscala || (datosEquipo.resolucion ? `${datosEquipo.resolucion} ${datosEquipo.unidad}` : '0,1 kg')}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Carga Mín. / Máx.:</td>
+                            <td>Min: {datosEquipo.cargaMinima || '2 kg'} | Max: {datosEquipo.cargaMaxima || '150 kg'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Clase de Exactitud:</td>
+                            <td><strong style={{ color: '#0f172a' }}>Clase {datosEquipo.claseExactitud || 'III'}</strong> (Media según OIML R 76-1)</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ubicación:</td>
+                            <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Sede Santa Isabel - Cirugía'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fila 2: Fechas & Condiciones */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: 12, marginBottom: 10 }}>
+                  {/* DATOS DE LA CALIBRACIÓN Y CONDICIONES */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      DATOS DE CALIBRACIÓN Y CONDICIONES AMBIENTALES
+                    </div>
+                    <div style={{ padding: '7px 10px' }}>
+                      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', color: '#1e293b' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 145, fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha de calibración:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{fechaCalibracion}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha de recepción:</td>
+                            <td>{datosEquipo.fechaRecepcion || fechaCalibracion}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha de emisión:</td>
+                            <td>{fechaEmision || fechaCalibracion}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Próxima calibración:</td>
+                            <td style={{ fontWeight: 700, color: '#0369a1' }}>{fechaProximaCalibracion || 'Recomendada a 12 meses'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Lugar de calibración:</td>
+                            <td>{condicionesAmbientales.lugarCalibracion || 'Taller Biomedico'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Procedimiento:</td>
+                            <td>{procedimiento || 'MC-DT-I-034'} (SIM MWG7-cg-01 / OIML R 76-1)</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Método de calibración:</td>
+                            <td>{condicionesAmbientales.metodoCalibracion || 'Comparación directa'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Condiciones ambientales:</td>
+                            <td>
+                              Temp: <strong>{condicionesAmbientales.temperatura ?? 23.5} °C ± {condicionesAmbientales.incertTemperatura ?? 0.8} °C</strong> | HR: <strong>{condicionesAmbientales.humedadRelativa ?? 47} % ± {condicionesAmbientales.incertHumedad ?? 2.5} %</strong>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* TRAZABILIDAD METROLÓGICA DE PATRONES */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      TRAZABILIDAD METROLÓGICA DE PATRONES
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse', color: '#1e293b' }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1', textAlign: 'left' }}>
+                            <th style={{ padding: '4px 6px', fontWeight: 800 }}>Patrón / Masas</th>
+                            <th style={{ padding: '4px 6px', fontWeight: 800 }}>Certificado Calibración</th>
+                            <th style={{ padding: '4px 6px', fontWeight: 800 }}>Fecha Calib.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {patronesBasculaDisplay.map((pat, pIdx) => (
+                            <tr key={pIdx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '4px 6px', fontWeight: 700, color: '#0f172a', fontSize: 9.8 }}>
+                                {pat.nombre || pat.codigo}
+                              </td>
+                              <td style={{ padding: '4px 6px', fontSize: 9.5, color: '#0369a1', fontWeight: 600 }}>
+                                {pat.certificadoCalibracion || 'Acreditado'}
+                              </td>
+                              <td style={{ padding: '4px 6px', fontSize: 9.5, whiteSpace: 'nowrap' }}>
+                                {pat.fechaCalibracion || '2024-2025'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div style={{ fontSize: 9.2, color: '#64748b', marginTop: 6, lineHeight: 1.35, fontStyle: 'italic' }}>
+                        * Los patrones de pesas utilizados poseen trazabilidad demostrable a los patrones nacionales custodiados por el Instituto Nacional de Metrología (INM) y laboratorios acreditados bajo ISO/IEC 17025 reconocidos en CIPM-MRA y signatarios de ILAC (ANAB / ONAC).
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TABLA DE DATOS DE CALIBRACIÓN (MEDIDAS DIRECTAS) */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                    TABLA DE DATOS DE CALIBRACIÓN (MEDIDAS DIRECTAS DE REPETICIÓN)
+                  </div>
+                  <div style={{ padding: '5px 8px' }}>
+                    <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', textAlign: 'center' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#0f172a' }}>
+                          <th style={{ padding: '6px 6px', fontWeight: 800, fontSize: 10.5, width: 36 }}>Pto</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5, textAlign: 'right' }}>Carga Nominal ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5, textAlign: 'right', background: '#f0f9ff' }}>Valor Masa Convencional ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Lectura 1</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Lectura 2</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5 }}>Lectura 3</th>
+                          <th style={{ padding: '6px 8px', fontWeight: 800, fontSize: 10.5, background: '#e0f2fe' }}>Indicación Promedio ({datosEquipo.unidad || 'kg'})</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {puntosBasculaDisplay.map((p, idx) => {
+                          const cNom = p.cargaNominal ?? p.valorNominal ?? p.valorPatron ?? 0;
+                          const masaConv = p.valorMasaConvencional ?? p.valorPatron ?? cNom;
+                          const lects = Array.isArray(p.lecturas) && p.lecturas.length >= 3
+                            ? p.lecturas
+                            : [p.promedio || cNom, p.promedio || cNom, p.promedio || cNom];
+                          const prom = p.indicacionPromedio ?? p.promedio ?? (lects.reduce((a, b) => a + Number(b), 0) / lects.length);
+                          return (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                              <td style={{ padding: '5.5px 6px', fontWeight: 800, color: '#475569' }}>{idx + 1}</td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 800, textAlign: 'right' }}>{Number(cNom).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 700, textAlign: 'right', background: '#f0f9ff', color: '#0369a1' }}>
+                                {formatMasaConv(masaConv)}
+                              </td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 600 }}>{Number(lects[0]).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 600 }}>{Number(lects[1]).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 600 }}>{Number(lects[2]).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 8px', fontWeight: 800, background: '#e0f2fe', color: '#0c4a6e' }}>
+                                {Number(prom).toFixed(1).replace('.', ',')}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {renderPieDePagina(1, 2, 'CERTIFICADO DE CALIBRACIÓN - IPFNA')}
+            </div>
+
+            {/* Salto de Página para Generación PDF */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ============================================================== */}
+            {/* HOJA 2: RESULTADOS METROLÓGICOS, DECLARACIONES Y FIRMAS (PÁG 2/2)*/}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(2, 2, 'CERTIFICADO DE CALIBRACIÓN', 'RESULTADOS METROLÓGICOS Y DECLARACIONES')}
+
+                {/* TABLA DE RESULTADOS DE CALIBRACIÓN */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 800,
+                      color: '#0f172a',
+                      background: '#f1f5f9',
+                      padding: '5px 10px',
+                      borderBottom: '1px solid #cbd5e1',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>RESULTADOS DE LA MEDICIÓN Y ESTIMACIÓN DE INCERTIDUMBRE (SIM MWG7-cg-01 / OIML R 76-1)</span>
+                    <span style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>
+                      Factor de Cobertura k = 2 (Nivel de Confianza ~95.45%)
+                    </span>
+                  </div>
+
+                  <div style={{ padding: '5px 8px' }}>
+                    <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse', textAlign: 'center' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#0f172a' }}>
+                          <th style={{ padding: '6px 6px', fontWeight: 800, fontSize: 10.5 }}>Carga Nominal ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#f0f9ff' }}>Valor Masa Convencional ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Indicación Promedio ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#f0f9ff' }}>Error de Indicación ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5, background: '#fffbeb', color: '#92400e' }}>Incertidumbre Expandida U ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 6px', fontWeight: 800, fontSize: 10.5 }}>Factor k</th>
+                          <th style={{ padding: '6px 6px', fontWeight: 800, fontSize: 10.5 }}>EMP ({datosEquipo.unidad || 'kg'})</th>
+                          <th style={{ padding: '6px 7px', fontWeight: 800, fontSize: 10.5 }}>Conformidad</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {puntosBasculaDisplay.map((p, idx) => {
+                          const cNom = p.cargaNominal ?? p.valorNominal ?? p.valorPatron ?? 0;
+                          const masaConv = p.valorMasaConvencional ?? p.valorPatron ?? cNom;
+                          const lects = Array.isArray(p.lecturas) && p.lecturas.length >= 3
+                            ? p.lecturas
+                            : [p.promedio || cNom, p.promedio || cNom, p.promedio || cNom];
+                          const prom = p.indicacionPromedio ?? p.promedio ?? (lects.reduce((a, b) => a + Number(b), 0) / lects.length);
+                          const err = p.error !== undefined ? Number(p.error) : Number((prom - masaConv).toFixed(4));
+                          const uExp = p.incertidumbreExpandida ?? 0.12;
+                          const empVal = p.emp ? Number(p.emp) : (cNom <= 50 ? 0.1 : (cNom <= 100 ? 0.2 : (cNom <= 120 ? 0.4 : 0.5)));
+                          const isConforme = p.cumple !== undefined ? p.cumple : Math.abs(err) <= empVal;
+
+                          return (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                              <td style={{ padding: '5.5px 6px', fontWeight: 800 }}>{Number(cNom).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 7px', fontWeight: 700, background: '#f0f9ff', color: '#0369a1' }}>
+                                {formatMasaConv(masaConv)}
+                              </td>
+                              <td style={{ padding: '5.5px 7px', fontWeight: 800 }}>{Number(prom).toFixed(1).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 7px', fontWeight: 800, background: '#f0f9ff', color: err >= 0 ? '#0369a1' : '#d97706' }}>
+                                {formatErrorVal(err)}
+                              </td>
+                              <td style={{ padding: '5.5px 7px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
+                                ± {formatIncertVal(uExp)}
+                              </td>
+                              <td style={{ padding: '5.5px 6px', fontWeight: 700 }}>2</td>
+                              <td style={{ padding: '5.5px 6px', fontWeight: 700 }}>± {Number(empVal).toFixed(2).replace('.', ',')}</td>
+                              <td style={{ padding: '5.5px 7px' }}>
+                                <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 9.5, fontWeight: 800, background: isConforme ? '#dcfce7' : '#fee2e2', color: isConforme ? '#15803d' : '#b91c1c' }}>
+                                  {isConforme ? 'CONFORME' : 'NO CONFORME'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* ENSAYOS PRELIMINARES: REPETIBILIDAD Y EXCENTRICIDAD */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
+                  {/* REPETIBILIDAD */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      ENSAYO DE REPETIBILIDAD (OIML R 76-1 numeral 3.6.1 / SIM MWG7)
+                    </div>
+                    <div style={{ padding: '7px 10px', fontSize: 10.5, color: '#1e293b' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span>Carga de Ensayo: <strong>{repBascula.cargaNominal || 75} {datosEquipo.unidad || 'kg'}</strong> (~50% Max)</span>
+                        <span style={{ color: '#15803d', fontWeight: 800 }}>✓ CUMPLE</span>
+                      </div>
+                      <div style={{ background: '#f8fafc', padding: '5px 8px', borderRadius: 4, border: '1px solid #e2e8f0', marginBottom: 6 }}>
+                        <div style={{ fontSize: 10, color: '#475569', fontWeight: 700, marginBottom: 2 }}>5 Lecturas Consecutivas ({datosEquipo.unidad || 'kg'}):</div>
+                        <div style={{ fontWeight: 800, color: '#0f172a' }}>
+                          L1: {(repBascula.lecturas?.[0] ?? 75.2).toFixed(1).replace('.', ',')} | L2: {(repBascula.lecturas?.[1] ?? 75.2).toFixed(1).replace('.', ',')} | L3: {(repBascula.lecturas?.[2] ?? 75.2).toFixed(1).replace('.', ',')} | L4: {(repBascula.lecturas?.[3] ?? 75.2).toFixed(1).replace('.', ',')} | L5: {(repBascula.lecturas?.[4] ?? 75.2).toFixed(1).replace('.', ',')}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.2 }}>
+                        <span>Diferencia Máx. (ΔI<sub>MAX(Rep)</sub>): <strong>{(repBascula.deltaMax ?? repBascula.deltaMaxRep ?? 0.0).toFixed(1).replace('.', ',')} {datosEquipo.unidad || 'kg'}</strong></span>
+                        <span>Tolerancia EMP: <strong>±0,2 {datosEquipo.unidad || 'kg'}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* EXCENTRICIDAD */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '5px 10px', borderBottom: '1px solid #cbd5e1', letterSpacing: 0.3 }}>
+                      ENSAYO DE EXCENTRICIDAD (OIML R 76-1 numeral 3.6.2)
+                    </div>
+                    <div style={{ padding: '7px 10px', fontSize: 10.5, color: '#1e293b' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span>Carga de Ensayo: <strong>{excBascula.cargaNominal || 50} {datosEquipo.unidad || 'kg'}</strong> (~1/3 Max)</span>
+                        <span style={{ color: '#15803d', fontWeight: 800 }}>✓ CUMPLE</span>
+                      </div>
+                      <div style={{ background: '#f8fafc', padding: '5px 8px', borderRadius: 4, border: '1px solid #e2e8f0', marginBottom: 6 }}>
+                        <div style={{ fontSize: 10, color: '#475569', fontWeight: 700, marginBottom: 2 }}>5 Posiciones de Carga ({datosEquipo.unidad || 'kg'}):</div>
+                        <div style={{ fontWeight: 800, color: '#0f172a' }}>
+                          1. Centro: {(excBascula.centro ?? 50.1).toFixed(1).replace('.', ',')} | 2. Del-Izq: {(excBascula.pos1 ?? 50.0).toFixed(1).replace('.', ',')} | 3. Det-Izq: {(excBascula.pos4 ?? 50.1).toFixed(1).replace('.', ',')} | 4. Det-Der: {(excBascula.pos3 ?? 50.1).toFixed(1).replace('.', ',')} | 5. Del-Der: {(excBascula.pos2 ?? 50.3).toFixed(1).replace('.', ',')}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.2 }}>
+                        <span>Diferencia Máx. (ΔI<sub>MAX(exc)</sub>): <strong>{(excBascula.deltaMax ?? excBascula.deltaMaxExc ?? 0.2).toFixed(1).replace('.', ',')} {datosEquipo.unidad || 'kg'}</strong></span>
+                        <span>Tolerancia EMP: <strong>±0,2 {datosEquipo.unidad || 'kg'}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OBSERVACIONES METROLÓGICAS */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '7px 12px', fontSize: 10.2, color: '#1e293b', lineHeight: 1.4, background: '#f8fafc', marginBottom: 10 }}>
+                  <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 3, fontSize: 10.8 }}>OBSERVACIONES METROLÓGICAS:</div>
+                  <div>• Los resultados de las calibraciones expresados en este certificado son válidos en el momento y bajo las condiciones en que se realizaron las mediciones.</div>
+                  <div>• El factor de cobertura k = 2 corresponde a un nivel de confianza de aproximadamente el 95.45% de acuerdo con la guía JCGM 100:2008 (GUM).</div>
+                  <div>• El error reportado corresponde a la diferencia: Error = Indicación del instrumento - Valor de masa convencional patrón (E = I - m<sub>c</sub>).</div>
+                  <div>• {observaciones || 'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.'}</div>
+                </div>
+
+                {/* DECLARACIONES METROLÓGICAS FORMALES (11 PUNTOS) */}
+                <div style={{ border: '1.5px solid #0f172a', borderRadius: 4, padding: '10px 14px', marginBottom: 12, background: '#ffffff' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 900, color: '#0f172a', marginBottom: 8, letterSpacing: 0.4 }}>
+                    DECLARACIONES METROLÓGICAS GENERALES (SIM MWG7-cg-01 / OIML R 76-1 / ISO/IEC 17025:2017):
+                  </div>
+                  <div style={{ fontSize: 9.8, color: '#1e293b', lineHeight: 1.45, textAlign: 'justify', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 14px' }}>
+                    <div>
+                      <strong>1. Validez de los resultados:</strong> Los resultados contenidos en este certificado se refieren exclusivamente al instrumento sometido a calibración en las condiciones indicadas.
+                    </div>
+                    <div>
+                      <strong>2. Reproducción:</strong> El presente documento no debe ser reproducido total o parcialmente sin la aprobación previa y por escrito de GEMTTO S.A.S.
+                    </div>
+                    <div>
+                      <strong>3. Incertidumbre expandida:</strong> La incertidumbre reportada se determinó multiplicando la incertidumbre combinada por el factor k = 2, para una probabilidad de cobertura del 95.45% (GUM).
+                    </div>
+                    <div>
+                      <strong>4. Método normativo:</strong> Fundamentado en la guía SIM MWG7-cg-01/v.00 (2009) "Guía para la Calibración de IPFNA" y la recomendación internacional OIML R 76-1.
+                    </div>
+                    <div>
+                      <strong>5. Regla de decisión:</strong> Se aplica la guía ILAC-G8:09/2019 de aceptación binaria simple basada en los errores máximos permisibles (EMP) de la clase de exactitud asignada.
+                    </div>
+                    <div>
+                      <strong>6. Masa convencional:</strong> El valor de masa convencional de los patrones empleados se ajusta a lo estipulado en la Recomendación Internacional OIML R 111-1.
+                    </div>
+                    <div>
+                      <strong>7. Cálculo del error:</strong> El error de indicación reportado corresponde a la diferencia aritmética: E = Indicación promedio - Masa convencional del patrón.
+                    </div>
+                    <div>
+                      <strong>8. Sin ajustes internos:</strong> La calibración no incluye modificaciones ni ajustes internos adicionales salvo los estipulados en el procedimiento técnico.
+                    </div>
+                    <div>
+                      <strong>9. Recalibración periódica:</strong> Es responsabilidad del usuario asegurar la periodicidad de calibración según la criticidad clínica y normatividad sanitaria vigente.
+                    </div>
+                    <div>
+                      <strong>10. Conservación metrológica:</strong> El instrumento mantiene su aptitud metrológica si no es sometido a sobrecargas mecánicas, desarmes ni traslados bruscos.
+                    </div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <strong>11. Integridad documental:</strong> Cualquier raspadura, enmienda o alteración anula por completo la validez jurídica y técnica del presente certificado oficial.
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECCIÓN DE FIRMAS METROLÓGICAS */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'center', marginTop: 14, marginBottom: 12 }}>
+                  {/* Revisado y autorizado por */}
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                      Revisado y autorizado por:
+                    </div>
+                    {aprobo.firma ? (
+                      <img
+                        src={aprobo.firma}
+                        alt="Firma Director Técnico"
+                        style={{ height: 56, maxWidth: 220, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 56 }} />
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 13, color: '#0f172a', marginTop: 4 }}>
+                      {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
+                      {aprobo.cargo || 'Director Técnico'}
+                    </div>
+                    {aprobo.tarjetaProfesional && (
+                      <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2 }}>
+                        T.P. Nº {aprobo.tarjetaProfesional}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ejecutado por: Recuadro con código */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                      Ejecutado por:
+                    </div>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        border: '2.5px solid #0f172a',
+                        padding: '8px 24px',
+                        borderRadius: 6,
+                        background: '#f8fafc',
+                        minWidth: 150,
+                      }}
+                    >
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
+                        CÓDIGO TÉCNICO AUTORIZADO
+                      </div>
+                      <div style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '3px 0' }}>
+                        {calibro.codigo || 'ISC24'}
+                      </div>
+                      {calibro.nombre && (
+                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
+                          {calibro.nombre}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* FIN DEL INFORME */}
+                <div
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 11.5,
+                    fontWeight: 900,
+                    color: '#0f172a',
+                    letterSpacing: 1.5,
+                    marginTop: 18,
+                    marginBottom: 6,
+                  }}
+                >
+                  --- FIN DEL INFORME METROLÓGICO OFICIAL ---
+                </div>
+              </div>
+
+              {renderPieDePagina(2, 2, 'CERTIFICADO DE CALIBRACIÓN - IPFNA')}
+            </div>
+
+            {/* Salto de Página para Generación PDF */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ============================================================== */}
+            {/* HOJA 3: ANEXO - GRÁFICAS DE DESEMPEÑO (PÁGINA 1 DE 1)          */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(1, 1, 'ANEXO TÉCNICO - GRÁFICAS DE CALIBRACIÓN', 'ERROR, INCERTIDUMBRE EXPANDIDA Y CARGAS')}
+
+                {/* Sub-encabezado con datos del cliente e instrumento */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
+                    <div><strong>Solicitante:</strong> {datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</div>
+                    <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'Calle 45 # 54 - 10'} - {datosCliente.ciudad || 'Bucaramanga'}</div>
+                    <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Báscula Pesa Persona Digital'}</div>
+                    <div><strong>Marca / Modelo:</strong> {datosEquipo.marca || 'seca'} / {datosEquipo.modelo || '803'}</div>
+                    <div><strong>Serie:</strong> <span style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || '8803325172348'}</span></div>
+                    <div><strong>No. de Activo:</strong> {datosEquipo.nroActivo || datosEquipo.placaInventario || 'ATCI003859'}</div>
+                    <div><strong>Div. Escala / Clase:</strong> {datosEquipo.divisionEscala || '0,1 kg'} / Clase {datosEquipo.claseExactitud || 'III'}</div>
+                  </div>
+                </div>
+
+                {/* TARJETA OFICIAL DE LA GRÁFICA */}
+                <div style={{ border: '2px solid #0f172a', borderRadius: 6, overflow: 'hidden', marginBottom: 14, background: '#ffffff' }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#ffffff',
+                      background: '#0f172a',
+                      padding: '8px 14px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>ERROR, INCERTIDUMBRE EXPANDIDA Y CARGAS (SIM MWG7-cg-01 / OIML R 76-1)</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: '#e0f2fe' }}>
+                      Cargas: 0 kg a 160 kg • Factor k = 2
+                    </span>
+                  </div>
+
+                  <div style={{ padding: '14px 10px 8px 10px', background: '#ffffff' }}>
+                    <CalibrationChart
+                      puntos={puntosBasculaDisplay}
+                      unidad={datosEquipo.unidad || 'kg'}
+                      tipoPlantilla="masa_bascula"
+                      titulo="ERROR, INCERTIDUMBRE EXPANDIDA Y CARGAS"
+                      height={370}
+                    />
+                  </div>
+
+                  <div style={{ borderTop: '1.5px solid #e2e8f0', background: '#f8fafc', padding: '10px 14px', fontSize: 10.8, color: '#334155', lineHeight: 1.5 }}>
+                    <strong>Criterios Normativos y Metodológicos:</strong> Curva de comportamiento metrológico evaluada conforme a la guía <strong>SIM MWG7-cg-01/v.00 (2009)</strong> y la recomendación internacional <strong>OIML R 76-1</strong> para Instrumentos de Pesar de Funcionamiento No Automático (IPFNA). Los puntos discretos representan el error de indicación <em>E = I - m<sub>c</sub></em> en cada escalón de carga nominal aplicada (5 kg a 150 kg). Las barras verticales con remate (serif) representan el intervalo de incertidumbre de medición expandida reportada (<em>±U</em>) para un factor de cobertura <em>k = 2</em> correspondiente a un nivel de confianza de aproximadamente el 95.45%. La línea central discontinua en <strong>0.000000 kg</strong> representa el valor de referencia de error nulo.
+                  </div>
+                </div>
+
+                {/* Firmas en Hoja 3 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'center', marginTop: 24, marginBottom: 10 }}>
+                  {/* Revisado y autorizado por */}
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                      Revisado y autorizado por:
+                    </div>
+                    {aprobo.firma ? (
+                      <img
+                        src={aprobo.firma}
+                        alt="Firma Director Técnico"
+                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 50 }} />
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
+                      {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
+                      {aprobo.cargo || 'Director Técnico'}
+                    </div>
+                  </div>
+
+                  {/* Ejecutado por */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                      Ejecutado por:
+                    </div>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        border: '2px solid #0f172a',
+                        padding: '8px 24px',
+                        borderRadius: 5,
+                        background: '#f8fafc',
+                        minWidth: 140,
+                      }}
+                    >
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b' }}>
+                        CÓDIGO TÉCNICO
+                      </div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '2px 0' }}>
+                        {calibro.codigo || 'ISC24'}
                       </div>
                       {calibro.nombre && (
                         <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>

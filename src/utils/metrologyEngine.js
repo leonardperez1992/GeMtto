@@ -67,47 +67,76 @@ export const calcularFactorZ = (tempC = 20, presionHpa = 1013) => {
   return Number(z.toFixed(5));
 };
 
-// 4. Tensiómetros: Cálculo de incertidumbre por punto
+// 4. Tensiómetros / Esfigmomanómetros: Cálculo metrológico según OIML 148-2 e ISO/IEC 17025
 export const calcularPuntoTensiometro = ({
+  prueba = 'Con Brazalete',
   valorPatron = 0,
+  indicacionIBC = null,
   lecturas = [],
-  resolucionEquipo = 2, // 2 mmHg típico en aneroides, 1 en digitales
+  resolucionEquipo = 2, // 2 mmHg en aneroides (estimación visual a 1 mmHg), 1 o 0.1 en digitales
   patronInfo = {},
 }) => {
   const valid = lecturas.map((x) => Number(x)).filter((x) => !isNaN(x));
   const prom = promedio(valid);
-  const error = valid.length > 0 ? prom - Number(valorPatron) : 0;
   const s = desviacionEstandar(valid);
 
-  // Tipo A: repetibilidad de las medidas
-  const uA = valid.length > 1 ? s / Math.sqrt(valid.length) : 0;
+  // Indicación en el IBC (nominal de prueba: 30, 100, 150, 200, 250, 300)
+  const ibcVal = indicacionIBC !== null && indicacionIBC !== undefined && indicacionIBC !== ''
+    ? Number(indicacionIBC)
+    : Number(valorPatron);
 
-  // Tipo B1: Incertidumbre del patrón
+  // Presión de Referencia: Promedio de las lecturas registradas por el módulo patrón
+  const presionReferencia = valid.length > 0 ? Number(prom.toFixed(1)) : ibcVal;
+
+  // Corrección = Presión Referencia - Indicación IBC
+  const correccion = valid.length > 0 ? Number((presionReferencia - ibcVal).toFixed(1)) : 0;
+  const correccionEntera = Math.round(correccion);
+
+  // Error de indicación = Indicación IBC - Presión Referencia
+  const error = valid.length > 0 ? Number((ibcVal - presionReferencia).toFixed(2)) : 0;
+
+  // Error para la gráfica de desempeño (Desviación respecto a la referencia)
+  const errorDesempeno = valid.length > 0 ? Number((presionReferencia - ibcVal).toFixed(2)) : 0;
+
+  // Tipo A: Repetibilidad de las 4 lecturas
+  const n = valid.length || 1;
+  const uA = n > 1 ? s / Math.sqrt(n) : 0;
+
+  // Tipo B1: Incertidumbre del patrón calibrador (distribución normal k=2)
   const uPat = (Number(patronInfo.incertidumbreExpandida) || 0.1) / (Number(patronInfo.factorK) || 2);
 
-  // Tipo B2: Resolución del equipo (distribución rectangular a = res / 2)
-  const uResEq = (Number(resolucionEquipo) || 2) / (2 * Math.sqrt(3));
+  // Tipo B2: Resolución del IBC (estimación a media división en aneroides de 2 mmHg: semiamplitud a = 1 / 2)
+  // Distribución rectangular: u = a / sqrt(3)
+  const estimacionRes = Number(resolucionEquipo) >= 2 ? 1 : (Number(resolucionEquipo) || 1);
+  const uResEq = estimacionRes / (2 * Math.sqrt(3));
 
-  // Tipo B3: Resolución del patrón
-  const uResPat = (Number(patronInfo.resolucion) || 0.05) / (2 * Math.sqrt(3));
+  // Tipo B3: Resolución del patrón (típicamente 0.01 o 0.1 mmHg)
+  const resPat = Number(patronInfo.resolucion) || 0.01;
+  const uResPat = resPat / (2 * Math.sqrt(3));
 
   // Incertidumbre Combinada
   const uc = Math.sqrt(
     Math.pow(uA, 2) + Math.pow(uPat, 2) + Math.pow(uResEq, 2) + Math.pow(uResPat, 2)
   );
 
-  // Incertidumbre Expandida k = 2 (95.45%)
+  // Incertidumbre Expandida U con factor de cobertura k = 2 (Nivel de confianza 95.45%)
   const U = 2 * uc;
 
-  // Error Máximo Permisible según OIML R 16: +/- 3 mmHg
+  // Error Máximo Permisible según OIML 148-2 Edition 2020 / OIML R 16: ± 3 mmHg
   const emp = 3.0;
   const cumple = Math.abs(error) <= emp;
 
   return {
-    valorPatron: Number(valorPatron),
+    prueba: prueba || 'Con Brazalete',
+    valorPatron: ibcVal,
+    indicacionIBC: ibcVal,
+    presionReferencia,
+    correccion,
+    correccionEntera,
     lecturas: valid,
-    promedio: Number(prom.toFixed(2)),
-    error: Number(error.toFixed(2)),
+    promedio: presionReferencia,
+    error,
+    errorDesempeno,
     desviacionEstandar: Number(s.toFixed(3)),
     incertidumbreTipoA: Number(uA.toFixed(3)),
     incertidumbreTipoB: Number(Math.sqrt(Math.pow(uPat, 2) + Math.pow(uResEq, 2) + Math.pow(uResPat, 2)).toFixed(3)),
@@ -115,6 +144,29 @@ export const calcularPuntoTensiometro = ({
     incertidumbreExpandida: Number(U.toFixed(2)),
     factorK: 2,
     emp,
+    cumple,
+  };
+};
+
+// 4.1 Cálculo de Hermeticidad y Razón de Cambio de Fuga de Aire (OIML 148-2 Edition 2020)
+export const calcularFugaAire = (presionInicial = 200, presionFinal = 198, tiempoMinutos = 1) => {
+  const pIni = Number(presionInicial) || 0;
+  const pFin = Number(presionFinal) || 0;
+  const t = Number(tiempoMinutos) || 1;
+  const caida = Number((pIni - pFin).toFixed(2));
+  const razonCambio = t > 0 ? Number((caida / t).toFixed(2)) : 0;
+  // Límite máximo permisible: menor a 4 mmHg por minuto según OIML 148-2:2020
+  const limite = 4.0;
+  const cumple = razonCambio <= limite;
+
+  return {
+    presionInicial: pIni,
+    presionFinal: pFin,
+    caidaPresion: caida,
+    tiempoMinutos: t,
+    fugaRazonCambio: razonCambio,
+    limitePermisible: limite,
+    normaReferencia: 'OIML 148-2 Edition 2020',
     cumple,
   };
 };

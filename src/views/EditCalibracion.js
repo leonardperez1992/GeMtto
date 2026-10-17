@@ -15,6 +15,7 @@ import {
 } from '../utils/metrologyEngine';
 import CalibrationChart from '../components/CalibrationChart';
 import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
+import SignatureCanvas from 'react-signature-canvas';
 import {
   FaArrowLeft,
   FaSave,
@@ -22,6 +23,7 @@ import {
   FaTimesCircle,
   FaPlus,
   FaTrash,
+  FaEraser,
 } from 'react-icons/fa';
 
 export default function EditCalibracion() {
@@ -51,6 +53,8 @@ export default function EditCalibracion() {
     modelo: '',
     serie: '',
     placaInventario: '',
+    nroActivo: '',
+    fechaRecepcion: '',
     ubicacion: '',
     servicio: '',
     resolucion: 2,
@@ -68,10 +72,12 @@ export default function EditCalibracion() {
   });
 
   const [condiciones, setCondiciones] = useState({
-    temperatura: 20,
-    incertTemperatura: 0.5,
-    humedadRelativa: 55,
-    incertHumedad: 2,
+    lugarCalibracion: 'Ingeniería',
+    metodoCalibracion: 'Comparación directa',
+    temperatura: 21.8,
+    incertTemperatura: 0.6,
+    humedadRelativa: 58,
+    incertHumedad: 0.5,
     presionAtmosferica: 1013,
   });
 
@@ -83,10 +89,11 @@ export default function EditCalibracion() {
     modelo: '',
     serie: '',
     certificadoCalibracion: '',
+    fechaCalibracion: '',
     trazabilidad: '',
     fechaVencimiento: '',
-    resolucion: 0.1,
-    incertidumbreExpandida: 0.2,
+    resolucion: 0.01,
+    incertidumbreExpandida: 0.05,
     factorK: 2,
   });
 
@@ -197,6 +204,7 @@ export default function EditCalibracion() {
   const [puntosMicropipeta, setPuntosMicropipeta] = useState([]);
 
   const [calibro, setCalibro] = useState({
+    codigo: 'TSC31',
     nombre: '',
     cargo: '',
     tarjetaProfesional: '',
@@ -250,12 +258,25 @@ export default function EditCalibracion() {
                   p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== ''
                     ? Number(p.valorPatron)
                     : Number(p.valorNominal || 0);
+                const ibcVal =
+                  p.indicacionIBC !== undefined && p.indicacionIBC !== null && p.indicacionIBC !== ''
+                    ? Number(p.indicacionIBC)
+                    : valPat;
+                let lects = [ibcVal, ibcVal, ibcVal, ibcVal];
+                if (Array.isArray(p.lecturas) && p.lecturas.length > 0) {
+                  if (p.lecturas.length === 4) {
+                    lects = p.lecturas;
+                  } else if (p.lecturas.length === 3) {
+                    lects = [...p.lecturas, p.lecturas[2]];
+                  } else {
+                    lects = p.lecturas;
+                  }
+                }
                 return {
+                  prueba: p.prueba || 'Con Brazalete',
+                  indicacionIBC: ibcVal,
                   valorPatron: valPat,
-                  lecturas:
-                    Array.isArray(p.lecturas) && p.lecturas.length > 0
-                      ? p.lecturas
-                      : [p.promedio || 0, p.promedio || 0, p.promedio || 0],
+                  lecturas: lects,
                 };
               })
             );
@@ -366,13 +387,30 @@ export default function EditCalibracion() {
     });
   };
 
+  const handleHermeticidadChange = (campo, valor) => {
+    const num = Number(valor);
+    const updated = { ...hermeticidad, [campo]: num };
+    if (campo === 'presionInicial' || campo === 'presionFinal') {
+      const pIni = campo === 'presionInicial' ? num : hermeticidad.presionInicial;
+      const pFin = campo === 'presionFinal' ? num : hermeticidad.presionFinal;
+      const caida = Number(Math.max(0, pIni - pFin).toFixed(2));
+      const razon = Number((caida / (updated.tiempoMinutos || 1)).toFixed(2));
+      updated.caidaPresion = caida;
+      updated.fugaRazonCambio = razon;
+      updated.cumple = razon <= (updated.limitePermisible || 4);
+    }
+    setHermeticidad(updated);
+  };
+
   // Cálculos en tiempo real
   const puntosTensiometroCalculados = puntosTensiometro.map((p) =>
     calcularPuntoTensiometro({
+      indicacionIBC: p.indicacionIBC ?? p.valorPatron,
       valorPatron: p.valorPatron,
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
       patronInfo: datosPatron,
+      prueba: p.prueba,
     })
   );
 
@@ -738,12 +776,27 @@ export default function EditCalibracion() {
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Placa / Código Interno
+                  Nro. de Activo / Placa
                 </label>
                 <input
                   type="text"
-                  value={datosEquipo.placaInventario}
-                  onChange={(e) => setDatosEquipo({ ...datosEquipo, placaInventario: e.target.value })}
+                  value={datosEquipo.nroActivo || datosEquipo.placaInventario}
+                  onChange={(e) =>
+                    setDatosEquipo({ ...datosEquipo, nroActivo: e.target.value, placaInventario: e.target.value })
+                  }
+                  placeholder="Ej: No presenta / ACT-00124"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha de Recepción
+                </label>
+                <input
+                  type="date"
+                  value={datosEquipo.fechaRecepcion || fechaCalibracion}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, fechaRecepcion: e.target.value })}
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -998,17 +1051,58 @@ export default function EditCalibracion() {
             }}
           >
             <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-              2. Patrón de Referencia
+              2. Patrón de Referencia y Condiciones Ambientales
             </h3>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Nombre del Patrón
+                  Nombre del Patrón *
                 </label>
                 <input
                   type="text"
                   value={datosPatron.nombre}
                   onChange={(e) => setDatosPatron({ ...datosPatron, nombre: e.target.value })}
+                  placeholder="Ej: Módulo de Presión"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Marca del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.marca}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, marca: e.target.value })}
+                  placeholder="Ej: FLUKE"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Modelo del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.modelo}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, modelo: e.target.value })}
+                  placeholder="Ej: 2700G-BG100K"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Serie del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.serie}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, serie: e.target.value })}
+                  placeholder="Ej: 4023109"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1021,6 +1115,19 @@ export default function EditCalibracion() {
                   type="text"
                   value={datosPatron.certificadoCalibracion}
                   onChange={(e) => setDatosPatron({ ...datosPatron, certificadoCalibracion: e.target.value })}
+                  placeholder="Ej: DE1805-25"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha Calibración del Patrón
+                </label>
+                <input
+                  type="date"
+                  value={datosPatron.fechaCalibracion}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, fechaCalibracion: e.target.value })}
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1037,6 +1144,71 @@ export default function EditCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Lugar de Calibración
+                </label>
+                <input
+                  type="text"
+                  value={condiciones.lugarCalibracion}
+                  onChange={(e) => setCondiciones({ ...condiciones, lugarCalibracion: e.target.value })}
+                  placeholder="Ej: Ingeniería / In situ"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Método de Calibración
+                </label>
+                <input
+                  type="text"
+                  value={condiciones.metodoCalibracion}
+                  onChange={(e) => setCondiciones({ ...condiciones, metodoCalibracion: e.target.value })}
+                  placeholder="Ej: Comparación directa"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Temperatura (°C) ± {condiciones.incertTemperatura || 0.6}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.temperatura}
+                  onChange={(e) => setCondiciones({ ...condiciones, temperatura: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Humedad Relativa (%HR) ± {condiciones.incertHumedad || 0.5}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.humedadRelativa}
+                  onChange={(e) => setCondiciones({ ...condiciones, humedadRelativa: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Presión Atmosférica (hPa)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={condiciones.presionAtmosferica}
+                  onChange={(e) => setCondiciones({ ...condiciones, presionAtmosferica: Number(e.target.value) })}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -1050,24 +1222,137 @@ export default function EditCalibracion() {
               border: '1px solid #e2e8f0',
               padding: 20,
               marginBottom: 20,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
             }}
           >
-            <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-              3. Mediciones de Presión (Tensiómetro)
-            </h3>
-            <div style={{ overflowX: 'auto', marginBottom: 16 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                  3. MEDICIONES - PRUEBA DE PRESIÓN DEL ESFIGMOMANÓMETRO
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Conforme a la norma internacional ISO/IEC 17025 y recomendación OIML 148-2 Edition 2020.
+                </p>
+              </div>
+            </div>
+
+            {/* Ensayo de Hermeticidad y Error Cero */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 16,
+                background: '#f8fafc',
+                padding: 16,
+                borderRadius: 8,
+                marginBottom: 20,
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <div>
+                <h4 style={{ margin: '0 0 8px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
+                  Prueba de Hermeticidad (Fuga de Presión en 1 min):
+                </h4>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>P. Inicial (mmHg):</span>
+                    <input
+                      type="number"
+                      value={hermeticidad.presionInicial}
+                      onChange={(e) => handleHermeticidadChange('presionInicial', e.target.value)}
+                      style={{ width: 85, padding: '5px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>P. Final (mmHg):</span>
+                    <input
+                      type="number"
+                      step="any"
+                      value={hermeticidad.presionFinal}
+                      onChange={(e) => handleHermeticidadChange('presionFinal', e.target.value)}
+                      style={{ width: 85, padding: '5px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>Razón de Fuga:</span>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: hermeticidad.cumple ? '#15803d' : '#dc2626' }}>
+                      {hermeticidad.fugaRazonCambio || hermeticidad.caidaPresion} mmHg/min {hermeticidad.cumple ? '✓ Cumple (≤ 4)' : '✗ Falla (> 4)'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 6, fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
+                  * Según OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ margin: '0 0 8px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
+                  Verificación de Error a Cero y Configuración de Prueba:
+                </h4>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, marginBottom: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={errorCero.cumple}
+                    onChange={(e) => setErrorCero({ ...errorCero, cumple: e.target.checked })}
+                    style={{ width: 16, height: 16 }}
+                  />
+                  La aguja / indicación regresa a la zona cero sin presión (Cumple)
+                </label>
+              </div>
+            </div>
+
+            {/* Tabla de Medición de Presión: 4 Lecturas */}
+            <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
+                Datos de Calibración (4 Mediciones por Punto en Módulo Patrón):
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setPuntosTensiometro((prev) => [
+                    ...prev,
+                    {
+                      prueba: 'Con Brazalete',
+                      indicacionIBC: prev.length > 0 ? (prev[prev.length - 1].indicacionIBC || prev[prev.length - 1].valorPatron) + 50 : 50,
+                      valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 50 : 50,
+                      lecturas: [0, 0, 0, 0],
+                    },
+                  ])
+                }
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  padding: '5px 10px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <FaPlus size={10} /> Añadir Punto
+              </button>
+            </div>
+
+            <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center' }}>
                 <thead>
-                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
-                    <th style={{ padding: '8px 10px' }}>Punto</th>
-                    <th style={{ padding: '8px 10px' }}>Patrón (mmHg)</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 1</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 2</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 3</th>
-                    <th style={{ padding: '8px 10px', background: '#e0f2fe' }}>Media</th>
-                    <th style={{ padding: '8px 10px', background: '#e0f2fe' }}>Error</th>
-                    <th style={{ padding: '8px 10px', background: '#fef3c7' }}>U (k=2)</th>
-                    <th style={{ padding: '8px 10px' }}>Estado</th>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', color: '#334155' }}>
+                    <th style={{ padding: '8px 6px', width: 35 }}>#</th>
+                    <th style={{ padding: '8px 8px' }}>Prueba</th>
+                    <th style={{ padding: '8px 8px' }}>Referencia (IBC)</th>
+                    <th style={{ padding: '8px 8px' }}>Unidad</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 1</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 2</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 3</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 4</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Presión Ref.</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Corrección</th>
+                    <th style={{ padding: '8px 8px', background: '#fef3c7' }}>U (k=2)</th>
+                    <th style={{ padding: '8px 8px' }}>Conformidad</th>
+                    <th style={{ padding: '8px 6px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1075,61 +1360,120 @@ export default function EditCalibracion() {
                     const c = puntosTensiometroCalculados[idx];
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <td style={{ padding: '8px 10px' }}>{idx + 1}</td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 4px', fontWeight: 700 }}>{idx + 1}</td>
+                        <td style={{ padding: '6px 6px' }}>
+                          <input
+                            type="text"
+                            value={p.prueba || 'Con Brazalete'}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPuntosTensiometro((prev) => {
+                                const n = [...prev];
+                                n[idx].prueba = val;
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 100,
+                              padding: '4px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontSize: 12,
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 6px' }}>
                           <input
                             type="number"
-                            value={p.valorPatron}
+                            value={p.indicacionIBC ?? p.valorPatron}
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               setPuntosTensiometro((prev) => {
                                 const n = [...prev];
+                                n[idx].indicacionIBC = val;
                                 n[idx].valorPatron = val;
                                 return n;
                               });
                             }}
-                            style={{ width: 75, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                            style={{
+                              width: 65,
+                              padding: '4px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontWeight: 700,
+                            }}
                           />
                         </td>
-                        {[0, 1, 2].map((lIdx) => (
-                          <td key={lIdx} style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 6px', color: '#64748b' }}>mmHg</td>
+                        {[0, 1, 2, 3].map((lIdx) => (
+                          <td key={lIdx} style={{ padding: '6px 4px' }}>
                             <input
                               type="number"
+                              step="any"
                               value={p.lecturas[lIdx] ?? ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setPuntosTensiometro((prev) => {
                                   const n = [...prev];
-                                  const lects = [...n[idx].lecturas];
+                                  const lects = [...(n[idx].lecturas || [0, 0, 0, 0])];
                                   lects[lIdx] = val;
                                   n[idx].lecturas = lects;
                                   return n;
                                 });
                               }}
-                              style={{ width: 70, padding: '4px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                              style={{
+                                width: 65,
+                                padding: '4px 4px',
+                                textAlign: 'center',
+                                borderRadius: 4,
+                                border: '1px solid #cbd5e1',
+                                fontSize: 12,
+                              }}
                             />
                           </td>
                         ))}
-                        <td style={{ padding: '8px 10px', fontWeight: 700 }}>{c?.promedio}</td>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: c?.cumple ? '#0369a1' : '#dc2626' }}>
-                          {c?.error > 0 ? `+${c?.error}` : c?.error}
+                        <td style={{ padding: '6px 8px', fontWeight: 800, background: '#f0f9ff' }}>
+                          {c?.presionReferencia ?? c?.promedio}
                         </td>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#b45309' }}>
+                        <td
+                          style={{
+                            padding: '6px 8px',
+                            fontWeight: 800,
+                            color: c?.correccion >= 0 ? '#0369a1' : '#d97706',
+                            background: '#f0f9ff',
+                          }}
+                        >
+                          {c?.correccion > 0 ? `+${c?.correccion}` : c?.correccion}
+                        </td>
+                        <td style={{ padding: '6px 8px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
                           ± {c?.incertidumbreExpandida}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 8px' }}>
                           <span
                             style={{
                               padding: '2px 6px',
                               borderRadius: 4,
-                              fontSize: 11,
-                              fontWeight: 700,
+                              fontSize: 10.5,
+                              fontWeight: 800,
                               background: c?.cumple ? '#dcfce7' : '#fee2e2',
                               color: c?.cumple ? '#15803d' : '#b91c1c',
                             }}
                           >
-                            {c?.cumple ? 'CUMPLE' : 'NO CUMPLE'}
+                            {c?.cumple ? 'CONFORME' : 'NO CONFORME'}
                           </span>
+                        </td>
+                        <td style={{ padding: '6px 4px' }}>
+                          {puntosTensiometro.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setPuntosTensiometro((prev) => prev.filter((_, i) => i !== idx))}
+                              style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -1137,10 +1481,15 @@ export default function EditCalibracion() {
                 </tbody>
               </table>
             </div>
+
+            {/* Gráfico Metrológico: Prueba de Parámetros */}
             <CalibrationChart
               puntos={puntosTensiometroCalculados}
               unidad="mmHg"
-              titulo="Curva de Error vs. Valor Patrón (Límites EMP ± 3 mmHg)"
+              tipoPlantilla="presion_tensiometro"
+              esPresion={true}
+              titulo="PRUEBA DE PARÁMETROS"
+              height={260}
             />
           </div>
         )}
@@ -1497,9 +1846,9 @@ export default function EditCalibracion() {
             marginBottom: 20,
           }}
         >
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-              Observaciones
+              Observaciones del Certificado
             </label>
             <textarea
               rows="3"
@@ -1507,6 +1856,167 @@ export default function EditCalibracion() {
               onChange={(e) => setObservaciones(e.target.value)}
               style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
             />
+          </div>
+
+          {/* Firmas Digitales */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 20 }}>
+            {/* Firma Calibrador */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, background: '#f8fafc' }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: 13.5, color: '#0f172a' }}>
+                Firma: Realizó la Calibración (Metrólogo / Calibrador)
+              </h4>
+              <div style={{ marginBottom: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
+                  value={calibro.codigo || ''}
+                  onChange={(e) => setCalibro({ ...calibro, codigo: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                    fontWeight: 700,
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Nombre del técnico/ingeniero"
+                  value={calibro.nombre || ''}
+                  onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Cargo / Especialidad"
+                  value={calibro.cargo || ''}
+                  onChange={(e) => setCalibro({ ...calibro, cargo: e.target.value })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              {calibro.firma ? (
+                <div style={{ marginBottom: 8, textAlign: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, padding: 8 }}>
+                  <img src={calibro.firma} alt="Firma Calibrador" style={{ maxHeight: 70, maxWidth: '100%' }} />
+                  <div style={{ marginTop: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => setCalibro({ ...calibro, firma: '' })}
+                      style={{ fontSize: 11, color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Volver a Firmar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ border: '1px dashed #cbd5e1', borderRadius: 6, background: '#ffffff', height: 110 }}>
+                    <SignatureCanvas
+                      ref={firmaCalibroRef}
+                      penColor="black"
+                      canvasProps={{ width: 340, height: 110, className: 'sigCanvas' }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => firmaCalibroRef.current?.clear()}
+                    style={{
+                      marginTop: 6,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <FaEraser size={11} /> Limpiar Firma
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Firma Aprobador */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, background: '#f8fafc' }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: 13.5, color: '#0f172a' }}>
+                Firma: Aprobó / Responsable Técnico ISO 17025
+              </h4>
+              <div style={{ marginBottom: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Nombre del responsable técnico"
+                  value={aprobo.nombre || ''}
+                  onChange={(e) => setAprobo({ ...aprobo, nombre: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Cargo"
+                  value={aprobo.cargo || ''}
+                  onChange={(e) => setAprobo({ ...aprobo, cargo: e.target.value })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              {aprobo.firma ? (
+                <div style={{ marginBottom: 8, textAlign: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, padding: 8 }}>
+                  <img src={aprobo.firma} alt="Firma Aprobador" style={{ maxHeight: 70, maxWidth: '100%' }} />
+                  <div style={{ marginTop: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => setAprobo({ ...aprobo, firma: '' })}
+                      style={{ fontSize: 11, color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Volver a Firmar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ border: '1px dashed #cbd5e1', borderRadius: 6, background: '#ffffff', height: 110 }}>
+                    <SignatureCanvas
+                      ref={firmaAproboRef}
+                      penColor="black"
+                      canvasProps={{ width: 340, height: 110, className: 'sigCanvas' }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => firmaAproboRef.current?.clear()}
+                    style={{
+                      marginTop: 6,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <FaEraser size={11} /> Limpiar Firma
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -10,10 +10,14 @@ import React from 'react';
 export default function CalibrationChart({
   puntos = [],
   unidad = '',
-  titulo = 'Curva de Error vs. Valor Patrón con Incertidumbre (k=2)',
+  tipoPlantilla = '',
+  esPresion = false,
+  titulo = '',
   width = 620,
   height = 270,
 }) {
+  const isPresion = esPresion || tipoPlantilla === 'presion_tensiometro' || unidad === 'mmHg';
+
   if (!puntos || puntos.length === 0) {
     return (
       <div
@@ -35,14 +39,16 @@ export default function CalibrationChart({
     );
   }
 
-  const padding = { top: 35, right: 35, bottom: 45, left: 60 };
+  const padding = isPresion
+    ? { top: 25, right: 35, bottom: 45, left: 65 }
+    : { top: 35, right: 35, bottom: 45, left: 60 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
   // Filtrar puntos válidos asegurando conversión numérica segura
   const validPuntos = puntos.filter((p) => {
     if (!p) return false;
-    const rawVal = p.valorPatron ?? p.nominal ?? p.valorNominal;
+    const rawVal = p.valorPatron ?? p.nominal ?? p.valorNominal ?? p.indicacionIBC;
     return rawVal !== undefined && rawVal !== null && rawVal !== '' && !isNaN(Number(rawVal));
   });
 
@@ -50,17 +56,21 @@ export default function CalibrationChart({
 
   // Extraer valores X e Y
   const data = validPuntos.map((p) => {
-    const rawX = p.valorPatron ?? p.nominal ?? p.valorNominal ?? 0;
+    const rawX = p.indicacionIBC ?? p.valorPatron ?? p.nominal ?? p.valorNominal ?? 0;
     const x = Number(rawX);
-    const rawY = p.error ?? p.errorSistematico ?? 0;
+    // Para presión, en el gráfico se representa el error de desempeño o corrección (Ref - IBC)
+    const rawY = isPresion
+      ? (p.errorDesempeno !== undefined ? p.errorDesempeno : p.correccion !== undefined ? p.correccion : (-(Number(p.error) || 0)))
+      : (p.error ?? p.errorSistematico ?? 0);
     const y = Number(rawY) || 0;
     const u = Number(p.incertidumbreExpandida) || 0;
-    const rawEmp =
-      p.emp !== undefined
+    const rawEmp = isPresion
+      ? 3.0
+      : (p.emp !== undefined
         ? Number(p.emp)
         : p.empSistematicoPct
         ? (Number(p.empSistematicoPct) * x) / 100
-        : 0;
+        : 0);
     const emp = isNaN(rawEmp) ? 0 : rawEmp;
     return { x, y, u, emp };
   });
@@ -70,14 +80,27 @@ export default function CalibrationChart({
   const maxX = Math.max(...xValues);
   const rangeX = maxX - minX || (maxX > 0 ? maxX : 1);
 
-  // Determinar rango en Y adaptado matemáticamente según la escala (Masa kg, Presión mmHg o Volumen µL)
-  const maxDelta = Math.max(
-    ...data.map((d) => Math.max(Math.abs(d.y) + (d.u || 0), Math.abs(d.emp || 0))),
-    0.005
-  );
-  const absMaxY = Number((maxDelta * 1.35).toFixed(4)) || 0.05;
+  // Determinar rango en Y: en presión es exactamente -5.00 a +5.00
+  let absMaxY = 5.0;
+  let yTicks = [5.0, 4.0, 3.0, 2.0, 1.0, 0.0, -1.0, -2.0, -3.0, -4.0, -5.0];
+
+  if (!isPresion) {
+    const maxDelta = Math.max(
+      ...data.map((d) => Math.max(Math.abs(d.y) + (d.u || 0), Math.abs(d.emp || 0))),
+      0.005
+    );
+    absMaxY = Number((maxDelta * 1.35).toFixed(4)) || 0.05;
+    yTicks = [
+      absMaxY,
+      absMaxY / 2,
+      0,
+      -absMaxY / 2,
+      -absMaxY,
+    ];
+  }
 
   const formatVal = (v) => {
+    if (isPresion) return Number(v).toFixed(2).replace('.', ',');
     if (absMaxY < 0.05) return Number(v).toFixed(4);
     if (absMaxY < 0.5) return Number(v).toFixed(3);
     if (absMaxY < 5) return Number(v).toFixed(2);
@@ -87,8 +110,7 @@ export default function CalibrationChart({
   // Funciones de escala
   const getXPos = (val) => {
     if (data.length === 1 || rangeX === 0) return padding.left + plotWidth / 2;
-    // Margen interno del 6% para que el primer y último punto no toquen los bordes
-    const innerPad = plotWidth * 0.06;
+    const innerPad = plotWidth * 0.07;
     const available = plotWidth - innerPad * 2;
     return padding.left + innerPad + ((val - minX) / rangeX) * available;
   };
@@ -97,17 +119,10 @@ export default function CalibrationChart({
     return padding.top + plotHeight / 2 - (val / absMaxY) * (plotHeight / 2);
   };
 
-  // Línea conectora de errores
+  // Línea conectora de errores (solo para básculas/micropipetas; en presión son puntos de dispersión)
   const linePoints = data.map((d) => `${getXPos(d.x)},${getYPos(d.y)}`).join(' ');
 
-  // Ticks para eje Y
-  const yTicks = [
-    absMaxY,
-    absMaxY / 2,
-    0,
-    -absMaxY / 2,
-    -absMaxY,
-  ];
+  const chartTitle = titulo || (isPresion ? 'PRUEBA DE PARÁMETROS' : 'Curva de Error vs. Valor Patrón con Incertidumbre (k=2)');
 
   return (
     <div
@@ -129,7 +144,7 @@ export default function CalibrationChart({
           letterSpacing: 0.2,
         }}
       >
-        {titulo}
+        {chartTitle}
       </div>
 
       <svg
@@ -145,14 +160,17 @@ export default function CalibrationChart({
           y={padding.top}
           width={plotWidth}
           height={plotHeight}
-          fill="#f8fafc"
+          fill={isPresion ? '#ffffff' : '#f8fafc'}
           stroke="#cbd5e1"
-          strokeWidth="1"
+          strokeWidth="1.2"
         />
 
         {/* Líneas de cuadrícula horizontal */}
         {yTicks.map((val, idx) => {
           const y = getYPos(val);
+          const isEmpLimit = isPresion && (Math.abs(val - 3.0) < 0.01 || Math.abs(val + 3.0) < 0.01);
+          const isZero = Math.abs(val) < 0.01;
+
           return (
             <g key={idx}>
               <line
@@ -160,28 +178,33 @@ export default function CalibrationChart({
                 y1={y}
                 x2={padding.left + plotWidth}
                 y2={y}
-                stroke={val === 0 ? '#10b981' : '#e2e8f0'}
-                strokeWidth={val === 0 ? '1.5' : '1'}
-                strokeDasharray={val === 0 ? '4 2' : 'none'}
+                stroke={
+                  isEmpLimit
+                    ? '#ef4444'
+                    : isZero
+                    ? (isPresion ? '#64748b' : '#10b981')
+                    : '#e2e8f0'
+                }
+                strokeWidth={isEmpLimit ? '2' : isZero ? '1.5' : '1'}
+                strokeDasharray={(!isPresion && isZero) ? '4 2' : 'none'}
               />
               <text
                 x={padding.left - 8}
                 y={y + 3.5}
                 textAnchor="end"
-                fontSize="10.5"
-                fill={val === 0 ? '#059669' : '#475569'}
-                fontWeight={val === 0 ? '800' : '600'}
+                fontSize="10"
+                fill={isEmpLimit ? '#dc2626' : isZero ? '#0f172a' : '#475569'}
+                fontWeight={isEmpLimit || isZero ? '800' : '600'}
               >
-                {val > 0 ? `+${formatVal(val)}` : formatVal(val)}
+                {formatVal(val)}
               </text>
             </g>
           );
         })}
 
-        {/* Límites de Error Máximo Permisible (± EMP) si existen */}
-        {data.some((d) => d.emp > 0) && (
+        {/* Límites de Error Máximo Permisible (± EMP) para Básculas/Micropipetas si existen */}
+        {!isPresion && data.some((d) => d.emp > 0) && (
           <>
-            {/* EMP superior */}
             <path
               d={data.reduce((acc, d, i) => {
                 const x = getXPos(d.x);
@@ -194,7 +217,6 @@ export default function CalibrationChart({
               strokeDasharray="4 3"
               opacity="0.85"
             />
-            {/* EMP inferior */}
             <path
               d={data.reduce((acc, d, i) => {
                 const x = getXPos(d.x);
@@ -210,8 +232,8 @@ export default function CalibrationChart({
           </>
         )}
 
-        {/* Línea conectora de errores */}
-        {data.length > 1 && (
+        {/* Línea conectora de errores (solo cuando no es modo presión) */}
+        {!isPresion && data.length > 1 && (
           <polyline
             fill="none"
             stroke="#0284c7"
@@ -220,7 +242,7 @@ export default function CalibrationChart({
           />
         )}
 
-        {/* Barras de Incertidumbre y puntos individuales */}
+        {/* Puntos individuales y barras de incertidumbre */}
         {data.map((d, idx) => {
           const cx = getXPos(d.x);
           const cy = getYPos(d.y);
@@ -229,8 +251,8 @@ export default function CalibrationChart({
 
           return (
             <g key={idx}>
-              {/* Barra de incertidumbre vertical (± U) */}
-              {d.u > 0 && (
+              {/* Barra de incertidumbre vertical (± U) solo para básculas/micropipetas */}
+              {!isPresion && d.u > 0 && (
                 <>
                   <line
                     x1={cx}
@@ -259,35 +281,37 @@ export default function CalibrationChart({
                 </>
               )}
 
-              {/* Punto de Error */}
+              {/* Punto de Error: En presión es un círculo negro sólido tal como en met&cal */}
               <circle
                 cx={cx}
                 cy={cy}
-                r="4.5"
-                fill="#0284c7"
-                stroke="#ffffff"
-                strokeWidth="1.5"
+                r={isPresion ? '5' : '4.5'}
+                fill={isPresion ? '#000000' : '#0284c7'}
+                stroke={isPresion ? '#000000' : '#ffffff'}
+                strokeWidth={isPresion ? '1' : '1.5'}
               />
 
-              {/* Etiqueta de valor del punto */}
-              <text
-                x={cx}
-                y={cy - 7}
-                textAnchor="middle"
-                fontSize="10"
-                fontWeight="800"
-                fill="#0f172a"
-              >
-                {d.y > 0 ? `+${formatVal(d.y)}` : formatVal(d.y)}
-              </text>
+              {/* Etiqueta de valor del punto (solo en básculas/micropipetas para no recargar) */}
+              {!isPresion && (
+                <text
+                  x={cx}
+                  y={cy - 7}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontWeight="800"
+                  fill="#0f172a"
+                >
+                  {d.y > 0 ? `+${formatVal(d.y)}` : formatVal(d.y)}
+                </text>
+              )}
 
               {/* Etiqueta de X en el eje */}
               <text
                 x={cx}
-                y={padding.top + plotHeight + 16}
+                y={padding.top + plotHeight + 18}
                 textAnchor="middle"
-                fontSize="10.5"
-                fill="#334155"
+                fontSize="11"
+                fill="#0f172a"
                 fontWeight="700"
               >
                 {d.x}
@@ -301,54 +325,56 @@ export default function CalibrationChart({
           x={padding.left + plotWidth / 2}
           y={height - 8}
           textAnchor="middle"
-          fontSize="11"
+          fontSize="11.5"
           fill="#0f172a"
-          fontWeight="700"
+          fontWeight="800"
         >
-          Valor Patrón {unidad ? `(${unidad})` : ''}
+          {isPresion ? 'Presión (mmHg)' : `Valor Patrón ${unidad ? `(${unidad})` : ''}`}
         </text>
 
         <text
           x={-(padding.top + plotHeight / 2)}
-          y="15"
+          y="18"
           transform="rotate(-90)"
           textAnchor="middle"
-          fontSize="11"
+          fontSize="11.5"
           fill="#0f172a"
-          fontWeight="700"
+          fontWeight="800"
         >
-          Error de Indicación {unidad ? `(${unidad})` : ''}
+          {isPresion ? 'Error ± Incertidumbre (mmHg)' : `Error de Indicación ${unidad ? `(${unidad})` : ''}`}
         </text>
       </svg>
 
-      {/* Leyenda explicativa metrológica */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 16,
-          marginTop: 6,
-          fontSize: 11,
-          color: '#334155',
-          fontWeight: 600,
-          flexWrap: 'wrap',
-        }}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0284c7' }} />
-          Error de indicación (E)
-        </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 14, height: 2, background: '#0369a1' }} />
-          Barra de Incertidumbre expandida (± U, k=2)
-        </span>
-        {data.some((d) => d.emp > 0) && (
+      {/* Leyenda explicativa metrológica (solo cuando no es presión para mantener formato puro met&cal) */}
+      {!isPresion && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 16,
+            marginTop: 6,
+            fontSize: 11,
+            color: '#334155',
+            fontWeight: 600,
+            flexWrap: 'wrap',
+          }}
+        >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 14, height: 2, borderTop: '2px dashed #ef4444' }} />
-            Límite Error Máx. Permisible (EMP)
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0284c7' }} />
+            Error de indicación (E)
           </span>
-        )}
-      </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 14, height: 2, background: '#0369a1' }} />
+            Barra de Incertidumbre expandida (± U, k=2)
+          </span>
+          {data.some((d) => d.emp > 0) && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 14, height: 2, borderTop: '2px dashed #ef4444' }} />
+              Límite Error Máx. Permisible (EMP)
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

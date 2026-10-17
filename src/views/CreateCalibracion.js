@@ -61,13 +61,15 @@ export default function CreateCalibracion() {
 
   // Datos del Equipo (Entrada 100% manual)
   const [datosEquipo, setDatosEquipo] = useState({
-    nombre: '',
-    marca: '',
-    modelo: '',
-    serie: '',
+    nombre: 'Esfigmomanómetro Aneroide',
+    marca: 'No presenta',
+    modelo: 'No presenta',
+    serie: 'No presenta',
     placaInventario: '',
-    ubicacion: '',
-    servicio: '',
+    nroActivo: 'No presenta',
+    fechaRecepcion: new Date().toISOString().split('T')[0],
+    ubicacion: 'Sede Principal - Selección Donante',
+    servicio: 'Selección Donante',
     resolucion: 2,
     unidad: 'mmHg',
   });
@@ -84,26 +86,29 @@ export default function CreateCalibracion() {
 
   // Condiciones Ambientales
   const [condiciones, setCondiciones] = useState({
-    temperatura: 20,
-    incertTemperatura: 0.5,
-    humedadRelativa: 55,
-    incertHumedad: 2,
+    lugarCalibracion: 'Ingeniería',
+    metodoCalibracion: 'Comparación directa',
+    temperatura: 21.8,
+    incertTemperatura: 0.6,
+    humedadRelativa: 58,
+    incertHumedad: 0.5,
     presionAtmosferica: 1013,
   });
 
   // Patrón Individual de Referencia (Tensiómetros y Micropipetas)
   const [patronSeleccionadoId, setPatronSeleccionadoId] = useState('');
   const [datosPatron, setDatosPatron] = useState({
-    codigo: '',
-    nombre: '',
-    marca: '',
-    modelo: '',
-    serie: '',
-    certificadoCalibracion: '',
-    trazabilidad: '',
+    codigo: 'PAT-PRES-01',
+    nombre: 'Módulo de Presión',
+    marca: 'FLUKE',
+    modelo: '2700G-BG100K',
+    serie: '4023109',
+    certificadoCalibracion: 'DE1805-25',
+    fechaCalibracion: '2025-05-12',
+    trazabilidad: 'Laboratorio de Metrología Acreditado ISO/IEC 17025',
     fechaVencimiento: '',
-    resolucion: 0.1,
-    incertidumbreExpandida: 0.2,
+    resolucion: 0.01,
+    incertidumbreExpandida: 0.05,
     factorK: 2,
   });
 
@@ -160,18 +165,19 @@ export default function CreateCalibracion() {
   ]);
 
   // Procedimiento Metrológico
-  const [procedimiento, setProcedimiento] = useState(
-    'Procedimiento de calibración por comparación directa según recomendación OIML R 16.'
-  );
+  const [procedimiento, setProcedimiento] = useState('MC-DT-I-008');
 
-  // 1. Datos específicos Tensiómetro
+  // 1. Datos específicos Tensiómetro (OIML 148-2 Edition 2020)
   const [hermeticidad, setHermeticidad] = useState({
     presionInicial: 200,
-    presionFinal: 198,
-    caidaPresion: 2,
+    presionFinal: 182.73,
+    caidaPresion: 17.27,
     tiempoMinutos: 1,
+    fugaRazonCambio: 17.27,
+    unidadFuga: 'mmHg/min',
     limitePermisible: 4,
-    cumple: true,
+    normaReferencia: 'OIML 148-2 Edition 2020',
+    cumple: false,
   });
 
   const [errorCero, setErrorCero] = useState({
@@ -180,12 +186,12 @@ export default function CreateCalibracion() {
   });
 
   const [puntosTensiometro, setPuntosTensiometro] = useState([
-    { valorPatron: 50, lecturas: [50, 50, 50] },
-    { valorPatron: 100, lecturas: [100, 100, 100] },
-    { valorPatron: 150, lecturas: [150, 150, 150] },
-    { valorPatron: 200, lecturas: [200, 200, 200] },
-    { valorPatron: 250, lecturas: [250, 250, 250] },
-    { valorPatron: 300, lecturas: [300, 300, 300] },
+    { prueba: 'Con Brazalete', indicacionIBC: 30, valorPatron: 30, lecturas: [31.2, 31.2, 31.4, 31.2] },
+    { prueba: 'Con Brazalete', indicacionIBC: 100, valorPatron: 100, lecturas: [101.3, 101.4, 101.3, 101.6] },
+    { prueba: 'Con Brazalete', indicacionIBC: 150, valorPatron: 150, lecturas: [152.0, 151.7, 151.8, 151.7] },
+    { prueba: 'Con Brazalete', indicacionIBC: 200, valorPatron: 200, lecturas: [200.6, 200.8, 200.3, 200.2] },
+    { prueba: 'Con Brazalete', indicacionIBC: 250, valorPatron: 250, lecturas: [249.9, 249.8, 249.8, 249.7] },
+    { prueba: 'Con Brazalete', indicacionIBC: 300, valorPatron: 300, lecturas: [298.1, 297.9, 298.1, 297.8] },
   ]);
 
   // 2. Datos específicos Báscula
@@ -253,19 +259,20 @@ export default function CreateCalibracion() {
 
   // Responsables y firmas
   const [calibro, setCalibro] = useState({
-    nombre: '',
-    cargo: 'Ingeniero Biomédico / Metrólogo',
+    codigo: 'TSC31',
+    nombre: 'Ing. Metrólogo Biomédico',
+    cargo: 'Metrólogo Responsable',
     tarjetaProfesional: '',
   });
 
   const [aprobo, setAprobo] = useState({
-    nombre: '',
-    cargo: 'Director Técnico de Calibración',
+    nombre: 'Ing. Fernando Castañeda Meriño',
+    cargo: 'Director Técnico',
     tarjetaProfesional: '',
   });
 
   const [observaciones, setObservaciones] = useState(
-    'El instrumento fue calibrado en condiciones ambientales controladas y estables. Los resultados aplican únicamente al ítem calibrado.'
+    '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.'
   );
 
   // Cargar consecutivo y patrones
@@ -392,24 +399,29 @@ export default function CreateCalibracion() {
     setMicropipetaInfo((prev) => ({ ...prev, factorZ: z }));
   }, [micropipetaInfo.temperaturaAgua, micropipetaInfo.presionAtmosferica]);
 
-  // Recalcular caída de hermeticidad
+  // Recalcular caída de hermeticidad y razón de cambio (OIML 148-2)
   const handleHermeticidadChange = (campo, val) => {
     const num = Number(val);
     setHermeticidad((prev) => {
       const updated = { ...prev, [campo]: num };
       const caida = Math.max(0, updated.presionInicial - updated.presionFinal);
-      updated.caidaPresion = Number(caida.toFixed(1));
-      updated.cumple = caida <= updated.limitePermisible;
+      const t = updated.tiempoMinutos > 0 ? updated.tiempoMinutos : 1;
+      const razon = Number((caida / t).toFixed(2));
+      updated.caidaPresion = Number(caida.toFixed(2));
+      updated.fugaRazonCambio = razon;
+      updated.cumple = razon <= updated.limitePermisible;
       return updated;
     });
   };
 
   // CÁLCULOS METROLÓGICOS EN TIEMPO REAL
 
-  // 1. Puntos calculados Tensiómetro
+  // 1. Puntos calculados Tensiómetro (ISO/IEC 17025 y OIML 148-2)
   const puntosTensiometroCalculados = puntosTensiometro.map((p) =>
     calcularPuntoTensiometro({
+      prueba: p.prueba || 'Con Brazalete',
       valorPatron: p.valorPatron,
+      indicacionIBC: p.indicacionIBC ?? p.valorPatron,
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
       patronInfo: datosPatron,
@@ -920,13 +932,27 @@ export default function CreateCalibracion() {
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Placa / Código Interno
+                  Nro. de Activo / Placa
                 </label>
                 <input
                   type="text"
-                  value={datosEquipo.placaInventario}
-                  onChange={(e) => setDatosEquipo({ ...datosEquipo, placaInventario: e.target.value })}
-                  placeholder="Ej: ACT-00124"
+                  value={datosEquipo.nroActivo || datosEquipo.placaInventario}
+                  onChange={(e) =>
+                    setDatosEquipo({ ...datosEquipo, nroActivo: e.target.value, placaInventario: e.target.value })
+                  }
+                  placeholder="Ej: No presenta / ACT-00124"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha de Recepción
+                </label>
+                <input
+                  type="date"
+                  value={datosEquipo.fechaRecepcion || fechaCalibracion}
+                  onChange={(e) => setDatosEquipo({ ...datosEquipo, fechaRecepcion: e.target.value })}
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1345,7 +1371,46 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosPatron.nombre}
                   onChange={(e) => setDatosPatron({ ...datosPatron, nombre: e.target.value })}
-                  placeholder="Ej: Manómetro digital patrón"
+                  placeholder="Ej: Módulo de Presión"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Marca del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.marca}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, marca: e.target.value })}
+                  placeholder="Ej: FLUKE"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Modelo del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.modelo}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, modelo: e.target.value })}
+                  placeholder="Ej: 2700G-BG100K"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Serie del Patrón
+                </label>
+                <input
+                  type="text"
+                  value={datosPatron.serie}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, serie: e.target.value })}
+                  placeholder="Ej: 4023109"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1358,7 +1423,19 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosPatron.certificadoCalibracion}
                   onChange={(e) => setDatosPatron({ ...datosPatron, certificadoCalibracion: e.target.value })}
-                  placeholder="Ej: ONAC-CAL-2025"
+                  placeholder="Ej: DE1805-25"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Fecha Calibración del Patrón
+                </label>
+                <input
+                  type="date"
+                  value={datosPatron.fechaCalibracion}
+                  onChange={(e) => setDatosPatron({ ...datosPatron, fechaCalibracion: e.target.value })}
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1380,7 +1457,33 @@ export default function CreateCalibracion() {
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Temperatura (°C) ± 0.5
+                  Lugar de Calibración
+                </label>
+                <input
+                  type="text"
+                  value={condiciones.lugarCalibracion}
+                  onChange={(e) => setCondiciones({ ...condiciones, lugarCalibracion: e.target.value })}
+                  placeholder="Ej: Ingeniería / In situ"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Método de Calibración
+                </label>
+                <input
+                  type="text"
+                  value={condiciones.metodoCalibracion}
+                  onChange={(e) => setCondiciones({ ...condiciones, metodoCalibracion: e.target.value })}
+                  placeholder="Ej: Comparación directa"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Temperatura (°C) ± {condiciones.incertTemperatura || 0.6}
                 </label>
                 <input
                   type="number"
@@ -1393,7 +1496,7 @@ export default function CreateCalibracion() {
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Humedad Relativa (%HR) ± 2
+                  Humedad Relativa (%HR) ± {condiciones.incertHumedad || 0.5}
                 </label>
                 <input
                   type="number"
@@ -1434,9 +1537,16 @@ export default function CreateCalibracion() {
               boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
             }}
           >
-            <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-              3. Ensayos para Tensiómetros (OIML R 16 / NTC 4353)
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                  3. MEDICIONES - PRUEBA DE PRESIÓN DEL ESFIGMOMANÓMETRO
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Conforme a la norma internacional ISO/IEC 17025 y recomendación OIML 148-2 Edition 2020.
+                </p>
+              </div>
+            </div>
 
             {/* Ensayo de Hermeticidad y Error Cero */}
             <div
@@ -1469,25 +1579,29 @@ export default function CreateCalibracion() {
                     <span style={{ fontSize: 11, color: '#64748b' }}>P. Final (mmHg):</span>
                     <input
                       type="number"
+                      step="any"
                       value={hermeticidad.presionFinal}
                       onChange={(e) => handleHermeticidadChange('presionFinal', e.target.value)}
                       style={{ width: 85, padding: '5px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
                     />
                   </div>
                   <div>
-                    <span style={{ fontSize: 11, color: '#64748b' }}>Caída:</span>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>Razón de Fuga:</span>
                     <div style={{ fontWeight: 700, fontSize: 13, color: hermeticidad.cumple ? '#15803d' : '#dc2626' }}>
-                      {hermeticidad.caidaPresion} mmHg {hermeticidad.cumple ? '✓ Cumple (≤ 4)' : '✗ Falla (> 4)'}
+                      {hermeticidad.fugaRazonCambio || hermeticidad.caidaPresion} mmHg/min {hermeticidad.cumple ? '✓ Cumple (≤ 4)' : '✗ Falla (> 4)'}
                     </div>
                   </div>
+                </div>
+                <div style={{ marginTop: 6, fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
+                  * Según OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.
                 </div>
               </div>
 
               <div>
                 <h4 style={{ margin: '0 0 8px', fontSize: 13.5, color: '#0369a1', fontWeight: 700 }}>
-                  Verificación de Error a Cero:
+                  Verificación de Error a Cero y Configuración de Prueba:
                 </h4>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, marginBottom: 8 }}>
                   <input
                     type="checkbox"
                     checked={errorCero.cumple}
@@ -1499,10 +1613,10 @@ export default function CreateCalibracion() {
               </div>
             </div>
 
-            {/* Tabla de Medición de Presión */}
+            {/* Tabla de Medición de Presión: 4 Lecturas */}
             <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-                Mediciones de Presión (mmHg) y Cálculo Automático de Incertidumbres:
+                Datos de Calibración (4 Mediciones por Punto en Módulo Patrón):
               </div>
               <button
                 type="button"
@@ -1510,8 +1624,10 @@ export default function CreateCalibracion() {
                   setPuntosTensiometro((prev) => [
                     ...prev,
                     {
+                      prueba: 'Con Brazalete',
+                      indicacionIBC: prev.length > 0 ? (prev[prev.length - 1].indicacionIBC || prev[prev.length - 1].valorPatron) + 50 : 50,
                       valorPatron: prev.length > 0 ? prev[prev.length - 1].valorPatron + 50 : 50,
-                      lecturas: [0, 0, 0],
+                      lecturas: [0, 0, 0, 0],
                     },
                   ])
                 }
@@ -1533,21 +1649,22 @@ export default function CreateCalibracion() {
             </div>
 
             <div style={{ overflowX: 'auto', marginBottom: 20 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'center' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center' }}>
                 <thead>
                   <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', color: '#334155' }}>
-                    <th style={{ padding: '8px 10px' }}>Punto</th>
-                    <th style={{ padding: '8px 10px' }}>Patrón (mmHg)</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 1</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 2</th>
-                    <th style={{ padding: '8px 10px' }}>Lectura 3</th>
-                    <th style={{ padding: '8px 10px', background: '#e0f2fe' }}>Media</th>
-                    <th style={{ padding: '8px 10px', background: '#e0f2fe' }}>Error (E)</th>
-                    <th style={{ padding: '8px 10px' }}>uA</th>
-                    <th style={{ padding: '8px 10px' }}>uB</th>
-                    <th style={{ padding: '8px 10px', background: '#fef3c7' }}>U (k=2)</th>
-                    <th style={{ padding: '8px 10px' }}>Estado</th>
-                    <th style={{ padding: '8px 10px' }}></th>
+                    <th style={{ padding: '8px 6px', width: 35 }}>#</th>
+                    <th style={{ padding: '8px 8px' }}>Prueba</th>
+                    <th style={{ padding: '8px 8px' }}>Referencia (IBC)</th>
+                    <th style={{ padding: '8px 8px' }}>Unidad</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 1</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 2</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 3</th>
+                    <th style={{ padding: '8px 6px' }}>Medición 4</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Presión Ref.</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Corrección</th>
+                    <th style={{ padding: '8px 8px', background: '#fef3c7' }}>U (k=2)</th>
+                    <th style={{ padding: '8px 8px' }}>Conformidad</th>
+                    <th style={{ padding: '8px 6px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1555,86 +1672,111 @@ export default function CreateCalibracion() {
                     const c = puntosTensiometroCalculados[idx];
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <td style={{ padding: '8px 10px', fontWeight: 600 }}>{idx + 1}</td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 4px', fontWeight: 700 }}>{idx + 1}</td>
+                        <td style={{ padding: '6px 6px' }}>
+                          <input
+                            type="text"
+                            value={p.prueba || 'Con Brazalete'}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPuntosTensiometro((prev) => {
+                                const n = [...prev];
+                                n[idx].prueba = val;
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 100,
+                              padding: '4px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontSize: 12,
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 6px' }}>
                           <input
                             type="number"
-                            value={p.valorPatron}
+                            value={p.indicacionIBC ?? p.valorPatron}
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               setPuntosTensiometro((prev) => {
                                 const n = [...prev];
+                                n[idx].indicacionIBC = val;
                                 n[idx].valorPatron = val;
                                 return n;
                               });
                             }}
                             style={{
-                              width: 75,
+                              width: 65,
                               padding: '4px 6px',
                               textAlign: 'center',
                               borderRadius: 4,
                               border: '1px solid #cbd5e1',
+                              fontWeight: 700,
                             }}
                           />
                         </td>
-                        {[0, 1, 2].map((lIdx) => (
-                          <td key={lIdx} style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 6px', color: '#64748b' }}>mmHg</td>
+                        {[0, 1, 2, 3].map((lIdx) => (
+                          <td key={lIdx} style={{ padding: '6px 4px' }}>
                             <input
                               type="number"
+                              step="any"
                               value={p.lecturas[lIdx] ?? ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setPuntosTensiometro((prev) => {
                                   const n = [...prev];
-                                  const lects = [...n[idx].lecturas];
+                                  const lects = [...(n[idx].lecturas || [0, 0, 0, 0])];
                                   lects[lIdx] = val;
                                   n[idx].lecturas = lects;
                                   return n;
                                 });
                               }}
                               style={{
-                                width: 70,
-                                padding: '4px 6px',
+                                width: 65,
+                                padding: '4px 4px',
                                 textAlign: 'center',
                                 borderRadius: 4,
                                 border: '1px solid #cbd5e1',
+                                fontSize: 12,
                               }}
                             />
                           </td>
                         ))}
-                        <td style={{ padding: '8px 10px', fontWeight: 700, background: '#f0f9ff' }}>
-                          {c?.promedio}
+                        <td style={{ padding: '6px 8px', fontWeight: 800, background: '#f0f9ff' }}>
+                          {c?.presionReferencia ?? c?.promedio}
                         </td>
                         <td
                           style={{
-                            padding: '8px 10px',
-                            fontWeight: 700,
-                            color: c?.cumple ? '#0369a1' : '#dc2626',
+                            padding: '6px 8px',
+                            fontWeight: 800,
+                            color: c?.correccion >= 0 ? '#0369a1' : '#d97706',
                             background: '#f0f9ff',
                           }}
                         >
-                          {c?.error > 0 ? `+${c?.error}` : c?.error}
+                          {c?.correccion > 0 ? `+${c?.correccion}` : c?.correccion}
                         </td>
-                        <td style={{ padding: '8px 10px', color: '#64748b' }}>{c?.incertidumbreTipoA}</td>
-                        <td style={{ padding: '8px 10px', color: '#64748b' }}>{c?.incertidumbreTipoB}</td>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#b45309', background: '#fffbeb' }}>
+                        <td style={{ padding: '6px 8px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
                           ± {c?.incertidumbreExpandida}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 8px' }}>
                           <span
                             style={{
                               padding: '2px 6px',
                               borderRadius: 4,
-                              fontSize: 11,
-                              fontWeight: 700,
+                              fontSize: 10.5,
+                              fontWeight: 800,
                               background: c?.cumple ? '#dcfce7' : '#fee2e2',
                               color: c?.cumple ? '#15803d' : '#b91c1c',
                             }}
                           >
-                            {c?.cumple ? 'CUMPLE' : 'NO CUMPLE'}
+                            {c?.cumple ? 'CONFORME' : 'NO CONFORME'}
                           </span>
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '6px 4px' }}>
                           {puntosTensiometro.length > 1 && (
                             <button
                               type="button"
@@ -1652,11 +1794,14 @@ export default function CreateCalibracion() {
               </table>
             </div>
 
-            {/* Gráfico en Tiempo Real Tensiómetros */}
+            {/* Gráfico Metrológico en Tiempo Real: Prueba de Parámetros */}
             <CalibrationChart
               puntos={puntosTensiometroCalculados}
               unidad="mmHg"
-              titulo="Curva de Calibración: Error de Presión vs. Valor Patrón (Límites EMP ± 3 mmHg)"
+              tipoPlantilla="presion_tensiometro"
+              esPresion={true}
+              titulo="PRUEBA DE PARÁMETROS"
+              height={260}
             />
           </div>
         )}
@@ -2238,6 +2383,20 @@ export default function CreateCalibracion() {
                 Firma: Realizó la Calibración (Metrólogo / Calibrador)
               </h4>
               <div style={{ marginBottom: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
+                  value={calibro.codigo}
+                  onChange={(e) => setCalibro({ ...calibro, codigo: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 6,
+                    fontWeight: 700,
+                  }}
+                />
                 <input
                   type="text"
                   placeholder="Nombre del técnico/ingeniero"

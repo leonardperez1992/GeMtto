@@ -88,8 +88,8 @@ export default function CertificadoPdf() {
   const hermeticidad = datosCalibracion.hermeticidad || {};
   const micropipetaInfo = datosCalibracion.micropipetaInfo || {};
 
-  // Componente interno para Encabezado Oficial en cada una de las 3 páginas
-  const renderEncabezado = (paginaNum) => (
+  // Componente interno para Encabezado Oficial en cada página
+  const renderEncabezado = (paginaNum, totalPaginas = 3, titulo = 'CERTIFICADO DE CALIBRACIÓN METROLÓGICA', subtitulo = 'LABORATORIO DE CALIBRACIÓN BIOMÉDICA GEMTTO') => (
     <div
       style={{
         display: 'grid',
@@ -117,13 +117,13 @@ export default function CertificadoPdf() {
           padding: '0 10px',
         }}
       >
-        <div style={{ fontSize: 14.5, fontWeight: 900, color: '#0f172a', letterSpacing: 0.5 }}>
-          CERTIFICADO DE CALIBRACIÓN METROLÓGICA
+        <div style={{ fontSize: 13.5, fontWeight: 900, color: '#0f172a', letterSpacing: 0.5 }}>
+          {titulo}
         </div>
-        <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0284c7', marginTop: 2 }}>
-          LABORATORIO DE CALIBRACIÓN BIOMÉDICA GEMTTO
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#0284c7', marginTop: 2 }}>
+          {subtitulo}
         </div>
-        <div style={{ fontSize: 9.5, color: '#475569', marginTop: 2, letterSpacing: 0.3, fontWeight: 600 }}>
+        <div style={{ fontSize: 9, color: '#475569', marginTop: 2, letterSpacing: 0.3, fontWeight: 600 }}>
           CONFORME A LA NORMA INTERNACIONAL ISO/IEC 17025:2017
         </div>
       </div>
@@ -139,14 +139,14 @@ export default function CertificadoPdf() {
           <strong>Emisión:</strong> {fechaEmision || fechaCalibracion}
         </div>
         <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 10.5 }}>
-          Página {paginaNum} de 3
+          Página {paginaNum} de {totalPaginas}
         </div>
       </div>
     </div>
   );
 
-  // Componente interno para Pie de Página Oficial en cada una de las 3 páginas
-  const renderPieDePagina = (paginaNum) => (
+  // Componente interno para Pie de Página Oficial en cada página
+  const renderPieDePagina = (paginaNum, totalPaginas = 3, leyendaPersonalizada = null) => (
     <div
       style={{
         marginTop: 'auto',
@@ -163,10 +163,10 @@ export default function CertificadoPdf() {
         <strong style={{ color: '#0f172a' }}>GEMTTO S.A.S.</strong> • Metrología Biomédica • Certificado Nº {numeroCertificado}
       </div>
       <div style={{ fontStyle: 'italic', fontSize: 8.5 }}>
-        Prohibida la reproducción parcial de este documento sin autorización previa escrita del laboratorio.
+        {leyendaPersonalizada || 'Prohibida la reproducción parcial de este documento sin autorización previa escrita del laboratorio.'}
       </div>
       <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 10 }}>
-        Página {paginaNum} de 3
+        Página {paginaNum} de {totalPaginas}
       </div>
     </div>
   );
@@ -327,27 +327,528 @@ export default function CertificadoPdf() {
       </div>
 
       {/* ============================================================== */}
-      {/* CONTENEDOR TOTAL IMPRIMIBLE MULTI-HOJA (MÍNIMO 3 PÁGINAS)       */}
+      {/* CONTENEDOR TOTAL IMPRIMIBLE MULTI-HOJA                         */}
       {/* ============================================================== */}
       <div ref={targetRef}>
+        {tipoPlantilla === 'presion_tensiometro' ? (
+          <>
+            {/* ------------------------------------------------------------ */}
+            {/* HOJA 1: FORMATO ACREDITADO ISO 17025 - TENSIÓMETROS (PÁG 1/2) */}
+            {/* ------------------------------------------------------------ */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(1, 2, 'CERTIFICADO DE CALIBRACIÓN', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
 
-        {/* ------------------------------------------------------------ */}
-        {/* HOJA 1: IDENTIFICACIÓN, CONDICIONES, FECHAS Y PROCEDIMIENTO   */}
-        {/* ------------------------------------------------------------ */}
-        <div className="certificado-hoja">
-          <div>
-            {renderEncabezado(1)}
+                {/* Fila 1: Cliente & Ítem a Calibrar */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 }}>
+                  {/* DATOS GENERALES DEL CLIENTE */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                      DATOS GENERALES DEL CLIENTE
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 90, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Solicitante:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Dirección:</td>
+                            <td>{datosCliente.direccion || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ciudad:</td>
+                            <td>{datosCliente.ciudad || 'Colombia'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Contacto:</td>
+                            <td>{datosCliente.telefono || datosCliente.contacto || 'N/A'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-            {/* 1. Datos del Solicitante / Cliente */}
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 9, overflow: 'hidden' }}>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  fontWeight: 800,
-                  color: '#0f172a',
-                  background: '#f1f5f9',
-                  padding: '5px 9px',
-                  borderBottom: '1px solid #cbd5e1',
+                  {/* DATOS GENERALES DEL ÍTEM A CALIBRAR */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                      DATOS GENERALES DEL ÍTEM A CALIBRAR
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 100, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ítem:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Marca / Modelo:</td>
+                            <td>{datosEquipo.marca || 'N/A'} / {datosEquipo.modelo || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Serie:</td>
+                            <td style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>No. de Activo:</td>
+                            <td>{datosEquipo.nroActivo || datosEquipo.placaInventario || 'No presenta'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha recepción:</td>
+                            <td>{datosEquipo.fechaRecepcion || fechaCalibracion}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Intervalo / Res.:</td>
+                            <td>0 a 300 mmHg / {datosEquipo.resolucion || 2} mmHg</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Ubicación:</td>
+                            <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Servicio Médico'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fila 2: Datos de Calibración & Patrones */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 10, marginBottom: 8 }}>
+                  {/* DATOS GENERALES DE LA CALIBRACIÓN */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                      DATOS GENERALES DE LA CALIBRACIÓN
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 125, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha de calibración:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{fechaCalibracion}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Lugar de calibración:</td>
+                            <td>{condicionesAmbientales.lugarCalibracion || 'Ingeniería / In situ'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Procedimiento:</td>
+                            <td>{procedimiento || 'MC-DT-I-008 Calibración de Esfigmomanómetros'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Método de calibración:</td>
+                            <td>{condicionesAmbientales.metodoCalibracion || 'Comparación directa'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Condiciones ambientales:</td>
+                            <td>
+                              Temp: <strong>{condicionesAmbientales.temperatura || 22.4} °C ± {condicionesAmbientales.incertTemperatura || 0.6} °C</strong> | HR: <strong>{condicionesAmbientales.humedadRelativa || 55.0} % ± {condicionesAmbientales.incertHumedad || 0.5} %</strong>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Presión atmosférica:</td>
+                            <td>{condicionesAmbientales.presionAtmosferica || 1013} hPa</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* DATOS DE LOS PATRONES UTILIZADOS */}
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                      DATOS DE LOS PATRONES UTILIZADOS
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 110, fontWeight: 700, color: '#334155', padding: '2px 0' }}>Descripción:</td>
+                            <td style={{ fontWeight: 800, color: '#0f172a' }}>{patron.nombre || 'Módulo de Presión'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Marca / Modelo:</td>
+                            <td>{patron.marca || 'FLUKE'} / {patron.modelo || '2700G-BG100K'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Serie:</td>
+                            <td style={{ fontWeight: 700 }}>{patron.serie || '4023109'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>No. Certificado:</td>
+                            <td>{patron.certificadoCalibracion || 'DE1805-25'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Fecha calibración:</td>
+                            <td>{patron.fechaCalibracion || '2025-05-18'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '2px 0' }}>Trazabilidad:</td>
+                            <td>{patron.trazabilidad || 'Fluke Calibration / ONAC / INM'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TABLA 1: DATOS DE CALIBRACIÓN */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    DATOS DE CALIBRACIÓN
+                  </div>
+                  <div style={{ padding: '4px 6px' }}>
+                    <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse', textAlign: 'center' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#1e293b' }}>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Prueba</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Referencia</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Unidad</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 1</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 2</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 3</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Medición 4</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {puntos.map((p, idx) => {
+                          const refVal = p.indicacionIBC ?? p.valorPatron ?? p.valorNominal ?? 0;
+                          const lects = Array.isArray(p.lecturas) && p.lecturas.length >= 4
+                            ? p.lecturas
+                            : Array.isArray(p.lecturas) && p.lecturas.length === 3
+                              ? [...p.lecturas, p.lecturas[2]]
+                              : [refVal, refVal, refVal, refVal];
+                          return (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#fafafa' }}>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 800 }}>{refVal}</td>
+                              <td style={{ padding: '3.5px 6px', color: '#64748b' }}>mmHg</td>
+                              <td style={{ padding: '3.5px 6px' }}>{lects[0] !== undefined ? lects[0] : '-'}</td>
+                              <td style={{ padding: '3.5px 6px' }}>{lects[1] !== undefined ? lects[1] : '-'}</td>
+                              <td style={{ padding: '3.5px 6px' }}>{lects[2] !== undefined ? lects[2] : '-'}</td>
+                              <td style={{ padding: '3.5px 6px' }}>{lects[3] !== undefined ? lects[3] : '-'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* TABLA 2: RESULTADO - TABLA DE INCERTIDUMBRE */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', background: '#f1f5f9', padding: '4px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                    RESULTADO - TABLA DE INCERTIDUMBRE
+                  </div>
+                  <div style={{ padding: '4px 6px' }}>
+                    <table style={{ width: '100%', fontSize: 9.5, borderCollapse: 'collapse', textAlign: 'center' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #cbd5e1', color: '#1e293b' }}>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Prueba</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#f0f9ff' }}>Presión Referencia</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Unidad</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Indicación IBC</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#f0f9ff' }}>Corrección</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800, background: '#fffbeb', color: '#92400e' }}>Incertidumbre (mmHg)</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Factor de Cobertura</th>
+                          <th style={{ padding: '4px 6px', fontWeight: 800 }}>Conformidad</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {puntos.map((p, idx) => {
+                          const refVal = p.indicacionIBC ?? p.valorPatron ?? p.valorNominal ?? 0;
+                          const presRef = p.presionReferencia ?? p.promedio ?? refVal;
+                          const corr = p.correccion !== undefined ? p.correccion : Number((presRef - refVal).toFixed(2));
+                          const uExp = p.incertidumbreExpandida ?? 0.62;
+                          const corrStr = corr > 0 ? `+${corr}` : `${corr}`;
+                          return (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#fafafa' }}>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 700, color: '#0f172a' }}>{p.prueba || 'Con Brazalete'}</td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 800, background: '#f0f9ff' }}>{presRef}</td>
+                              <td style={{ padding: '3.5px 6px', color: '#64748b' }}>mmHg</td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 800 }}>{refVal}</td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 800, background: '#f0f9ff', color: corr >= 0 ? '#0369a1' : '#d97706' }}>
+                                {corrStr}
+                              </td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 800, color: '#b45309', background: '#fffbeb' }}>
+                                ± {uExp}
+                              </td>
+                              <td style={{ padding: '3.5px 6px', fontWeight: 700 }}>2</td>
+                              <td style={{ padding: '3.5px 6px' }}>
+                                <span style={{ padding: '2px 6px', borderRadius: 3, fontSize: 8.5, fontWeight: 800, background: p.cumple ? '#dcfce7' : '#fee2e2', color: p.cumple ? '#15803d' : '#b91c1c' }}>
+                                  {p.cumple ? 'CONFORME' : 'NO CONFORME'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* OBSERVACIONES */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '6px 8px', fontSize: 8.5, color: '#334155', lineHeight: 1.35, background: '#f8fafc' }}>
+                  <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 2 }}>OBSERVACIONES:</div>
+                  <div>• Los resultados de las calibraciones expresados en este certificado son válidos en el momento y bajo las condiciones en que se realizaron las mediciones.</div>
+                  <div>• El factor de cobertura corresponde a un nivel de confianza de aproximadamente 95.45%.</div>
+                  <div>• La corrección se calcula como: Presión Referencia - Indicación IBC.</div>
+                  <div>
+                    • * La prueba de hermeticidad realizada al esfigmomanómetro no hace parte del alcance de la acreditación. Razón de cambio calculada: <strong>{hermeticidad.fugaRazonCambio || hermeticidad.caidaPresion || 17.27} mmHg/min</strong> (Límite máximo permitido según OIML 148-2 Edition 2020: ≤ 4.0 mmHg/min) → <strong style={{ color: hermeticidad.cumple ? '#15803d' : '#dc2626' }}>{hermeticidad.cumple ? 'CUMPLE' : 'NO CUMPLE'}</strong>.
+                  </div>
+                  {observaciones && <div>• {observaciones}</div>}
+                </div>
+              </div>
+
+              {renderPieDePagina(1, 2)}
+            </div>
+
+            {/* Salto de Página para Generación PDF */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ------------------------------------------------------------ */}
+            {/* HOJA 2: DECLARACIONES Y FIRMAS (PÁGINA 2 DE 2)                */}
+            {/* ------------------------------------------------------------ */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(2, 2, 'CERTIFICADO DE CALIBRACIÓN', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
+
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '12px 14px', marginBottom: 20, background: '#f8fafc' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', marginBottom: 10, letterSpacing: 0.3 }}>
+                    DECLARACIÓN:
+                  </div>
+                  <div style={{ fontSize: 9.5, color: '#334155', lineHeight: 1.5, textAlign: 'justify', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div>
+                      <strong>1. Incertidumbre de medición:</strong> La incertidumbre reportada es la incertidumbre de medición expandida, la cual se ha determinado multiplicando la incertidumbre típica combinada por el factor de cobertura k = 2, que para una distribución normal corresponde a una probabilidad de cobertura de aproximadamente el 95.45%. La incertidumbre de medición fue calculada conforme a la Guía para la Expresión de la Incertidumbre de Medida (JCGM 100:2008 - GUM).
+                    </div>
+                    <div>
+                      <strong>2. Trazabilidad metrológica:</strong> Los resultados contenidos en el presente certificado tienen trazabilidad hacia los patrones nacionales del Instituto Nacional de Metrología (INM) o institutos nacionales reconocidos por el BIPM a través del Acuerdo de Reconocimiento Mutuo CIPM-MRA, asegurando una cadena ininterrumpida de calibraciones hacia el Sistema Internacional de Unidades (SI).
+                    </div>
+                    <div>
+                      <strong>3. Regla de decisión de conformidad:</strong> Se aplica la regla de decisión de aceptación simple (riesgo compartido hasta el 50%) conforme a los lineamientos de la guía ILAC-G8:09/2019. Se declara conformidad cuando el resultado medido se encuentra dentro de los límites del Error Máximo Permitido (EMP = ±3.0 mmHg según recomendación internacional OIML 148-2 Edition 2020), sin considerar la zona de guardia por incertidumbre.
+                    </div>
+                    <div>
+                      <strong>4. Validez y uso del certificado:</strong> Este certificado es válido exclusivamente para el ítem bajo calibración identificado en este documento y bajo las condiciones ambientales registradas durante el ensayo. El laboratorio emisor no se responsabiliza por los daños o desajustes que pueda sufrir el instrumento debido a un transporte inapropiado o manipulación incorrecta posterior a la calibración.
+                    </div>
+                    <div>
+                      <strong>5. Reproducción:</strong> Este certificado no puede ser reproducido total ni parcialmente sin la autorización previa escrita de GEMTTO S.A.S. Los certificados sin firma autorizada carecen de validez legal y metrológica.
+                    </div>
+                    <div>
+                      <strong>6. Ensayos fuera del alcance acreditado:</strong> Los ensayos señalados con asterisco (*) en este certificado (prueba de hermeticidad y fuga neumática) se realizan como evaluación de funcionamiento mecánico según la recomendación OIML 148-2 Edition 2020 y no hacen parte del alcance de la acreditación.
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECCIÓN DE FIRMAS METROLÓGICAS */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center', marginTop: 30, marginBottom: 30 }}>
+                  {/* Revisado y autorizado por */}
+                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                      Revisado y autorizado por:
+                    </div>
+                    {aprobo.firma ? (
+                      <img
+                        src={aprobo.firma}
+                        alt="Firma Director Técnico"
+                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 50 }} />
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 11.5, color: '#0f172a', marginTop: 4 }}>
+                      {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#334155', fontWeight: 700 }}>
+                      {aprobo.cargo || 'Director Técnico'}
+                    </div>
+                    {aprobo.tarjetaProfesional && (
+                      <div style={{ fontSize: 9, color: '#64748b' }}>
+                        T.P. Nº {aprobo.tarjetaProfesional}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ejecutado por: Recuadro con código */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                      Ejecutado por:
+                    </div>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        border: '2px solid #0f172a',
+                        padding: '8px 24px',
+                        borderRadius: 4,
+                        background: '#f8fafc',
+                        minWidth: 140,
+                      }}
+                    >
+                      <div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
+                        CÓDIGO TÉCNICO
+                      </div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, margin: '2px 0' }}>
+                        {calibro.codigo || 'TSC31'}
+                      </div>
+                      {calibro.nombre && (
+                        <div style={{ fontSize: 9.5, color: '#334155', fontWeight: 600 }}>
+                          {calibro.nombre}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* FIN DEL INFORME */}
+                <div
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 10.5,
+                    fontWeight: 900,
+                    color: '#0f172a',
+                    letterSpacing: 1,
+                    marginTop: 35,
+                  }}
+                >
+                  --- FIN DEL INFORME ---
+                </div>
+              </div>
+
+              {renderPieDePagina(2, 2)}
+            </div>
+
+            {/* Salto de Página para Generación PDF */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ------------------------------------------------------------ */}
+            {/* HOJA 3: ANEXO - GRÁFICAS DE DESEMPEÑO (PÁGINA 1 DE 1)          */}
+            {/* ------------------------------------------------------------ */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(1, 1, 'GRÁFICAS DE DESEMPEÑO', 'LABORATORIO DE CALIBRACIÓN METROLÓGICA')}
+
+                {/* Sub-encabezado con datos del cliente e instrumento */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '8px 12px', marginBottom: 12, background: '#f8fafc' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 6, fontSize: 10 }}>
+                    <div><strong>Solicitante:</strong> {datosCliente.nombre || 'N/A'}</div>
+                    <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'N/A'} - {datosCliente.ciudad || 'Colombia'}</div>
+                    <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</div>
+                    <div><strong>Serie:</strong> <span style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || 'N/A'}</span></div>
+                    <div><strong>No. de Activo:</strong> {datosEquipo.nroActivo || datosEquipo.placaInventario || 'No presenta'}</div>
+                  </div>
+                </div>
+
+                {/* PRUEBA DE PARÁMETROS */}
+                <div style={{ border: '1.5px solid #0f172a', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 900,
+                      color: '#ffffff',
+                      background: '#0f172a',
+                      padding: '6px 12px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>PRUEBA DE PARÁMETROS: ERROR DE INDICACIÓN vs. PRESIÓN PATRÓN</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: '#e0f2fe' }}>
+                      Límites EMP: ±3.00 mmHg (OIML 148-2)
+                    </span>
+                  </div>
+
+                  <div style={{ padding: '10px 8px 4px 8px', background: '#ffffff' }}>
+                    <CalibrationChart
+                      puntos={puntos}
+                      unidad="mmHg"
+                      tipoPlantilla="presion_tensiometro"
+                      esPresion={true}
+                      titulo="PRUEBA DE PARÁMETROS"
+                      height={320}
+                    />
+                  </div>
+
+                  <div style={{ borderTop: '1px solid #e2e8f0', background: '#f8fafc', padding: '8px 12px', fontSize: 9.5, color: '#475569', lineHeight: 1.4 }}>
+                    <strong>Criterio Normativo de Evaluación:</strong> Para la prueba de parámetros y desempeño se toma como referencia la recomendación internacional <strong>OIML 148-2 Edition 2020</strong>, cuyo error máximo permitido (EMP) para esfigmomanómetros es de <strong>±3.00 mmHg</strong>. La línea roja superior (+3.00 mmHg) e inferior (-3.00 mmHg) representan las tolerancias límite permisibles; la línea central representa el cero metrológico (0.00 mmHg).
+                  </div>
+                </div>
+
+                {/* Firmas en Hoja 3 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center', marginTop: 18, marginBottom: 8 }}>
+                  {/* Revisado y autorizado por */}
+                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 6 }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475569', marginBottom: 2 }}>
+                      Revisado y autorizado por:
+                    </div>
+                    {aprobo.firma ? (
+                      <img
+                        src={aprobo.firma}
+                        alt="Firma Director Técnico"
+                        style={{ height: 40, maxWidth: 180, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 40 }} />
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 11, color: '#0f172a' }}>
+                      {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
+                    </div>
+                    <div style={{ fontSize: 9.5, color: '#334155', fontWeight: 600 }}>
+                      {aprobo.cargo || 'Director Técnico'}
+                    </div>
+                  </div>
+
+                  {/* Ejecutado por */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                      Ejecutado por:
+                    </div>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        border: '2px solid #0f172a',
+                        padding: '6px 20px',
+                        borderRadius: 4,
+                        background: '#f8fafc',
+                      }}
+                    >
+                      <div style={{ fontSize: 8.5, fontWeight: 800, color: '#64748b' }}>
+                        CÓDIGO TÉCNICO
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5 }}>
+                        {calibro.codigo || 'TSC31'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {renderPieDePagina(1, 1, 'ANEXO TÉCNICO - GRÁFICAS DE DESEMPEÑO')}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* ------------------------------------------------------------ */}
+            {/* HOJA 1: IDENTIFICACIÓN, CONDICIONES, FECHAS Y PROCEDIMIENTO   */}
+            {/* ------------------------------------------------------------ */}
+            <div className="certificado-hoja">
+              <div>
+                {renderEncabezado(1)}
+
+                {/* 1. Datos del Solicitante / Cliente */}
+                <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, marginBottom: 9, overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 800,
+                      color: '#0f172a',
+                      background: '#f1f5f9',
+                      padding: '5px 9px',
+                      borderBottom: '1px solid #cbd5e1',
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    1. DATOS DEL CLIENTE / SOLICITANTE
+                  </div>
+                  <div style={{ padding: '7px 10px' }}>
                   letterSpacing: 0.3,
                 }}
               >
@@ -1123,6 +1624,8 @@ export default function CertificadoPdf() {
 
           {renderPieDePagina(3)}
         </div>
+          </>
+        )}
 
       </div>
     </div>

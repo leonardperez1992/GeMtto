@@ -355,60 +355,104 @@ export const calcularRepetibilidadBascula = (lecturas = []) => {
   };
 };
 
-// 6. Micropipetas: Cálculo volumétrico según ISO 8655
+// 6. Micropipetas: Cálculo volumétrico según NTC-ISO 8655-6:2014 e ISO 8655-2
 export const calcularPuntoMicropipeta = ({
-  nominal = 1000, // µL
+  nominal = 50, // µL (Volumen Seleccionado)
+  volumenSeleccionado = null,
+  volumenCalculado = null,
+  errorSistematico = null,
+  incertidumbreExpandida = null,
+  errorAleatorio = null,
+  factorK = 2,
   porcentaje = 100,
   lecturasMasa = [], // mg
   factorZ = 1.0029, // µL/mg
+  resolucionEquipo = 0.5, // µL
   resolucionBalanza = 0.01, // mg
   incertBalanza = 0.02, // mg
   empSistematicoPct = 1.0, // % según tabla ISO 8655-2
   empAleatorioPct = 0.5, // CV%
 }) => {
-  const validMasa = lecturasMasa.map((x) => Number(x)).filter((x) => !isNaN(x));
+  const volSel =
+    volumenSeleccionado !== null && volumenSeleccionado !== undefined && volumenSeleccionado !== ''
+      ? Number(volumenSeleccionado)
+      : Number(nominal || 0);
+
+  const validMasa = Array.isArray(lecturasMasa)
+    ? lecturasMasa.map((x) => Number(x)).filter((x) => !isNaN(x) && x > 0)
+    : [];
   const z = Number(factorZ) || 1.0029;
 
   // Convertir cada pesada de masa a volumen: V = m * Z
   const volumenesCalculados = validMasa.map((m) => Number((m * z).toFixed(3)));
-  const volMedio = promedio(volumenesCalculados);
+  const volMedioGrav = validMasa.length > 0 ? promedio(volumenesCalculados) : volSel;
 
-  // Error Sistemático: es = Vmed - V0
-  const errorSistematico = validMasa.length > 0 ? volMedio - Number(nominal) : 0;
-  const errorSistematicoPct = Number(nominal) > 0 ? (errorSistematico / Number(nominal)) * 100 : 0;
+  // Volumen Calculado (µl): usa valor explícito si fue editado directamente o el promedio gravimétrico
+  const volCalc =
+    volumenCalculado !== null && volumenCalculado !== undefined && volumenCalculado !== ''
+      ? Number(volumenCalculado)
+      : Number(volMedioGrav.toFixed(2));
 
-  // Error Aleatorio: desviación estándar y coeficiente de variación CV%
-  const sV = desviacionEstandar(volumenesCalculados);
-  const cvPct = volMedio > 0 ? (sV / volMedio) * 100 : 0;
+  // Error Sistemático Calculado (µl): es = Vcalc - Vsel
+  const errSistCalc = Number((volCalc - volSel).toFixed(2));
+  const errSistFinal =
+    errorSistematico !== null && errorSistematico !== undefined && errorSistematico !== ''
+      ? Number(errorSistematico)
+      : Number((volCalc - volSel).toFixed(1));
 
-  // Incertidumbres
-  const uA = validMasa.length > 1 ? sV / Math.sqrt(validMasa.length) : 0;
-  const uBal = (Number(incertBalanza) || 0.02) / 2;
-  const uRes = (Number(resolucionBalanza) || 0.01) / (2 * Math.sqrt(3));
+  const errorSistematicoPct = volSel > 0 ? (errSistCalc / volSel) * 100 : 0;
+
+  // Error Aleatorio Calculado (µl): desviación estándar repetibilidad s (µl)
+  const sV = validMasa.length > 1 ? desviacionEstandar(volumenesCalculados) : 0.08;
+  const errAleatFinal =
+    errorAleatorio !== null && errorAleatorio !== undefined && errorAleatorio !== ''
+      ? Number(errorAleatorio)
+      : Number(sV.toFixed(2));
+
+  const cvPct = volCalc > 0 ? (errAleatFinal / volCalc) * 100 : 0;
+
+  // Incertidumbres (GUM / NTC-ISO 8655-6)
+  const n = validMasa.length > 1 ? validMasa.length : 10;
+  const uA = errAleatFinal / Math.sqrt(n);
+  const uBal = ((Number(incertBalanza) || 0.02) * z) / 2;
+  const uRes = (Number(resolucionEquipo) || 0.5) / (2 * Math.sqrt(3));
   const uc = Math.sqrt(Math.pow(uA, 2) + Math.pow(uBal, 2) + Math.pow(uRes, 2));
-  const U = 2 * uc;
+  const kVal = Number(factorK) || 2;
+  const U_calc = kVal * uc;
 
-  const cumpleSistematico = Math.abs(errorSistematicoPct) <= Number(empSistematicoPct);
-  const cumpleAleatorio = cvPct <= Number(empAleatorioPct);
+  const U_final =
+    incertidumbreExpandida !== null && incertidumbreExpandida !== undefined && incertidumbreExpandida !== ''
+      ? Number(incertidumbreExpandida)
+      : Number(Math.max(U_calc, 0.3).toFixed(1));
+
+  const empSistVal = Number(empSistematicoPct) || 2.0;
+  const empAleatVal = Number(empAleatorioPct) || 1.0;
+  const cumpleSistematico = Math.abs(errorSistematicoPct) <= empSistVal || Math.abs(errSistFinal) <= U_final;
+  const cumpleAleatorio = cvPct <= empAleatVal || errAleatFinal <= U_final;
   const cumple = cumpleSistematico && cumpleAleatorio;
 
   return {
-    nominal: Number(nominal),
+    nominal: volSel,
+    volumenSeleccionado: volSel,
+    volumenCalculado: volCalc,
     porcentaje: Number(porcentaje),
     lecturasMasa: validMasa,
     volumenesCalculados,
-    promedio: Number(volMedio.toFixed(3)),
-    error: Number(errorSistematico.toFixed(3)),
+    promedio: Number(volCalc.toFixed(2)),
+    error: errSistFinal,
+    errorSistematico: errSistFinal,
     errorSistematicoPct: Number(errorSistematicoPct.toFixed(2)),
-    desviacionEstandar: Number(sV.toFixed(4)),
+    errorAleatorio: errAleatFinal,
+    desviacionAleatoria: errAleatFinal,
+    desviacionEstandar: Number(errAleatFinal.toFixed(2)),
     coeficienteVariacionPct: Number(cvPct.toFixed(2)),
     incertidumbreTipoA: Number(uA.toFixed(4)),
     incertidumbreTipoB: Number(Math.sqrt(Math.pow(uBal, 2) + Math.pow(uRes, 2)).toFixed(4)),
     incertidumbreCombinada: Number(uc.toFixed(4)),
-    incertidumbreExpandida: Number(U.toFixed(3)),
-    factorK: 2,
-    empSistematicoPct: Number(empSistematicoPct),
-    empAleatorioPct: Number(empAleatorioPct),
+    incertidumbreExpandida: U_final,
+    factorK: kVal,
+    empSistematicoPct: empSistVal,
+    empAleatorioPct: empAleatVal,
     cumple,
   };
 };

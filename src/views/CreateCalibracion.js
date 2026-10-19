@@ -85,21 +85,27 @@ export default function CreateCalibracion() {
 
     const defaultNombre = tipo === 'masa_bascula'
       ? 'Báscula Pesa Persona Digital'
-      : (tipo === 'volumen_micropipeta' ? 'Micropipeta Monocanal Variable' : 'Esfigmomanómetro Aneroide');
+      : (tipo === 'volumen_micropipeta' ? 'EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN' : 'Esfigmomanómetro Aneroide');
 
-    const defaultUnidad = tipo === 'masa_bascula' ? 'kg' : (tipo === 'volumen_micropipeta' ? 'µL' : 'mmHg');
-    const defaultRes = tipo === 'masa_bascula' ? 0.1 : (tipo === 'volumen_micropipeta' ? 0.1 : 2);
+    const defaultUnidad = tipo === 'masa_bascula' ? 'kg' : (tipo === 'volumen_micropipeta' ? 'µl' : 'mmHg');
+    const defaultRes = tipo === 'masa_bascula' ? 0.1 : (tipo === 'volumen_micropipeta' ? 0.5 : 2);
 
     return {
       nombre: eqName || defaultNombre,
-      marca: eqMarca || 'No presenta',
-      modelo: eqModelo || 'No presenta',
-      serie: eqSerie || 'No presenta',
-      placaInventario: eqPlaca || '',
-      nroActivo: eqPlaca || 'No presenta',
+      tipoInstrumento: 'VARIABLE',
+      marca: eqMarca || (tipo === 'volumen_micropipeta' ? 'BIOHIT' : 'No presenta'),
+      modelo: eqModelo || (tipo === 'volumen_micropipeta' ? '5-50 uL' : 'No presenta'),
+      serie: eqSerie || (tipo === 'volumen_micropipeta' ? '14578608' : 'No presenta'),
+      placaInventario: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : ''),
+      nroActivo: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : 'No presenta'),
+      idGlobal: 'NO REGISTRA',
+      intervaloMin: '5 µl',
+      intervaloMax: '50 µl',
+      baseAjuste: 'Ex',
+      temperaturaRef: '20 °C',
       fechaRecepcion: new Date().toISOString().split('T')[0],
-      ubicacion: eqServicio || eqUbicacion || 'Sede Principal - Selección Donante',
-      servicio: eqServicio || eqUbicacion || 'Selección Donante',
+      ubicacion: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : 'Sede Principal - Selección Donante'),
+      servicio: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : 'Selección Donante'),
       resolucion: defaultRes,
       unidad: defaultUnidad,
       divisionEscala: '0,1 kg',
@@ -120,6 +126,8 @@ export default function CreateCalibracion() {
       sede: srv || (inst ? `${inst} - Sede Principal` : ''),
       direccion: '',
       ciudad: '',
+      departamento: 'CESAR',
+      pais: 'COLOMBIA',
       telefono: '',
     };
   });
@@ -133,6 +141,9 @@ export default function CreateCalibracion() {
     humedadRelativa: 58,
     incertHumedad: 0.5,
     presionAtmosferica: 1013,
+    incertPresion: 0.42,
+    tipoPunta: 'GENERICA',
+    liquidoEnsayo: 'Agua grado 3',
   });
 
   // Patrón Individual de Referencia (Tensiómetros y Micropipetas)
@@ -258,38 +269,58 @@ export default function CreateCalibracion() {
     { cargaNominal: 150, valorPatron: 149.99989, valorMasaConvencional: 149.99989, lecturas: [150.4, 150.5, 150.5] },
   ]);
 
-  // 3. Datos específicos Micropipeta
+  // 3. Datos específicos Micropipeta (NTC-ISO 8655-6:2014)
   const [micropipetaInfo, setMicropipetaInfo] = useState({
-    tipo: 'Monocanal volumen variable',
-    volumenNominal: 1000,
-    temperaturaAgua: 20,
-    presionAtmosferica: 1013,
+    tipo: 'VARIABLE',
+    volumenNominal: 50,
+    temperaturaAgua: 20.12,
+    presionAtmosferica: 847.14,
     factorZ: 1.0029,
     resolucionBalanza: 0.01,
     incertBalanza: 0.02,
+    tipoPunta: 'GENERICA',
+    liquidoEnsayo: 'Agua grado 3',
   });
 
   const [puntosMicropipeta, setPuntosMicropipeta] = useState([
     {
-      nominal: 100,
-      porcentaje: 10,
-      lecturasMasa: [99.7, 99.8, 99.6, 99.7, 99.8],
-      empSistematicoPct: 2.5,
+      nominal: 50,
+      volumenSeleccionado: 50,
+      porcentaje: 100,
+      volumenCalculado: 50.51,
+      errorSistematico: 0.5,
+      incertidumbreExpandida: 5.8,
+      factorK: 2.0,
+      errorAleatorio: 0.33,
+      lecturasMasa: [50.36, 50.40, 50.35, 50.38, 50.36],
+      empSistematicoPct: 2.0,
+      empAleatorioPct: 1.0,
+    },
+    {
+      nominal: 25,
+      volumenSeleccionado: 25,
+      porcentaje: 50,
+      volumenCalculado: 25.14,
+      errorSistematico: 0.1,
+      incertidumbreExpandida: 5.8,
+      factorK: 2.0,
+      errorAleatorio: 0.08,
+      lecturasMasa: [25.06, 25.07, 25.06, 25.08, 25.07],
+      empSistematicoPct: 3.0,
       empAleatorioPct: 1.5,
     },
     {
-      nominal: 500,
-      porcentaje: 50,
-      lecturasMasa: [498.5, 498.7, 498.6, 498.5, 498.6],
-      empSistematicoPct: 1.2,
-      empAleatorioPct: 0.8,
-    },
-    {
-      nominal: 1000,
-      porcentaje: 100,
-      lecturasMasa: [997.1, 997.3, 997.2, 997.0, 997.2],
-      empSistematicoPct: 0.8,
-      empAleatorioPct: 0.4,
+      nominal: 5,
+      volumenSeleccionado: 5,
+      porcentaje: 10,
+      volumenCalculado: 5.09,
+      errorSistematico: 0.1,
+      incertidumbreExpandida: 5.8,
+      factorK: 2.0,
+      errorAleatorio: 0.08,
+      lecturasMasa: [5.07, 5.08, 5.07, 5.08, 5.07],
+      empSistematicoPct: 5.0,
+      empAleatorioPct: 3.0,
     },
   ]);
 
@@ -480,14 +511,41 @@ export default function CreateCalibracion() {
       }));
     } else if (tipoPlantilla === 'volumen_micropipeta') {
       setProcedimiento(
-        'Procedimiento gravimétrico de calibración de aparatos volumétricos accionados por pistón según ISO 8655-2 e ISO 8655-6.'
+        'La calibración se realiza por el método gravimétrico basándose en la norma NTC-ISO 8655-6:2014 "APARATOS VOLUMÉTRICOS ACCIONADOS POR PISTÓN. PARTE 6: MÉTODOS GRAVIMÉTRICOS PARA LA DETERMINACIÓN DEL ERROR DE MEDICIÓN."'
       );
       setDatosEquipo((prev) => ({
         ...prev,
-        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Báscula') ? prev.nombre : 'Micropipeta Monocanal Variable',
-        unidad: 'µL',
-        resolucion: 0.1,
+        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Báscula') ? prev.nombre : 'EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN',
+        tipoInstrumento: prev.tipoInstrumento || 'VARIABLE',
+        marca: prev.marca && prev.marca !== 'No presenta' && prev.marca !== 'seca' ? prev.marca : 'BIOHIT',
+        modelo: prev.modelo && prev.modelo !== 'No presenta' && prev.modelo !== '803' ? prev.modelo : '5-50 uL',
+        serie: prev.serie && prev.serie !== 'No presenta' && prev.serie !== '8803325172348' ? prev.serie : '14578608',
+        nroActivo: prev.nroActivo && prev.nroActivo !== 'No presenta' && prev.nroActivo !== 'ATCI003859' ? prev.nroActivo : 'NO REGISTRA',
+        placaInventario: prev.placaInventario || 'NO REGISTRA',
+        idGlobal: prev.idGlobal || 'NO REGISTRA',
+        intervaloMin: prev.intervaloMin || '5 µl',
+        intervaloMax: prev.intervaloMax || '50 µl',
+        baseAjuste: prev.baseAjuste || 'Ex',
+        temperaturaRef: prev.temperaturaRef || '20 °C',
+        ubicacion: prev.ubicacion && !prev.ubicacion.includes('Selección Donante') ? prev.ubicacion : 'LABORATORIO CLINICO',
+        servicio: prev.servicio && !prev.servicio.includes('Selección Donante') ? prev.servicio : 'LABORATORIO CLINICO',
+        unidad: 'µl',
+        resolucion: 0.5,
       }));
+      setCondiciones((prev) => ({
+        ...prev,
+        lugarCalibracion: 'Laboratorio de Metrología GEMTTO S.A.S.',
+        metodoCalibracion: 'Gravimétrico (NTC-ISO 8655-6:2014)',
+        temperatura: 20.12,
+        incertTemperatura: 0.12,
+        humedadRelativa: 60.7,
+        incertHumedad: 1.8,
+        presionAtmosferica: 847.14,
+        incertPresion: 0.42,
+        tipoPunta: prev.tipoPunta || 'GENERICA',
+        liquidoEnsayo: prev.liquidoEnsayo || 'Agua grado 3',
+      }));
+      setObservaciones('NINGUNA');
     }
   }, [tipoPlantilla]);
 
@@ -603,17 +661,24 @@ export default function CreateCalibracion() {
     })
   );
 
-  // 3. Puntos calculados Micropipeta
+  // 3. Puntos calculados Micropipeta (NTC-ISO 8655-6:2014)
   const puntosMicropipetaCalculados = puntosMicropipeta.map((p) =>
     calcularPuntoMicropipeta({
-      nominal: p.nominal,
+      nominal: p.volumenSeleccionado ?? p.nominal,
+      volumenSeleccionado: p.volumenSeleccionado ?? p.nominal,
       porcentaje: p.porcentaje,
       lecturasMasa: p.lecturasMasa,
       factorZ: micropipetaInfo.factorZ,
       resolucionBalanza: micropipetaInfo.resolucionBalanza,
       incertBalanza: micropipetaInfo.incertBalanza,
+      resolucionEquipo: datosEquipo.resolucion,
       empSistematicoPct: p.empSistematicoPct,
       empAleatorioPct: p.empAleatorioPct,
+      volumenCalculado: p.volumenCalculado,
+      errorSistematico: p.errorSistematico,
+      incertidumbreExpandida: p.incertidumbreExpandida,
+      errorAleatorio: p.errorAleatorio,
+      factorK: p.factorK,
     })
   );
 
@@ -708,13 +773,23 @@ export default function CreateCalibracion() {
       puntosParaGuardar = puntosMicropipetaCalculados.map((p, idx) => ({
         ...p,
         puntoNumero: idx + 1,
-        nominal: p.nominal,
-        valorNominal: p.nominal,
-        valorPatron: p.nominal,
+        nominal: p.volumenSeleccionado ?? p.nominal,
+        volumenSeleccionado: p.volumenSeleccionado ?? p.nominal,
+        valorNominal: p.volumenSeleccionado ?? p.nominal,
+        valorPatron: p.volumenSeleccionado ?? p.nominal,
         porcentajeNominal: p.porcentaje,
+        volumenCalculado: p.volumenCalculado,
+        errorSistematico: p.errorSistematico,
+        incertidumbreExpandida: p.incertidumbreExpandida,
+        factorK: p.factorK ?? 2.0,
+        errorAleatorio: p.errorAleatorio,
       }));
       datosCalibracion = {
-        micropipetaInfo,
+        micropipetaInfo: {
+          ...micropipetaInfo,
+          tipoPunta: condiciones.tipoPunta || micropipetaInfo.tipoPunta || 'GENERICA',
+          liquidoEnsayo: condiciones.liquidoEnsayo || micropipetaInfo.liquidoEnsayo || 'Agua grado 3',
+        },
         puntos: puntosParaGuardar,
       };
     }
@@ -997,7 +1072,33 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosCliente.ciudad}
                   onChange={(e) => setDatosCliente({ ...datosCliente, ciudad: e.target.value })}
-                  placeholder="Ej: Barranquilla / Bogotá"
+                  placeholder="Ej: Valledupar / Barranquilla"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  Departamento
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.departamento || ''}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
+                  placeholder="Ej: CESAR / ATLÁNTICO"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                  País
+                </label>
+                <input
+                  type="text"
+                  value={datosCliente.pais || 'COLOMBIA'}
+                  onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
+                  placeholder="Ej: COLOMBIA"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1045,10 +1146,25 @@ export default function CreateCalibracion() {
                   value={datosEquipo.nombre}
                   onChange={(e) => setDatosEquipo({ ...datosEquipo, nombre: e.target.value })}
                   required
-                  placeholder="Ej: Báscula Digital / Tensiómetro"
+                  placeholder="Ej: EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              {tipoPlantilla === 'volumen_micropipeta' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Tipo (Variable / Fijo)
+                  </label>
+                  <input
+                    type="text"
+                    value={datosEquipo.tipoInstrumento || 'VARIABLE'}
+                    onChange={(e) => setDatosEquipo({ ...datosEquipo, tipoInstrumento: e.target.value })}
+                    placeholder="Ej: VARIABLE / FIJO"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1058,7 +1174,7 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosEquipo.marca}
                   onChange={(e) => setDatosEquipo({ ...datosEquipo, marca: e.target.value })}
-                  placeholder="Ej: Seca / Welch Allyn"
+                  placeholder="Ej: BIOHIT / Seca / Welch Allyn"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1071,7 +1187,7 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosEquipo.modelo}
                   onChange={(e) => setDatosEquipo({ ...datosEquipo, modelo: e.target.value })}
-                  placeholder="Ej: 703 / DS58"
+                  placeholder="Ej: 5-50 uL / 703 / DS58"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1085,7 +1201,7 @@ export default function CreateCalibracion() {
                   value={datosEquipo.serie}
                   onChange={(e) => setDatosEquipo({ ...datosEquipo, serie: e.target.value })}
                   required
-                  placeholder="Ej: SN-987654"
+                  placeholder="Ej: 14578608"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1100,10 +1216,79 @@ export default function CreateCalibracion() {
                   onChange={(e) =>
                     setDatosEquipo({ ...datosEquipo, nroActivo: e.target.value, placaInventario: e.target.value })
                   }
-                  placeholder="Ej: No presenta / ACT-00124"
+                  placeholder="Ej: NO REGISTRA / ACT-00124"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              {tipoPlantilla === 'volumen_micropipeta' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      ID Global
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.idGlobal || 'NO REGISTRA'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, idGlobal: e.target.value })}
+                      placeholder="Ej: NO REGISTRA"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Intervalo Mínimo
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.intervaloMin || '5 µl'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, intervaloMin: e.target.value })}
+                      placeholder="Ej: 5 µl"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Intervalo Máximo
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.intervaloMax || '50 µl'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, intervaloMax: e.target.value })}
+                      placeholder="Ej: 50 µl"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Base de Ajuste
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.baseAjuste || 'Ex'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, baseAjuste: e.target.value })}
+                      placeholder="Ej: Ex / In"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Temperatura de Referencia
+                    </label>
+                    <input
+                      type="text"
+                      value={datosEquipo.temperaturaRef || '20 °C'}
+                      onChange={(e) => setDatosEquipo({ ...datosEquipo, temperaturaRef: e.target.value })}
+                      placeholder="Ej: 20 °C"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1127,7 +1312,7 @@ export default function CreateCalibracion() {
                   onChange={(e) =>
                     setDatosEquipo({ ...datosEquipo, ubicacion: e.target.value, servicio: e.target.value })
                   }
-                  placeholder="Ej: Urgencias / Triaje"
+                  placeholder="Ej: LABORATORIO CLINICO"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1153,7 +1338,7 @@ export default function CreateCalibracion() {
                   type="text"
                   value={datosEquipo.unidad}
                   onChange={(e) => setDatosEquipo({ ...datosEquipo, unidad: e.target.value })}
-                  placeholder="kg, mmHg, µL"
+                  placeholder="kg, mmHg, µl"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
@@ -1699,7 +1884,7 @@ export default function CreateCalibracion() {
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Temperatura (°C) ± {condiciones.incertTemperatura || 0.6}
+                  Temperatura (°C) ± {condiciones.incertTemperatura || 0.12}
                 </label>
                 <input
                   type="number"
@@ -1710,9 +1895,24 @@ export default function CreateCalibracion() {
                 />
               </div>
 
+              {tipoPlantilla === 'volumen_micropipeta' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Incertidumbre Temperatura (± °C)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={condiciones.incertTemperatura ?? 0.12}
+                    onChange={(e) => setCondiciones({ ...condiciones, incertTemperatura: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
+
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Humedad Relativa (%HR) ± {condiciones.incertHumedad || 0.5}
+                  Humedad Relativa (%HR) ± {condiciones.incertHumedad || 1.8}
                 </label>
                 <input
                   type="number"
@@ -1722,6 +1922,21 @@ export default function CreateCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              {tipoPlantilla === 'volumen_micropipeta' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Incertidumbre Humedad (± %HR)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={condiciones.incertHumedad ?? 1.8}
+                    onChange={(e) => setCondiciones({ ...condiciones, incertHumedad: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1735,6 +1950,49 @@ export default function CreateCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
+
+              {tipoPlantilla === 'volumen_micropipeta' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Incertidumbre Presión (± hPa)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={condiciones.incertPresion ?? 0.42}
+                      onChange={(e) => setCondiciones({ ...condiciones, incertPresion: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Tipo de Punta
+                    </label>
+                    <input
+                      type="text"
+                      value={condiciones.tipoPunta || 'GENERICA'}
+                      onChange={(e) => setCondiciones({ ...condiciones, tipoPunta: e.target.value })}
+                      placeholder="Ej: GENERICA / ORIGINAL"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Líquido de Ensayo
+                    </label>
+                    <input
+                      type="text"
+                      value={condiciones.liquidoEnsayo || 'Agua grado 3'}
+                      onChange={(e) => setCondiciones({ ...condiciones, liquidoEnsayo: e.target.value })}
+                      placeholder="Ej: Agua grado 3"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -2335,7 +2593,7 @@ export default function CreateCalibracion() {
           </div>
         )}
 
-        {/* ===================== PLANTILLA 3: MICROPIPETAS ===================== */}
+        {/* ===================== PLANTILLA 3: MICROPIPETAS (NTC-ISO 8655-6:2014) ===================== */}
         {tipoPlantilla === 'volumen_micropipeta' && (
           <div
             style={{
@@ -2347,27 +2605,72 @@ export default function CreateCalibracion() {
               boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
             }}
           >
-            <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-              3. Calibración Gravimétrica de Micropipetas (ISO 8655-2 / ISO 8655-6)
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                  3. RESULTADO DE LA CALIBRACIÓN - EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN (NTC-ISO 8655-6:2014)
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Puede editar directamente los valores reportados en el certificado o calcularlos automáticamente a partir de las pesadas gravimétricas y el Factor Z.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPuntosMicropipeta((prev) => [
+                    ...prev,
+                    {
+                      nominal: 10,
+                      volumenSeleccionado: 10,
+                      porcentaje: 20,
+                      volumenCalculado: 10.05,
+                      errorSistematico: 0.1,
+                      incertidumbreExpandida: 5.8,
+                      factorK: 2.0,
+                      errorAleatorio: 0.08,
+                      lecturasMasa: [10.02, 10.03, 10.02, 10.03, 10.02],
+                      empSistematicoPct: 3.0,
+                      empAleatorioPct: 1.5,
+                    },
+                  ])
+                }
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  background: '#0284c7',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                <FaPlus size={10} /> + Añadir Punto Volumétrico
+              </button>
+            </div>
 
             {/* Parámetros de conversión y Factor Z */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
                 gap: 12,
                 background: '#f8fafc',
                 padding: 14,
                 borderRadius: 8,
-                marginBottom: 20,
+                marginBottom: 18,
                 border: '1px solid #e2e8f0',
               }}
             >
               <div>
-                <span style={{ fontSize: 11.5, color: '#475569', fontWeight: 600 }}>Volumen Nominal (µL):</span>
+                <span style={{ fontSize: 11.5, color: '#475569', fontWeight: 600 }}>Volumen Nominal Máx. (µl):</span>
                 <input
                   type="number"
+                  step="any"
                   value={micropipetaInfo.volumenNominal}
                   onChange={(e) =>
                     setMicropipetaInfo({ ...micropipetaInfo, volumenNominal: Number(e.target.value) })
@@ -2390,7 +2693,7 @@ export default function CreateCalibracion() {
               </div>
 
               <div>
-                <span style={{ fontSize: 11.5, color: '#475569', fontWeight: 600 }}>Factor Z Calculado (µL/mg):</span>
+                <span style={{ fontSize: 11.5, color: '#475569', fontWeight: 600 }}>Factor Z Calculado (µl/mg):</span>
                 <div
                   style={{
                     padding: '6px 10px',
@@ -2401,7 +2704,7 @@ export default function CreateCalibracion() {
                     fontSize: 13,
                   }}
                 >
-                  {micropipetaInfo.factorZ} µL/mg
+                  {micropipetaInfo.factorZ} µl/mg
                 </div>
               </div>
 
@@ -2419,62 +2722,221 @@ export default function CreateCalibracion() {
               </div>
             </div>
 
-            {/* Puntos volumétricos con pesadas repetidas */}
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-                Mediciones de Masa de Agua (mg) por cada volumen y evaluación ISO 8655:
-              </div>
+            {/* Tabla Principal de Resultados del Certificado (Sección 5 NTC-ISO 8655-6:2014) */}
+            <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ background: '#cbd5e1', borderBottom: '2px solid #94a3b8', color: '#0f172a' }}>
+                    <th style={{ padding: '8px 6px' }}>#</th>
+                    <th style={{ padding: '8px 8px' }}>Volumen Seleccionado (µl)</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Volumen Calculado (µl)</th>
+                    <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Error Sistemático Calculado (µl)</th>
+                    <th style={{ padding: '8px 8px', background: '#fef3c7' }}>Incertidumbre Expandida (µl)</th>
+                    <th style={{ padding: '8px 8px' }}>Factor k</th>
+                    <th style={{ padding: '8px 8px', background: '#f1f5f9' }}>Error Aleatorio Calculado (µl)</th>
+                    <th style={{ padding: '8px 6px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {puntosMicropipeta.map((p, idx) => {
+                    const c = puntosMicropipetaCalculados[idx];
+                    return (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '6px 6px', fontWeight: 700 }}>{idx + 1}</td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.volumenSeleccionado ?? p.nominal}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                n[idx] = {
+                                  ...n[idx],
+                                  nominal: val,
+                                  volumenSeleccionado: val,
+                                  errorSistematico:
+                                    n[idx].volumenCalculado !== undefined
+                                      ? Number((Number(n[idx].volumenCalculado) - val).toFixed(1))
+                                      : n[idx].errorSistematico,
+                                };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 85,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontWeight: 700,
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.volumenCalculado ?? c?.volumenCalculado ?? ''}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                const volSel = Number(n[idx].volumenSeleccionado ?? n[idx].nominal ?? 0);
+                                n[idx] = {
+                                  ...n[idx],
+                                  volumenCalculado: val,
+                                  errorSistematico: Number((val - volSel).toFixed(1)),
+                                };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 90,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #93c5fd',
+                              fontWeight: 700,
+                              color: '#0369a1',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.errorSistematico ?? c?.errorSistematico ?? ''}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], errorSistematico: val };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 85,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #93c5fd',
+                              fontWeight: 700,
+                              color: '#dc2626',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#fffbeb' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.incertidumbreExpandida ?? c?.incertidumbreExpandida ?? 5.8}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], incertidumbreExpandida: val };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 85,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #fcd34d',
+                              fontWeight: 700,
+                              color: '#b45309',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.factorK ?? c?.factorK ?? 2.0}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], factorK: val };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 65,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f8fafc' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.errorAleatorio ?? c?.errorAleatorio ?? ''}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosMicropipeta((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], errorAleatorio: val };
+                                return n;
+                              });
+                            }}
+                            style={{
+                              width: 85,
+                              padding: '5px 6px',
+                              textAlign: 'center',
+                              borderRadius: 4,
+                              border: '1px solid #cbd5e1',
+                              fontWeight: 700,
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 6px' }}>
+                          {puntosMicropipeta.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setPuntosMicropipeta((prev) => prev.filter((_, i) => i !== idx))}
+                              style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                              title="Eliminar punto"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
-            {puntosMicropipeta.map((p, idx) => {
-              const c = puntosMicropipetaCalculados[idx];
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 8,
-                    padding: 14,
-                    marginBottom: 16,
-                    background: '#ffffff',
-                  }}
-                >
+            {/* Pesadas gravimétricas opcionales por punto */}
+            <details style={{ marginBottom: 20, background: '#f8fafc', padding: '10px 14px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <summary style={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: '#0369a1' }}>
+                Opcional: Calcular automáticamente desde pesadas de masa de agua (mg) × Factor Z
+              </summary>
+              <div style={{ marginTop: 12 }}>
+                {puntosMicropipeta.map((p, idx) => (
                   <div
+                    key={idx}
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 8,
+                      padding: 12,
                       marginBottom: 10,
-                      flexWrap: 'wrap',
-                      gap: 8,
+                      background: '#ffffff',
                     }}
                   >
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0369a1' }}>
-                      Punto {idx + 1}: {p.nominal} µL ({p.porcentaje}% del volumen nominal)
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', marginBottom: 6 }}>
+                      Punto {idx + 1}: {p.volumenSeleccionado ?? p.nominal} µl — Pesadas de agua (mg):
                     </div>
-
-                    <div style={{ display: 'flex', gap: 12, fontSize: 12, alignItems: 'center' }}>
-                      <span>EMP Sistemático: ±{p.empSistematicoPct}%</span>
-                      <span>EMP Aleatorio (CV): ≤{p.empAleatorioPct}%</span>
-                      <span
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: 4,
-                          fontSize: 11.5,
-                          fontWeight: 700,
-                          background: c?.cumple ? '#dcfce7' : '#fee2e2',
-                          color: c?.cumple ? '#15803d' : '#b91c1c',
-                        }}
-                      >
-                        {c?.cumple ? 'CONFORME' : 'NO CONFORME'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 11.5, color: '#64748b' }}>Pesadas de agua repetidas (mg):</span>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                      {p.lecturasMasa.map((m, mIdx) => (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {(p.lecturasMasa || [0, 0, 0, 0, 0]).map((m, mIdx) => (
                         <input
                           key={mIdx}
                           type="number"
@@ -2484,14 +2946,24 @@ export default function CreateCalibracion() {
                             const val = Number(e.target.value);
                             setPuntosMicropipeta((prev) => {
                               const n = [...prev];
-                              const lects = [...n[idx].lecturasMasa];
+                              const lects = [...(n[idx].lecturasMasa || [0, 0, 0, 0, 0])];
                               lects[mIdx] = val;
-                              n[idx].lecturasMasa = lects;
+                              const vols = lects.map((x) => Number(x) * Number(micropipetaInfo.factorZ || 1.0029));
+                              const vMed = Number(promedio(vols).toFixed(2));
+                              const sVol = Number(desviacionEstandar(vols).toFixed(2));
+                              const vNom = Number(n[idx].volumenSeleccionado ?? n[idx].nominal ?? 0);
+                              n[idx] = {
+                                ...n[idx],
+                                lecturasMasa: lects,
+                                volumenCalculado: vMed,
+                                errorSistematico: Number((vMed - vNom).toFixed(1)),
+                                errorAleatorio: sVol,
+                              };
                               return n;
                             });
                           }}
                           style={{
-                            width: 85,
+                            width: 80,
                             padding: '4px 6px',
                             textAlign: 'center',
                             borderRadius: 4,
@@ -2501,43 +2973,15 @@ export default function CreateCalibracion() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Resultados calculados del punto */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                      gap: 8,
-                      background: '#f0f9ff',
-                      padding: 10,
-                      borderRadius: 6,
-                      fontSize: 12,
-                    }}
-                  >
-                    <div>
-                      Volumen Medio: <strong>{c?.promedio} µL</strong>
-                    </div>
-                    <div>
-                      Error Sistemático: <strong>{c?.errorSistematicoPct}%</strong> ({c?.error} µL)
-                    </div>
-                    <div>
-                      Desviación Estándar: <strong>{c?.desviacionEstandar} µL</strong>
-                    </div>
-                    <div>
-                      Coeficiente Var (CV): <strong>{c?.coeficienteVariacionPct}%</strong>
-                    </div>
-                    <div>
-                      Incertidumbre Expandida: <strong>± {c?.incertidumbreExpandida} µL</strong>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            </details>
 
             <CalibrationChart
               puntos={puntosMicropipetaCalculados}
-              unidad="µL"
-              titulo="Curva de Error Sistemático vs. Volumen Nominal (µL) con Incertidumbre (k=2)"
+              unidad="µl"
+              tipoPlantilla="volumen_micropipeta"
+              titulo="Gráfico de Error e Incertidumbre"
             />
           </div>
         )}

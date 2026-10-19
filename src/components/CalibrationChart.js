@@ -18,6 +18,9 @@ export default function CalibrationChart({
 }) {
   const isPresion = esPresion || tipoPlantilla === 'presion_tensiometro' || unidad === 'mmHg';
   const isBascula = tipoPlantilla === 'masa_bascula' || (!isPresion && (unidad === 'kg' || unidad === 'g'));
+  const isMicropipeta =
+    tipoPlantilla === 'volumen_micropipeta' ||
+    (!isPresion && !isBascula && (unidad === 'µL' || unidad === 'µl' || unidad === 'uL'));
 
   if (!puntos || puntos.length === 0) {
     return (
@@ -40,7 +43,7 @@ export default function CalibrationChart({
     );
   }
 
-  const padding = isPresion || isBascula
+  const padding = isPresion || isBascula || isMicropipeta
     ? { top: 28, right: 35, bottom: 48, left: 75 }
     : { top: 35, right: 35, bottom: 45, left: 60 };
   const plotWidth = width - padding.left - padding.right;
@@ -49,7 +52,13 @@ export default function CalibrationChart({
   // Filtrar puntos válidos asegurando conversión numérica segura
   const validPuntos = puntos.filter((p) => {
     if (!p) return false;
-    const rawVal = p.valorPatron ?? p.nominal ?? p.valorNominal ?? p.indicacionIBC ?? p.cargaNominal;
+    const rawVal =
+      p.volumenSeleccionado ??
+      p.nominal ??
+      p.valorPatron ??
+      p.valorNominal ??
+      p.indicacionIBC ??
+      p.cargaNominal;
     return rawVal !== undefined && rawVal !== null && rawVal !== '' && !isNaN(Number(rawVal));
   });
 
@@ -57,12 +66,19 @@ export default function CalibrationChart({
 
   // Extraer valores X e Y
   const data = validPuntos.map((p) => {
-    const rawX = p.cargaNominal ?? p.indicacionIBC ?? p.valorPatron ?? p.nominal ?? p.valorNominal ?? 0;
+    const rawX =
+      p.volumenSeleccionado ??
+      p.nominal ??
+      p.cargaNominal ??
+      p.indicacionIBC ??
+      p.valorPatron ??
+      p.valorNominal ??
+      0;
     const x = Number(rawX);
     // Para presión, en el gráfico se representa el error de desempeño o corrección (Ref - IBC)
     const rawY = isPresion
       ? (p.errorDesempeno !== undefined ? p.errorDesempeno : p.correccion !== undefined ? p.correccion : (-(Number(p.error) || 0)))
-      : (p.error ?? p.errorSistematico ?? 0);
+      : (p.errorSistematico ?? p.error ?? 0);
     const y = Number(rawY) || 0;
     const u = Number(p.incertidumbreExpandida) || 0;
     const rawEmp = isPresion
@@ -84,6 +100,7 @@ export default function CalibrationChart({
   // Determinar rango en Y:
   // Presión: -5.00 a +5.00
   // Báscula: -0.200 a +1.000 (o adaptado si los errores exceden)
+  // Micropipeta: -8.00 a +8.00 con paso 2.00 (o adaptado si error ± U excede 8)
   let absMaxY = 5.0;
   let yTicks = [5.0, 4.0, 3.0, 2.0, 1.0, 0.0, -1.0, -2.0, -3.0, -4.0, -5.0];
 
@@ -92,6 +109,10 @@ export default function CalibrationChart({
   let basculaMinX = 0;
   let basculaMaxX = 160;
   let xTicksBascula = [0, 20, 40, 60, 80, 100, 120, 140, 160];
+
+  let microMinX = 0;
+  let microMaxX = 60;
+  let xTicksMicro = [0, 10, 20, 30, 40, 50, 60];
 
   if (isBascula) {
     const minValY = Math.min(...data.map((d) => d.y - (d.u || 0)), -0.1);
@@ -108,6 +129,32 @@ export default function CalibrationChart({
     xTicksBascula = [];
     for (let vx = 0; vx <= basculaMaxX + 0.1; vx += 20) {
       xTicksBascula.push(vx);
+    }
+  } else if (isMicropipeta) {
+    const maxDeltaMicro = Math.max(
+      ...data.map((d) => Math.abs(d.y) + (d.u || 0)),
+      6.0
+    );
+    const stepY = maxDeltaMicro <= 8 ? 2 : Math.ceil((maxDeltaMicro * 1.15) / 4);
+    absMaxY = stepY * 4;
+    yTicks = [
+      absMaxY,
+      stepY * 3,
+      stepY * 2,
+      stepY,
+      0,
+      -stepY,
+      -stepY * 2,
+      -stepY * 3,
+      -absMaxY,
+    ];
+
+    const rawMaxMicro = maxX > 0 ? maxX : 50;
+    const stepX = rawMaxMicro <= 60 ? 10 : Math.ceil((rawMaxMicro * 1.2) / 6 / 10) * 10;
+    microMaxX = stepX * 6;
+    xTicksMicro = [];
+    for (let vx = 0; vx <= microMaxX + 0.001; vx += stepX) {
+      xTicksMicro.push(vx);
     }
   } else if (!isPresion) {
     const maxDelta = Math.max(
@@ -127,6 +174,7 @@ export default function CalibrationChart({
   const formatVal = (v) => {
     if (isPresion) return Number(v).toFixed(2).replace('.', ',');
     if (isBascula) return Number(v).toFixed(2).replace('.', ',');
+    if (isMicropipeta) return Number(v).toFixed(2).replace('.', ',');
     if (absMaxY < 0.05) return Number(v).toFixed(4);
     if (absMaxY < 0.5) return Number(v).toFixed(3);
     if (absMaxY < 5) return Number(v).toFixed(2);
@@ -137,6 +185,9 @@ export default function CalibrationChart({
   const getXPos = (val) => {
     if (isBascula) {
       return padding.left + ((val - basculaMinX) / (basculaMaxX - basculaMinX)) * plotWidth;
+    }
+    if (isMicropipeta) {
+      return padding.left + ((val - microMinX) / (microMaxX - microMinX)) * plotWidth;
     }
     if (data.length === 1 || rangeX === 0) return padding.left + plotWidth / 2;
     const innerPad = plotWidth * 0.07;
@@ -155,7 +206,7 @@ export default function CalibrationChart({
     return padding.top + plotHeight / 2 - (val / absMaxY) * (plotHeight / 2);
   };
 
-  // Línea conectora de errores (solo para micropipetas; en presión y básculas met&cal son puntos con barras)
+  // Línea conectora de errores
   const linePoints = data.map((d) => `${getXPos(d.x)},${getYPos(d.y)}`).join(' ');
 
   const chartTitle =
@@ -164,6 +215,8 @@ export default function CalibrationChart({
       ? 'PRUEBA DE PARÁMETROS'
       : isBascula
       ? 'ERROR, INCERTIDUMBRE EXPANDIDA Y CARGAS'
+      : isMicropipeta
+      ? 'Gráfico de Error e Incertidumbre'
       : 'Curva de Error vs. Valor Patrón con Incertidumbre (k=2)');
 
   return (
@@ -171,14 +224,14 @@ export default function CalibrationChart({
       style={{
         background: '#ffffff',
         borderRadius: 8,
-        border: '1px solid #e2e8f0',
+        border: '1px solid #cbd5e1',
         padding: '10px 14px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
       }}
     >
       <div
         style={{
-          fontSize: 13.5,
+          fontSize: 14,
           fontWeight: 800,
           color: '#0f172a',
           marginBottom: 6,
@@ -202,10 +255,27 @@ export default function CalibrationChart({
           y={padding.top}
           width={plotWidth}
           height={plotHeight}
-          fill={isPresion ? '#ffffff' : '#f8fafc'}
+          fill="#ffffff"
           stroke="#cbd5e1"
           strokeWidth="1.2"
         />
+
+        {/* Líneas de cuadrícula vertical para micropipeta */}
+        {isMicropipeta &&
+          xTicksMicro.map((valX, idx) => {
+            const xPos = getXPos(valX);
+            return (
+              <line
+                key={`vgrid-micro-${idx}`}
+                x1={xPos}
+                y1={padding.top}
+                x2={xPos}
+                y2={padding.top + plotHeight}
+                stroke="#e2e8f0"
+                strokeWidth="1"
+              />
+            );
+          })}
 
         {/* Líneas de cuadrícula horizontal */}
         {yTicks.map((val, idx) => {
@@ -224,11 +294,11 @@ export default function CalibrationChart({
                   isEmpLimit
                     ? '#ef4444'
                     : isZero
-                    ? (isPresion ? '#64748b' : '#10b981')
+                    ? (isPresion || isMicropipeta ? '#94a3b8' : '#10b981')
                     : '#e2e8f0'
                 }
-                strokeWidth={isEmpLimit ? '2' : isZero ? '1.5' : '1'}
-                strokeDasharray={(!isPresion && isZero) ? '4 2' : 'none'}
+                strokeWidth={isEmpLimit ? '2' : isZero ? '1.3' : '1'}
+                strokeDasharray={(!isPresion && !isMicropipeta && isZero) ? '4 2' : 'none'}
               />
               <text
                 x={padding.left - 8}
@@ -244,8 +314,8 @@ export default function CalibrationChart({
           );
         })}
 
-        {/* Límites de Error Máximo Permisible (± EMP) para Básculas/Micropipetas si existen */}
-        {!isPresion && data.some((d) => d.emp > 0) && (
+        {/* Límites de Error Máximo Permisible (± EMP) para Básculas si existen */}
+        {!isPresion && !isMicropipeta && data.some((d) => d.emp > 0) && (
           <>
             <path
               d={data.reduce((acc, d, i) => {
@@ -274,8 +344,8 @@ export default function CalibrationChart({
           </>
         )}
 
-        {/* Línea conectora de errores (solo para micropipetas; en presión y básculas son puntos con barras) */}
-        {!isPresion && !isBascula && data.length > 1 && (
+        {/* Línea conectora de errores (solo para plantillas genéricas) */}
+        {!isPresion && !isBascula && !isMicropipeta && data.length > 1 && (
           <polyline
             fill="none"
             stroke="#0284c7"
@@ -312,6 +382,34 @@ export default function CalibrationChart({
             );
           })}
 
+        {/* Ticks y etiquetas del eje X para micropipetas (escala continua 0 a 60) */}
+        {isMicropipeta &&
+          xTicksMicro.map((valX, idx) => {
+            const xPos = getXPos(valX);
+            return (
+              <g key={`xtick-micro-${idx}`}>
+                <line
+                  x1={xPos}
+                  y1={padding.top + plotHeight}
+                  x2={xPos}
+                  y2={padding.top + plotHeight + 5}
+                  stroke="#94a3b8"
+                  strokeWidth="1.2"
+                />
+                <text
+                  x={xPos}
+                  y={padding.top + plotHeight + 18}
+                  textAnchor="middle"
+                  fontSize="11.5"
+                  fill="#0f172a"
+                  fontWeight="700"
+                >
+                  {valX}
+                </text>
+              </g>
+            );
+          })}
+
         {/* Puntos individuales y barras de incertidumbre */}
         {data.map((d, idx) => {
           const cx = getXPos(d.x);
@@ -329,54 +427,48 @@ export default function CalibrationChart({
                     y1={topU}
                     x2={cx}
                     y2={botU}
-                    stroke={isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth="1.8"
+                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
                   />
                   <line
                     x1={cx - 5}
                     y1={topU}
                     x2={cx + 5}
                     y2={topU}
-                    stroke={isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth="1.8"
+                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
                   />
                   <line
                     x1={cx - 5}
                     y1={botU}
                     x2={cx + 5}
                     y2={botU}
-                    stroke={isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth="1.8"
+                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
                   />
                 </>
               )}
 
-              {/* Punto de Error: círculo con borde nítido */}
+              {/* Punto de Error: círculo con borde nítido (Rojo en micropipeta según formato ISO 8655-6) */}
               <circle
                 cx={cx}
                 cy={cy}
-                r={isPresion || isBascula ? '5.5' : '4.5'}
-                fill={isPresion ? '#000000' : isBascula ? '#0f172a' : '#0284c7'}
+                r={isPresion || isBascula || isMicropipeta ? '5.5' : '4.5'}
+                fill={
+                  isMicropipeta
+                    ? '#dc2626'
+                    : isPresion
+                    ? '#000000'
+                    : isBascula
+                    ? '#0f172a'
+                    : '#0284c7'
+                }
                 stroke="#ffffff"
-                strokeWidth="1.5"
+                strokeWidth="1.2"
               />
 
-              {/* Etiqueta de valor del punto (solo en micropipetas o báscula si se desea) */}
-              {!isPresion && !isBascula && (
-                <text
-                  x={cx}
-                  y={cy - 7}
-                  textAnchor="middle"
-                  fontSize="10.5"
-                  fontWeight="800"
-                  fill="#0f172a"
-                >
-                  {d.y > 0 ? `+${formatVal(d.y)}` : formatVal(d.y)}
-                </text>
-              )}
-
-              {/* Etiqueta de X en el eje (solo cuando NO es báscula, ya que báscula tiene su propio eje continuo) */}
-              {!isBascula && (
+              {/* Etiqueta de X en el eje (solo cuando NO es báscula ni micropipeta, que tienen su propio eje continuo) */}
+              {!isBascula && !isMicropipeta && (
                 <text
                   x={cx}
                   y={padding.top + plotHeight + 20}
@@ -401,7 +493,13 @@ export default function CalibrationChart({
           fill="#0f172a"
           fontWeight="900"
         >
-          {isPresion ? 'Presión (mmHg)' : isBascula ? 'Cargas (kg)' : `Valor Patrón ${unidad ? `(${unidad})` : ''}`}
+          {isPresion
+            ? 'Presión (mmHg)'
+            : isBascula
+            ? 'Cargas (kg)'
+            : isMicropipeta
+            ? 'Indicación'
+            : `Valor Patrón ${unidad ? `(${unidad})` : ''}`}
         </text>
 
         <text
@@ -409,43 +507,94 @@ export default function CalibrationChart({
           y="18"
           transform="rotate(-90)"
           textAnchor="middle"
-          fontSize="12.5"
+          fontSize="12"
           fill="#0f172a"
           fontWeight="900"
         >
-          {isPresion ? 'Error ± Incertidumbre (mmHg)' : isBascula ? 'Error ± Incertidumbre (kg)' : `Error de Indicación ${unidad ? `(${unidad})` : ''}`}
+          {isPresion
+            ? 'Error ± Incertidumbre (mmHg)'
+            : isBascula
+            ? 'Error ± Incertidumbre (kg)'
+            : isMicropipeta
+            ? 'Error Sistemático ± Incertidumbre'
+            : `Error de Indicación ${unidad ? `(${unidad})` : ''}`}
         </text>
       </svg>
 
       {/* Leyenda explicativa metrológica */}
-      {!isPresion && (
+      {isMicropipeta ? (
         <div
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 16,
-            marginTop: 6,
-            fontSize: 11,
-            color: '#334155',
-            fontWeight: 600,
-            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 48,
+            marginTop: 8,
+            fontSize: 12,
+            color: '#0f172a',
+            fontWeight: 700,
           }}
         >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: isBascula ? '#0f172a' : '#0284c7' }} />
-            Error de indicación (kg)
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 14, height: 2, background: '#0284c7' }} />
-            Barra de Incertidumbre expandida (± U, k=2)
-          </span>
-          {data.some((d) => d.emp > 0) && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 14, height: 2, borderTop: '2px dashed #ef4444' }} />
-              Límite Error Máx. Permisible (EMP)
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: 14,
+                width: 14,
+              }}
+            >
+              <span style={{ width: 12, height: 1.5, background: '#334155' }} />
+              <span style={{ width: 1.5, height: 11, background: '#334155' }} />
+              <span style={{ width: 12, height: 1.5, background: '#334155' }} />
             </span>
-          )}
+            Incertidumbre
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: '50%',
+                background: '#dc2626',
+                display: 'inline-block',
+              }}
+            />
+            Error sistemático
+          </span>
         </div>
+      ) : (
+        !isPresion && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 16,
+              marginTop: 6,
+              fontSize: 11,
+              color: '#334155',
+              fontWeight: 600,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: isBascula ? '#0f172a' : '#0284c7' }} />
+              Error de indicación (kg)
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 14, height: 2, background: '#0284c7' }} />
+              Barra de Incertidumbre expandida (± U, k=2)
+            </span>
+            {data.some((d) => d.emp > 0) && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 14, height: 2, borderTop: '2px dashed #ef4444' }} />
+                Límite Error Máx. Permisible (EMP)
+              </span>
+            )}
+          </div>
+        )
       )}
     </div>
   );

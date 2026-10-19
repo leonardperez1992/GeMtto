@@ -31,6 +31,8 @@ import {
   FaExternalLinkAlt,
   FaCopy,
   FaCheck,
+  FaMapMarkerAlt,
+  FaPhoneAlt,
 } from 'react-icons/fa';
 
 function EditarIps() {
@@ -62,6 +64,8 @@ function EditarIps() {
     ips: '',
     nit: '',
     ciudad: '',
+    direccion: '',
+    telefono: '',
     logo: [],
     plan_mantenimiento: null,
     plan_capacitacion: null,
@@ -116,6 +120,8 @@ function EditarIps() {
           ips: inst.ips || '',
           nit: inst.nit || '',
           ciudad: inst.ciudad || '',
+          direccion: inst.direccion || '',
+          telefono: inst.telefono || '',
           logo: initialLogo,
           plan_mantenimiento: inst.plan_mantenimiento || null,
           plan_capacitacion: inst.plan_capacitacion || null,
@@ -173,6 +179,8 @@ function EditarIps() {
           ips: ipsData.ips.trim().toUpperCase(),
           nit: ipsData.nit.trim(),
           ciudad: ipsData.ciudad.trim().toUpperCase(),
+          direccion: String(ipsData.direccion || '').trim(),
+          telefono: String(ipsData.telefono || '').trim(),
           logo: logoList,
         },
       });
@@ -528,6 +536,36 @@ function EditarIps() {
                 className="input-report"
                 placeholder="Ej. VALLEDUPAR"
                 style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
+                <FaMapMarkerAlt /> DIRECCIÓN DE LA SEDE / IPS:
+              </label>
+              <input
+                type="text"
+                name="direccion"
+                value={ipsData.direccion}
+                onChange={handleChange}
+                className="input-report"
+                placeholder="Ej. Cra. 15 # 12-45, Barrio Centro..."
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}>
+                <FaPhoneAlt /> TELÉFONO DE CONTACTO:
+              </label>
+              <input
+                type="text"
+                name="telefono"
+                value={ipsData.telefono}
+                onChange={handleChange}
+                className="input-report"
+                placeholder="Ej. (605) 5801234 / 300 123 4567..."
               />
             </div>
           </div>

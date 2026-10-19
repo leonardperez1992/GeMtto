@@ -12,6 +12,8 @@ import {
   FaCamera,
   FaImage,
   FaTrash,
+  FaMapMarkerAlt,
+  FaPhoneAlt,
 } from 'react-icons/fa';
 
 function CrearIps() {
@@ -22,6 +24,8 @@ function CrearIps() {
     ips: '',
     nit: '',
     ciudad: '',
+    direccion: '',
+    telefono: '',
   });
 
   const handleSave = (e) => {
@@ -44,6 +48,8 @@ function CrearIps() {
           ips: ips.ips.trim().toUpperCase(),
           nit: ips.nit.trim(),
           ciudad: ips.ciudad.trim().toUpperCase(),
+          direccion: ips.direccion.trim(),
+          telefono: ips.telefono.trim(),
           logo: logoList,
         },
         method: 'POST',
@@ -162,7 +168,7 @@ function CrearIps() {
             </div>
 
             {/* Ciudad */}
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                 <FaCity /> CIUDAD / MUNICIPIO:
               </label>
@@ -174,6 +180,36 @@ function CrearIps() {
                 value={ips.ciudad}
                 onChange={handleSave}
                 style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+
+            {/* Dirección */}
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                <FaMapMarkerAlt /> DIRECCIÓN DE LA SEDE / IPS:
+              </label>
+              <input
+                className="input-report"
+                name="direccion"
+                type="text"
+                placeholder="Ej. Cra. 15 # 12-45, Barrio Centro..."
+                value={ips.direccion}
+                onChange={handleSave}
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ fontSize: '12.5px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                <FaPhoneAlt /> TELÉFONO DE CONTACTO:
+              </label>
+              <input
+                className="input-report"
+                name="telefono"
+                type="text"
+                placeholder="Ej. (605) 5801234 / 300 123 4567..."
+                value={ips.telefono}
+                onChange={handleSave}
               />
             </div>
 

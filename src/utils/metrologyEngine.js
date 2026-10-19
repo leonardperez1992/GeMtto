@@ -412,3 +412,68 @@ export const calcularPuntoMicropipeta = ({
     cumple,
   };
 };
+
+/**
+ * 7. Clasificador inteligente de equipos biomédicos hacia plantillas de calibración
+ * Identifica si un equipo es Báscula (masa), Tensiómetro (presión) o Micropipeta (volumen).
+ */
+export const detectarTipoPlantillaCalibracion = (nombreEquipo) => {
+  const norm = String(nombreEquipo || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  // 1. Básculas / Balanzas / Pesas
+  if (
+    norm.includes('bascula') ||
+    norm.includes('balanza') ||
+    norm.includes('pesa') ||
+    norm.includes('gramera') ||
+    norm.includes('tallimetro')
+  ) {
+    return {
+      tipo: 'masa_bascula',
+      etiqueta: 'Báscula / Masa',
+      badgeColor: '#b45309',
+      badgeBg: '#fef3c7',
+    };
+  }
+
+  // 2. Tensiómetros / Esfigmomanómetros / Presión
+  if (
+    norm.includes('tensiometro') ||
+    norm.includes('esfigmo') ||
+    norm.includes('aneroide') ||
+    norm.includes('presion')
+  ) {
+    return {
+      tipo: 'presion_tensiometro',
+      etiqueta: 'Tensiómetro / Presión',
+      badgeColor: '#0369a1',
+      badgeBg: '#e0f2fe',
+    };
+  }
+
+  // 3. Micropipetas / Pipetas / Dispensadores volumétricos
+  if (
+    norm.includes('micropipeta') ||
+    norm.includes('pipeta') ||
+    norm.includes('dispensador')
+  ) {
+    return {
+      tipo: 'volumen_micropipeta',
+      etiqueta: 'Micropipeta / Volumen',
+      badgeColor: '#7e22ce',
+      badgeBg: '#f3e8ff',
+    };
+  }
+
+  // Por defecto (compatible con calibración analógica/digital general)
+  return {
+    tipo: 'presion_tensiometro',
+    etiqueta: 'Calibración Biomédica',
+    badgeColor: '#0284c7',
+    badgeBg: '#e0f2fe',
+  };
+};
+

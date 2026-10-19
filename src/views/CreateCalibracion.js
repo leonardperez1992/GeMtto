@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
 import {
   apiCrearCalibracion,
   apiSiguienteConsecutivoCalibracion,
   apiPatrones,
+  apiObtenerEquipo,
+  apiGetIps,
+  apiIps,
 } from '../utils/api';
 import request from '../utils/request';
 import {
@@ -14,6 +17,7 @@ import {
   calcularFactorZ,
   promedio,
   desviacionEstandar,
+  detectarTipoPlantillaCalibracion,
 } from '../utils/metrologyEngine';
 import CalibrationChart from '../components/CalibrationChart';
 import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
@@ -32,6 +36,7 @@ import { MdSpeed } from 'react-icons/md';
 
 export default function CreateCalibracion() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Estados generales de datos
   const [listaPatrones, setListaPatrones] = useState([]);
@@ -42,8 +47,15 @@ export default function CreateCalibracion() {
   const firmaCalibroRef = useRef({});
   const firmaAproboRef = useRef({});
 
-  // Tipo de plantilla seleccionada
-  const [tipoPlantilla, setTipoPlantilla] = useState('presion_tensiometro');
+  // Tipo de plantilla seleccionada (con autodetección inteligente de clase de equipo)
+  const [tipoPlantilla, setTipoPlantilla] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    const tipo = p.get('tipoPlantilla');
+    const eq = p.get('equipo');
+    if (tipo) return tipo;
+    if (eq) return detectarTipoPlantillaCalibracion(eq).tipo;
+    return 'presion_tensiometro';
+  });
 
   // Formulario general
   const [consecutivo, setConsecutivo] = useState('');
@@ -59,29 +71,57 @@ export default function CreateCalibracion() {
     return d.toISOString().split('T')[0];
   });
 
-  // Datos del Equipo (Entrada 100% manual)
-  const [datosEquipo, setDatosEquipo] = useState({
-    nombre: 'Esfigmomanómetro Aneroide',
-    marca: 'No presenta',
-    modelo: 'No presenta',
-    serie: 'No presenta',
-    placaInventario: '',
-    nroActivo: 'No presenta',
-    fechaRecepcion: new Date().toISOString().split('T')[0],
-    ubicacion: 'Sede Principal - Selección Donante',
-    servicio: 'Selección Donante',
-    resolucion: 2,
-    unidad: 'mmHg',
+  // Datos del Equipo (Inicialización inteligente desde URL o valores por defecto)
+  const [datosEquipo, setDatosEquipo] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    const eqName = p.get('equipo') || '';
+    const eqMarca = p.get('marca') || '';
+    const eqModelo = p.get('modelo') || '';
+    const eqSerie = p.get('serie') || '';
+    const eqPlaca = p.get('placa') || '';
+    const eqServicio = p.get('servicio') || '';
+    const eqUbicacion = p.get('ubicacion') || '';
+    const tipo = p.get('tipoPlantilla') || (eqName ? detectarTipoPlantillaCalibracion(eqName).tipo : 'presion_tensiometro');
+
+    const defaultNombre = tipo === 'masa_bascula'
+      ? 'Báscula Pesa Persona Digital'
+      : (tipo === 'volumen_micropipeta' ? 'Micropipeta Monocanal Variable' : 'Esfigmomanómetro Aneroide');
+
+    const defaultUnidad = tipo === 'masa_bascula' ? 'kg' : (tipo === 'volumen_micropipeta' ? 'µL' : 'mmHg');
+    const defaultRes = tipo === 'masa_bascula' ? 0.1 : (tipo === 'volumen_micropipeta' ? 0.1 : 2);
+
+    return {
+      nombre: eqName || defaultNombre,
+      marca: eqMarca || 'No presenta',
+      modelo: eqModelo || 'No presenta',
+      serie: eqSerie || 'No presenta',
+      placaInventario: eqPlaca || '',
+      nroActivo: eqPlaca || 'No presenta',
+      fechaRecepcion: new Date().toISOString().split('T')[0],
+      ubicacion: eqUbicacion || eqServicio || 'Sede Principal - Selección Donante',
+      servicio: eqServicio || 'Selección Donante',
+      resolucion: defaultRes,
+      unidad: defaultUnidad,
+      divisionEscala: '0,1 kg',
+      cargaMinima: '2 kg',
+      cargaMaxima: '150 kg',
+      claseExactitud: 'III',
+    };
   });
 
-  // Datos del Cliente / IPS (Entrada 100% manual)
-  const [datosCliente, setDatosCliente] = useState({
-    nombre: '',
-    nit: '',
-    sede: '',
-    direccion: '',
-    ciudad: '',
-    telefono: '',
+  // Datos del Cliente / IPS (Inicialización desde URL)
+  const [datosCliente, setDatosCliente] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    const inst = p.get('institucion') || '';
+    const srv = p.get('servicio') || p.get('ubicacion') || '';
+    return {
+      nombre: inst,
+      nit: '',
+      sede: srv || (inst ? `${inst} - Sede Principal` : ''),
+      direccion: '',
+      ciudad: '',
+      telefono: '',
+    };
   });
 
   // Condiciones Ambientales
@@ -271,7 +311,51 @@ export default function CreateCalibracion() {
     '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.'
   );
 
-  // Cargar consecutivo y patrones
+  const cargarDatosIps = async (nombreIps, sedeEquipo) => {
+    if (!nombreIps || !nombreIps.trim()) return;
+    try {
+      const res = await request({
+        link: `${apiGetIps}?ips=${encodeURIComponent(nombreIps.trim())}`,
+        method: 'GET',
+      });
+      if (res && res.success && res.institucion) {
+        const inst = res.institucion;
+        setDatosCliente((prev) => ({
+          ...prev,
+          nombre: inst.ips || nombreIps,
+          nit: inst.nit || prev.nit || '',
+          ciudad: inst.ciudad || prev.ciudad || '',
+          direccion: inst.direccion || prev.direccion || '',
+          telefono: inst.telefono || prev.telefono || '',
+          sede: sedeEquipo || prev.sede || inst.ciudad || '',
+        }));
+      } else {
+        const resAll = await request({ link: apiIps, method: 'GET' });
+        if (resAll && resAll.success && Array.isArray(resAll.ips)) {
+          const match = resAll.ips.find(
+            (item) =>
+              (item.ips && item.ips.trim().toLowerCase() === nombreIps.trim().toLowerCase()) ||
+              (item.ips && item.ips.trim().toLowerCase().includes(nombreIps.trim().toLowerCase()))
+          );
+          if (match) {
+            setDatosCliente((prev) => ({
+              ...prev,
+              nombre: match.ips || nombreIps,
+              nit: match.nit || prev.nit || '',
+              ciudad: match.ciudad || prev.ciudad || '',
+              direccion: match.direccion || prev.direccion || '',
+              telefono: match.telefono || prev.telefono || '',
+              sede: sedeEquipo || prev.sede || match.ciudad || '',
+            }));
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error al cargar datos de IPS para certificado:', e);
+    }
+  };
+
+  // Cargar consecutivo, patrones y datos precargados desde cronograma / backend
   useEffect(() => {
     let active = true;
     const init = async () => {
@@ -294,6 +378,46 @@ export default function CreateCalibracion() {
             setConsecutivo(`CAL-${yr}-0001`);
           }
         }
+
+        // Cargar datos de equipo desde backend si se proporcionó id en la URL
+        const urlId = searchParams.get('id');
+        const urlInst = searchParams.get('institucion');
+        const urlSrv = searchParams.get('servicio') || searchParams.get('ubicacion');
+
+        if (urlId) {
+          try {
+            const resEq = await request({
+              link: `${apiObtenerEquipo}?id=${urlId}`,
+              method: 'GET',
+            });
+            if (active && resEq && resEq.success && resEq.equipo) {
+              const eq = resEq.equipo;
+              const meta = detectarTipoPlantillaCalibracion(eq.equipo);
+              const targetTipo = searchParams.get('tipoPlantilla') || meta.tipo;
+              setTipoPlantilla(targetTipo);
+              setDatosEquipo((prev) => ({
+                ...prev,
+                nombre: eq.equipo || prev.nombre,
+                marca: eq.marca || prev.marca,
+                modelo: eq.modelo || prev.modelo,
+                serie: eq.serie || prev.serie,
+                placaInventario: eq.inventario || eq.placa || prev.placaInventario,
+                nroActivo: eq.nro_activo || eq.inventario || prev.nroActivo,
+                servicio: eq.servicio || prev.servicio,
+                ubicacion: eq.ubicacion || eq.servicio || prev.ubicacion,
+                unidad: targetTipo === 'masa_bascula' ? 'kg' : (targetTipo === 'volumen_micropipeta' ? 'µL' : 'mmHg'),
+                resolucion: targetTipo === 'masa_bascula' ? 0.1 : (targetTipo === 'volumen_micropipeta' ? 0.1 : 2),
+              }));
+              if (eq.institucion) {
+                cargarDatosIps(eq.institucion, eq.ubicacion || eq.servicio);
+              }
+            }
+          } catch (e) {
+            console.error('Error al cargar equipo por ID:', e);
+          }
+        } else if (urlInst) {
+          cargarDatosIps(urlInst, urlSrv);
+        }
       } catch (e) {
         console.error('Error en inicialización:', e);
       } finally {
@@ -305,6 +429,7 @@ export default function CreateCalibracion() {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Al cambiar la plantilla, ajustar procedimiento y unidades
@@ -313,22 +438,27 @@ export default function CreateCalibracion() {
       setProcedimiento(
         'Procedimiento de calibración por comparación directa con manómetro patrón digital según recomendación internacional OIML R 16.'
       );
-      setDatosEquipo((prev) => ({ ...prev, unidad: 'mmHg', resolucion: 2 }));
+      setDatosEquipo((prev) => ({
+        ...prev,
+        nombre: prev.nombre && !prev.nombre.includes('Báscula') && !prev.nombre.includes('Micropipeta') ? prev.nombre : 'Esfigmomanómetro Aneroide',
+        unidad: prev.unidad && prev.unidad !== 'kg' && prev.unidad !== 'µL' ? prev.unidad : 'mmHg',
+        resolucion: prev.resolucion && prev.resolucion !== 0.1 ? prev.resolucion : 2,
+      }));
     } else if (tipoPlantilla === 'masa_bascula') {
       setProcedimiento(
         'MC-DT-I-034 Calibración de Instrumentos de Pesaje de Funcionamiento No Automático'
       );
       setDatosEquipo((prev) => ({
         ...prev,
-        nombre: prev.nombre && prev.nombre !== 'Esfigmomanómetro Aneroide' ? prev.nombre : 'Báscula Pesa Persona Digital',
+        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Micropipeta') ? prev.nombre : 'Báscula Pesa Persona Digital',
         marca: prev.marca && prev.marca !== 'No presenta' ? prev.marca : 'seca',
         modelo: prev.modelo && prev.modelo !== 'No presenta' ? prev.modelo : '803',
         serie: prev.serie && prev.serie !== 'No presenta' ? prev.serie : '8803325172348',
         nroActivo: prev.nroActivo && prev.nroActivo !== 'No presenta' ? prev.nroActivo : 'ATCI003859',
-        divisionEscala: '0,1 kg',
-        cargaMinima: '2 kg',
-        cargaMaxima: '150 kg',
-        claseExactitud: 'III',
+        divisionEscala: prev.divisionEscala || '0,1 kg',
+        cargaMinima: prev.cargaMinima || '2 kg',
+        cargaMaxima: prev.cargaMaxima || '150 kg',
+        claseExactitud: prev.claseExactitud || 'III',
         unidad: 'kg',
         resolucion: 0.1,
       }));
@@ -347,7 +477,12 @@ export default function CreateCalibracion() {
       setProcedimiento(
         'Procedimiento gravimétrico de calibración de aparatos volumétricos accionados por pistón según ISO 8655-2 e ISO 8655-6.'
       );
-      setDatosEquipo((prev) => ({ ...prev, unidad: 'µL', resolucion: 0.1 }));
+      setDatosEquipo((prev) => ({
+        ...prev,
+        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Báscula') ? prev.nombre : 'Micropipeta Monocanal Variable',
+        unidad: 'µL',
+        resolucion: 0.1,
+      }));
     }
   }, [tipoPlantilla]);
 

@@ -80,7 +80,9 @@ function Ips() {
         (dato) =>
           (dato.ips && dato.ips.toLowerCase().includes(q)) ||
           (dato.nit && String(dato.nit).toLowerCase().includes(q)) ||
-          (dato.ciudad && dato.ciudad.toLowerCase().includes(q))
+          (dato.ciudad && dato.ciudad.toLowerCase().includes(q)) ||
+          (dato.direccion && dato.direccion.toLowerCase().includes(q)) ||
+          (dato.telefono && String(dato.telefono).toLowerCase().includes(q))
       );
     }
 

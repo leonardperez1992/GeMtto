@@ -18,9 +18,11 @@ import {
   FaFilter,
   FaLayerGroup,
   FaTools,
+  FaBalanceScale,
 } from 'react-icons/fa';
 import { GoEye, GoSearch } from 'react-icons/go';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
+import { detectarTipoPlantillaCalibracion } from '../utils/metrologyEngine';
 
 const normalizeText = (str) =>
   String(str || '')
@@ -805,8 +807,8 @@ function Cronograma() {
               <th
                 className="no-print"
                 style={{
-                  width: '75px',
-                  minWidth: '70px',
+                  width: '105px',
+                  minWidth: '95px',
                   textAlign: 'center',
                   padding: '4px 2px',
                   fontSize: '9.5px',
@@ -814,13 +816,7 @@ function Cronograma() {
                   whiteSpace: 'normal',
                 }}
               >
-                {isNonAdmin ? (
-                  <>
-                    HOJA DE<br />VIDA
-                  </>
-                ) : (
-                  'ACCIONES'
-                )}
+                ACCIONES
               </th>
             </tr>
           </thead>
@@ -958,7 +954,7 @@ function Cronograma() {
                       {eq.responsable || 'GEMTTO BIOMÉDICA SAS'}
                     </td>
 
-                    {/* 11. Acciones (Ver Hoja de Vida y Generar Reporte solo para admin) */}
+                    {/* 11. Acciones (Ver Hoja de Vida, Generar Reporte y Certificado de Calibración) */}
                     <td className="no-print" style={{ textAlign: 'center', padding: '4px 2px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'inline-flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
                         {/* Botón Ver Hoja de Vida */}
@@ -982,6 +978,32 @@ function Cronograma() {
                             <HiOutlineDocumentPlus size={13} color="#ffffff" />
                           </Link>
                         )}
+
+                        {/* Botón Generar Certificado de Calibración */}
+                        {(() => {
+                          const metaCalib = detectarTipoPlantillaCalibracion(eq.equipo);
+                          return (
+                            <Link
+                              to={`/crearcalibracion?id=${eq?._id}&equipo=${encodeURIComponent(eq?.equipo || '')}&serie=${encodeURIComponent(eq?.serie || '')}&institucion=${encodeURIComponent(eq?.institucion || '')}&servicio=${encodeURIComponent(eq?.servicio || '')}&marca=${encodeURIComponent(eq?.marca || '')}&modelo=${encodeURIComponent(eq?.modelo || '')}&ubicacion=${encodeURIComponent(eq?.ubicacion || '')}&placa=${encodeURIComponent(eq?.inventario || eq?.placa || eq?.nro_activo || '')}&tipoPlantilla=${metaCalib.tipo}&from=cronograma`}
+                              title={`Generar Certificado de Calibración (${metaCalib.etiqueta})`}
+                              className="action-btn"
+                              style={{
+                                padding: '3px 6px',
+                                backgroundColor: '#d97706',
+                                border: '1px solid #f59e0b',
+                                color: '#ffffff',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <FaBalanceScale size={13} color="#ffffff" />
+                            </Link>
+                          );
+                        })()}
                       </div>
                     </td>
                   </tr>

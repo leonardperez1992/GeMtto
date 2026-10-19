@@ -338,8 +338,19 @@ export default function CreateCalibracion() {
     tarjetaProfesional: '',
   });
 
+  const OBS_TENSIOMETRO =
+    '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.';
+  const OBS_BASCULA =
+    'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
+  const OBS_MICROPIPETA =
+    'El instrumento volumétrico accionado por pistón fue calibrado por el método gravimétrico según NTC-ISO 8655-6:2014 en condiciones ambientales controladas de laboratorio. Se verificó el correcto desplazamiento del émbolo, eyección de punta y ausencia de goteo en el cono portapuntas.';
+
   const [observaciones, setObservaciones] = useState(
-    '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.'
+    tipoPlantilla === 'masa_bascula'
+      ? OBS_BASCULA
+      : tipoPlantilla === 'volumen_micropipeta'
+      ? OBS_MICROPIPETA
+      : OBS_TENSIOMETRO
   );
 
   const cargarDatosIps = async (nombreIps, sedeEquipo) => {
@@ -468,7 +479,7 @@ export default function CreateCalibracion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Al cambiar la plantilla, ajustar procedimiento y unidades
+  // Al cambiar la plantilla, ajustar procedimiento, unidades y observaciones
   useEffect(() => {
     if (tipoPlantilla === 'presion_tensiometro') {
       setProcedimiento(
@@ -476,17 +487,22 @@ export default function CreateCalibracion() {
       );
       setDatosEquipo((prev) => ({
         ...prev,
-        nombre: prev.nombre && !prev.nombre.includes('Báscula') && !prev.nombre.includes('Micropipeta') ? prev.nombre : 'Esfigmomanómetro Aneroide',
-        unidad: prev.unidad && prev.unidad !== 'kg' && prev.unidad !== 'µL' ? prev.unidad : 'mmHg',
-        resolucion: prev.resolucion && prev.resolucion !== 0.1 ? prev.resolucion : 2,
+        nombre: prev.nombre && !prev.nombre.includes('Báscula') && !prev.nombre.includes('Micropipeta') && !prev.nombre.includes('VOLUMÉTRICO') ? prev.nombre : 'Esfigmomanómetro Aneroide',
+        unidad: prev.unidad && prev.unidad !== 'kg' && prev.unidad !== 'µL' && prev.unidad !== 'µl' ? prev.unidad : 'mmHg',
+        resolucion: prev.resolucion && prev.resolucion !== 0.1 && prev.resolucion !== 0.5 ? prev.resolucion : 2,
       }));
+      setObservaciones((prev) =>
+        !prev || prev === OBS_BASCULA || prev === OBS_MICROPIPETA || prev === 'NINGUNA'
+          ? OBS_TENSIOMETRO
+          : prev
+      );
     } else if (tipoPlantilla === 'masa_bascula') {
       setProcedimiento(
         'MC-DT-I-034 Calibración de Instrumentos de Pesaje de Funcionamiento No Automático'
       );
       setDatosEquipo((prev) => ({
         ...prev,
-        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Micropipeta') ? prev.nombre : 'Báscula Pesa Persona Digital',
+        nombre: prev.nombre && !prev.nombre.includes('Esfigmomanómetro') && !prev.nombre.includes('Micropipeta') && !prev.nombre.includes('VOLUMÉTRICO') ? prev.nombre : 'Báscula Pesa Persona Digital',
         marca: prev.marca && prev.marca !== 'No presenta' ? prev.marca : 'seca',
         modelo: prev.modelo && prev.modelo !== 'No presenta' ? prev.modelo : '803',
         serie: prev.serie && prev.serie !== 'No presenta' ? prev.serie : '8803325172348',
@@ -509,6 +525,15 @@ export default function CreateCalibracion() {
         ...prev,
         codigo: prev.codigo || 'ISC24',
       }));
+      setObservaciones((prev) =>
+        !prev ||
+        prev === OBS_TENSIOMETRO ||
+        prev === OBS_MICROPIPETA ||
+        prev === 'NINGUNA' ||
+        /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman/i.test(prev)
+          ? OBS_BASCULA
+          : prev
+      );
     } else if (tipoPlantilla === 'volumen_micropipeta') {
       setProcedimiento(
         'La calibración se realiza por el método gravimétrico basándose en la norma NTC-ISO 8655-6:2014 "APARATOS VOLUMÉTRICOS ACCIONADOS POR PISTÓN. PARTE 6: MÉTODOS GRAVIMÉTRICOS PARA LA DETERMINACIÓN DEL ERROR DE MEDICIÓN."'
@@ -545,8 +570,17 @@ export default function CreateCalibracion() {
         tipoPunta: prev.tipoPunta || 'GENERICA',
         liquidoEnsayo: prev.liquidoEnsayo || 'Agua grado 3',
       }));
-      setObservaciones('NINGUNA');
+      setObservaciones((prev) =>
+        !prev ||
+        prev === OBS_TENSIOMETRO ||
+        prev === OBS_BASCULA ||
+        prev === 'NINGUNA' ||
+        /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|ipfna/i.test(prev)
+          ? OBS_MICROPIPETA
+          : prev
+      );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tipoPlantilla]);
 
   // Al seleccionar un patrón del banco (para tensiómetros o micropipetas)

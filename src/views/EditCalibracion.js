@@ -223,6 +223,11 @@ export default function EditCalibracion() {
     firma: '',
   });
 
+  const OBS_BASCULA_DEFAULT =
+    'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
+  const OBS_MICROPIPETA_DEFAULT =
+    'El instrumento volumétrico accionado por pistón fue calibrado por el método gravimétrico según NTC-ISO 8655-6:2014 en condiciones ambientales controladas de laboratorio. Se verificó el correcto desplazamiento del émbolo, eyección de punta y ausencia de goteo en el cono portapuntas.';
+
   const [observaciones, setObservaciones] = useState('');
 
   useEffect(() => {
@@ -247,7 +252,19 @@ export default function EditCalibracion() {
           setPatronesLista(c.patronesLista);
         }
         if (c.procedimiento) setProcedimiento(c.procedimiento);
-        if (c.observaciones) setObservaciones(c.observaciones);
+        const obsCargada = c.observaciones || '';
+        const esObsTensiometro = /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman/i.test(obsCargada);
+        if (c.tipoPlantilla === 'masa_bascula') {
+          setObservaciones(!obsCargada || esObsTensiometro ? OBS_BASCULA_DEFAULT : obsCargada);
+        } else if (c.tipoPlantilla === 'volumen_micropipeta') {
+          setObservaciones(
+            !obsCargada || esObsTensiometro || /ipfna/i.test(obsCargada)
+              ? OBS_MICROPIPETA_DEFAULT
+              : obsCargada
+          );
+        } else if (c.observaciones) {
+          setObservaciones(c.observaciones);
+        }
         if (c.calibro) setCalibro((prev) => ({ ...prev, ...c.calibro }));
         if (c.aprobo) setAprobo((prev) => ({ ...prev, ...c.aprobo }));
 

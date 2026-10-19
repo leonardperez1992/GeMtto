@@ -1307,7 +1307,9 @@ export default function CertificadoPdf() {
                   <div>• Los resultados de las calibraciones expresados en este certificado son válidos en el momento y bajo las condiciones en que se realizaron las mediciones.</div>
                   <div>• El factor de cobertura k = 2 corresponde a un nivel de confianza de aproximadamente el 95.45% de acuerdo con la guía JCGM 100:2008 (GUM).</div>
                   <div>• El error reportado corresponde a la diferencia: Error = Indicación del instrumento - Valor de masa convencional patrón (E = I - m<sub>c</sub>).</div>
-                  <div>• {observaciones || 'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.'}</div>
+                  <div>• {observaciones && !/fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman/i.test(observaciones)
+                    ? observaciones
+                    : 'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.'}</div>
                 </div>
 
                 {/* DECLARACIONES METROLÓGICAS FORMALES (11 PUNTOS) */}
@@ -2374,9 +2376,9 @@ export default function CertificadoPdf() {
                     9. OBSERVACIONES
                   </div>
                   <div style={{ fontSize: 11.5, color: '#0f172a', textTransform: 'uppercase' }}>
-                    {observaciones && !observaciones.includes('OIML 148-2')
+                    {observaciones && !/fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|ipfna/i.test(observaciones)
                       ? observaciones
-                      : 'NO HAY OBSERVACIONES.'}
+                      : 'EL INSTRUMENTO VOLUMÉTRICO ACCIONADO POR PISTÓN FUE CALIBRADO POR EL MÉTODO GRAVIMÉTRICO SEGÚN NTC-ISO 8655-6:2014 EN CONDICIONES AMBIENTALES CONTROLADAS DE LABORATORIO. SE VERIFICÓ EL CORRECTO DESPLAZAMIENTO DEL ÉMBOLO, EYECCIÓN DE PUNTA Y AUSENCIA DE GOTEO EN EL CONO PORTAPUNTAS.'}
                   </div>
                 </div>
 

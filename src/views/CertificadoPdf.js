@@ -424,6 +424,10 @@ export default function CertificadoPdf() {
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'N/A'}</td>
                           </tr>
                           <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Sede / Área:</td>
+                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</td>
+                          </tr>
+                          <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Dirección:</td>
                             <td>{datosCliente.direccion || 'N/A'}</td>
                           </tr>
@@ -473,8 +477,8 @@ export default function CertificadoPdf() {
                             <td>0 a 300 mmHg / {datosEquipo.resolucion || 2} mmHg</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ubicación:</td>
-                            <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Servicio Médico'}</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Área / Servicio:</td>
+                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || datosEquipo.ubicacion || 'Servicio Médico'}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -814,6 +818,7 @@ export default function CertificadoPdf() {
                 <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
                     <div><strong>Solicitante:</strong> {datosCliente.nombre || 'N/A'}</div>
+                    <div><strong>Sede / Área:</strong> {datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</div>
                     <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'N/A'} - {datosCliente.ciudad || 'Colombia'}</div>
                     <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</div>
                     <div><strong>Serie:</strong> <span style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || 'N/A'}</span></div>
@@ -939,6 +944,10 @@ export default function CertificadoPdf() {
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</td>
                           </tr>
                           <tr>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Sede / Área:</td>
+                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</td>
+                          </tr>
+                          <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>NIT / CC:</td>
                             <td style={{ fontWeight: 700 }}>{datosCliente.nit || '890.201.216-5'}</td>
                           </tr>
@@ -996,8 +1005,8 @@ export default function CertificadoPdf() {
                             <td><strong style={{ color: '#0f172a' }}>Clase {datosEquipo.claseExactitud || 'III'}</strong> (Media según OIML R 76-1)</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ubicación:</td>
-                            <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Sede Santa Isabel - Cirugía'}</td>
+                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Área / Servicio:</td>
+                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || datosEquipo.ubicacion || 'Sede Santa Isabel - Cirugía'}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1420,6 +1429,7 @@ export default function CertificadoPdf() {
                 <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
                     <div><strong>Solicitante:</strong> {datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</div>
+                    <div><strong>Sede / Área:</strong> {datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</div>
                     <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'Calle 45 # 54 - 10'} - {datosCliente.ciudad || 'Bucaramanga'}</div>
                     <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Báscula Pesa Persona Digital'}</div>
                     <div><strong>Marca / Modelo:</strong> {datosEquipo.marca || 'seca'} / {datosEquipo.modelo || '803'}</div>
@@ -1557,7 +1567,7 @@ export default function CertificadoPdf() {
                     </tr>
                     <tr>
                       <td style={{ fontWeight: 700, color: '#334155', padding: '3px 0' }}>Sede / Área:</td>
-                      <td>{datosCliente.sede || datosEquipo.ubicacion || 'Sede Principal'}</td>
+                      <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || datosEquipo.ubicacion || 'Sede Principal'}</td>
                       <td style={{ fontWeight: 700, color: '#334155', padding: '3px 0' }}>Ciudad / Dpto:</td>
                       <td>{datosCliente.ciudad || 'Colombia'}</td>
                     </tr>
@@ -1603,8 +1613,8 @@ export default function CertificadoPdf() {
                       <td>{datosEquipo.placaInventario || 'N/A'}</td>
                     </tr>
                     <tr>
-                      <td style={{ fontWeight: 700, color: '#334155', padding: '3px 0' }}>Ubicación / Servicio:</td>
-                      <td>{datosEquipo.ubicacion || datosEquipo.servicio || 'Área Clínica'}</td>
+                      <td style={{ fontWeight: 700, color: '#334155', padding: '3px 0' }}>Área / Servicio:</td>
+                      <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || datosEquipo.ubicacion || 'Área Clínica'}</td>
                       <td style={{ fontWeight: 700, color: '#334155', padding: '3px 0' }}>Resolución (d / e):</td>
                       <td><strong>{datosEquipo.resolucion} {datosEquipo.unidad}</strong></td>
                     </tr>

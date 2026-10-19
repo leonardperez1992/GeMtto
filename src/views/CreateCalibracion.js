@@ -98,8 +98,8 @@ export default function CreateCalibracion() {
       placaInventario: eqPlaca || '',
       nroActivo: eqPlaca || 'No presenta',
       fechaRecepcion: new Date().toISOString().split('T')[0],
-      ubicacion: eqUbicacion || eqServicio || 'Sede Principal - Selección Donante',
-      servicio: eqServicio || 'Selección Donante',
+      ubicacion: eqServicio || eqUbicacion || 'Sede Principal - Selección Donante',
+      servicio: eqServicio || eqUbicacion || 'Selección Donante',
       resolucion: defaultRes,
       unidad: defaultUnidad,
       divisionEscala: '0,1 kg',
@@ -394,6 +394,7 @@ export default function CreateCalibracion() {
               const eq = resEq.equipo;
               const meta = detectarTipoPlantillaCalibracion(eq.equipo);
               const targetTipo = searchParams.get('tipoPlantilla') || meta.tipo;
+              const srvFinal = eq.servicio || eq.ubicacion || searchParams.get('servicio') || '';
               setTipoPlantilla(targetTipo);
               setDatosEquipo((prev) => ({
                 ...prev,
@@ -403,13 +404,17 @@ export default function CreateCalibracion() {
                 serie: eq.serie || prev.serie,
                 placaInventario: eq.inventario || eq.placa || prev.placaInventario,
                 nroActivo: eq.nro_activo || eq.inventario || prev.nroActivo,
-                servicio: eq.servicio || prev.servicio,
-                ubicacion: eq.ubicacion || eq.servicio || prev.ubicacion,
+                servicio: srvFinal || prev.servicio,
+                ubicacion: srvFinal || eq.ubicacion || prev.ubicacion,
                 unidad: targetTipo === 'masa_bascula' ? 'kg' : (targetTipo === 'volumen_micropipeta' ? 'µL' : 'mmHg'),
                 resolucion: targetTipo === 'masa_bascula' ? 0.1 : (targetTipo === 'volumen_micropipeta' ? 0.1 : 2),
               }));
+              setDatosCliente((prev) => ({
+                ...prev,
+                sede: srvFinal || prev.sede,
+              }));
               if (eq.institucion) {
-                cargarDatosIps(eq.institucion, eq.ubicacion || eq.servicio);
+                cargarDatosIps(eq.institucion, srvFinal);
               }
             }
           } catch (e) {

@@ -268,7 +268,7 @@ export const calcularPuntoBascula = ({
   const valid = lecturas.map((x) => Number(x)).filter((x) => !isNaN(x));
   const prom = promedio(valid);
   const indicacionPromedio = valid.length > 0 ? Number(prom.toFixed(2)) : carga;
-  const error = valid.length > 0 ? Number((indicacionPromedio - masaConv).toFixed(2)) : 0;
+  const error = valid.length > 0 ? Number((indicacionPromedio - masaConv).toFixed(4)) : 0;
   const s = desviacionEstandar(valid);
 
   // Tipo A: Repetibilidad de las lecturas
@@ -467,13 +467,32 @@ export const detectarTipoPlantillaCalibracion = (nombreEquipo) => {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-  // 1. Básculas / Balanzas / Pesas
+  // 1. Micropipetas / Pipetas / Aparatos volumétricos accionados por pistón
+  if (
+    norm.includes('micropipeta') ||
+    norm.includes('pipeta') ||
+    norm.includes('dispensador') ||
+    norm.includes('volumetric') ||
+    norm.includes('piston') ||
+    norm.includes('bureta') ||
+    norm.includes('dilutor')
+  ) {
+    return {
+      tipo: 'volumen_micropipeta',
+      etiqueta: 'Micropipeta / Volumen',
+      badgeColor: '#7e22ce',
+      badgeBg: '#f3e8ff',
+    };
+  }
+
+  // 2. Básculas / Balanzas / Pesas
   if (
     norm.includes('bascula') ||
     norm.includes('balanza') ||
     norm.includes('pesa') ||
     norm.includes('gramera') ||
-    norm.includes('tallimetro')
+    norm.includes('tallimetro') ||
+    norm.includes('ipfna')
   ) {
     return {
       tipo: 'masa_bascula',
@@ -483,32 +502,19 @@ export const detectarTipoPlantillaCalibracion = (nombreEquipo) => {
     };
   }
 
-  // 2. Tensiómetros / Esfigmomanómetros / Presión
+  // 3. Tensiómetros / Esfigmomanómetros / Presión
   if (
     norm.includes('tensiometro') ||
     norm.includes('esfigmo') ||
     norm.includes('aneroide') ||
-    norm.includes('presion')
+    norm.includes('presion') ||
+    norm.includes('baumanometro')
   ) {
     return {
       tipo: 'presion_tensiometro',
       etiqueta: 'Tensiómetro / Presión',
       badgeColor: '#0369a1',
       badgeBg: '#e0f2fe',
-    };
-  }
-
-  // 3. Micropipetas / Pipetas / Dispensadores volumétricos
-  if (
-    norm.includes('micropipeta') ||
-    norm.includes('pipeta') ||
-    norm.includes('dispensador')
-  ) {
-    return {
-      tipo: 'volumen_micropipeta',
-      etiqueta: 'Micropipeta / Volumen',
-      badgeColor: '#7e22ce',
-      badgeBg: '#f3e8ff',
     };
   }
 
@@ -520,4 +526,89 @@ export const detectarTipoPlantillaCalibracion = (nombreEquipo) => {
     badgeBg: '#e0f2fe',
   };
 };
+
+/**
+ * Determina la plantilla efectiva de un certificado existente evaluando primero
+ * el nombre y unidad del equipo (para corregir certificados guardados por error como tensiómetro).
+ */
+export const resolverTipoPlantillaCertificado = (certificado = {}) => {
+  const nombre = String(certificado?.datosEquipo?.nombre || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  const unidad = String(certificado?.datosEquipo?.unidad || '').toLowerCase();
+  const procedimiento = String(certificado?.procedimiento || '').toLowerCase();
+
+  if (
+    nombre.includes('micropipeta') ||
+    nombre.includes('pipeta') ||
+    nombre.includes('dispensador') ||
+    nombre.includes('volumetric') ||
+    nombre.includes('piston') ||
+    unidad.includes('µl') ||
+    unidad.includes('ul') ||
+    procedimiento.includes('8655')
+  ) {
+    return 'volumen_micropipeta';
+  }
+
+  if (
+    nombre.includes('bascula') ||
+    nombre.includes('balanza') ||
+    nombre.includes('pesa') ||
+    nombre.includes('gramera') ||
+    nombre.includes('tallimetro') ||
+    nombre.includes('ipfna') ||
+    unidad === 'kg' ||
+    unidad === 'g' ||
+    procedimiento.includes('mc-dt-i-034') ||
+    procedimiento.includes('pesaje')
+  ) {
+    return 'masa_bascula';
+  }
+
+  if (
+    certificado?.tipoPlantilla === 'masa_bascula' ||
+    certificado?.tipoPlantilla === 'volumen_micropipeta' ||
+    certificado?.tipoPlantilla === 'presion_tensiometro'
+  ) {
+    return certificado.tipoPlantilla;
+  }
+
+  return 'presion_tensiometro';
+};
+
+export const OBS_DEFAULT_TENSIOMETRO =
+  '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.';
+
+export const OBS_DEFAULT_BASCULA =
+  'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
+
+export const OBS_DEFAULT_MICROPIPETA = 'NO HAY OBSERVACIONES.';
+
+export const contieneTextoFugaTensiometro = (texto = '') =>
+  /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|hermeticidad|brazalete|neumatic/i.test(
+    String(texto || '')
+  );
+
+export const obtenerObservacionesPorPlantilla = (tipoPlantilla, observacionesActuales = '') => {
+  const obs = String(observacionesActuales || '').trim();
+  if (tipoPlantilla === 'masa_bascula') {
+    if (!obs || contieneTextoFugaTensiometro(obs) || /8655|portapuntas|pist[oó]n/i.test(obs) || obs === 'NO HAY OBSERVACIONES.' || obs === 'NINGUNA') {
+      return OBS_DEFAULT_BASCULA;
+    }
+    return obs;
+  }
+  if (tipoPlantilla === 'volumen_micropipeta') {
+    if (!obs || contieneTextoFugaTensiometro(obs) || /ipfna|taller biom[eé]dico|nivelaci[oó]n mec[aá]nica/i.test(obs) || obs === 'NINGUNA') {
+      return OBS_DEFAULT_MICROPIPETA;
+    }
+    return obs;
+  }
+  if (!obs || obs === OBS_DEFAULT_BASCULA || obs === OBS_DEFAULT_MICROPIPETA || obs === 'NINGUNA' || obs === 'NO HAY OBSERVACIONES.') {
+    return OBS_DEFAULT_TENSIOMETRO;
+  }
+  return obs;
+};
+
 

@@ -16,11 +16,12 @@ export default function CalibrationChart({
   width = 620,
   height = 270,
 }) {
-  const isPresion = esPresion || tipoPlantilla === 'presion_tensiometro' || unidad === 'mmHg';
-  const isBascula = tipoPlantilla === 'masa_bascula' || (!isPresion && (unidad === 'kg' || unidad === 'g'));
+  const normUnidad = String(unidad || '').toLowerCase();
+  const isPresion = esPresion || tipoPlantilla === 'presion_tensiometro' || normUnidad === 'mmhg';
+  const isBascula = tipoPlantilla === 'masa_bascula' || (!isPresion && (normUnidad === 'kg' || normUnidad === 'g'));
   const isMicropipeta =
     tipoPlantilla === 'volumen_micropipeta' ||
-    (!isPresion && !isBascula && (unidad === 'µL' || unidad === 'µl' || unidad === 'uL'));
+    (!isPresion && !isBascula && (normUnidad === 'µl' || normUnidad === 'ul' || normUnidad === 'ml'));
 
   if (!puntos || puntos.length === 0) {
     return (
@@ -49,48 +50,117 @@ export default function CalibrationChart({
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
+  // Selecciona el primer valor numérico distinto de cero (evita que los defaults 0 de Mongoose oculten el valor real)
+  const pickNonZero = (...vals) => {
+    for (const v of vals) {
+      if (v !== undefined && v !== null && v !== '' && !isNaN(Number(v)) && Number(v) !== 0) {
+        return Number(v);
+      }
+    }
+    for (const v of vals) {
+      if (v !== undefined && v !== null && v !== '' && !isNaN(Number(v))) {
+        return Number(v);
+      }
+    }
+    return undefined;
+  };
+
+  const getPointX = (p) => {
+    if (!p) return undefined;
+    if (isBascula) {
+      return pickNonZero(p.cargaNominal, p.valorNominal, p.valorPatron, p.valorMasaConvencional);
+    }
+    if (isMicropipeta) {
+      return pickNonZero(p.volumenSeleccionado, p.nominal, p.valorNominal, p.valorPatron);
+    }
+    if (isPresion) {
+      return pickNonZero(p.indicacionIBC, p.valorPatron, p.valorNominal, p.nominal);
+    }
+    return pickNonZero(
+      p.cargaNominal,
+      p.valorPatron,
+      p.valorNominal,
+      p.indicacionIBC,
+      p.volumenSeleccionado,
+      p.nominal
+    );
+  };
+
   // Filtrar puntos válidos asegurando conversión numérica segura
   const validPuntos = puntos.filter((p) => {
-    if (!p) return false;
-    const rawVal =
-      p.volumenSeleccionado ??
-      p.nominal ??
-      p.valorPatron ??
-      p.valorNominal ??
-      p.indicacionIBC ??
-      p.cargaNominal;
-    return rawVal !== undefined && rawVal !== null && rawVal !== '' && !isNaN(Number(rawVal));
+    const rawVal = getPointX(p);
+    return rawVal !== undefined && !isNaN(Number(rawVal));
   });
 
   if (validPuntos.length === 0) return null;
 
-  // Extraer valores X e Y
-  const data = validPuntos.map((p) => {
-    const rawX =
-      p.volumenSeleccionado ??
-      p.nominal ??
-      p.cargaNominal ??
-      p.indicacionIBC ??
-      p.valorPatron ??
-      p.valorNominal ??
-      0;
+  const defaultCargasBascula = [5, 40, 80, 120, 150];
+
+  // Extraer valores X e Y según el tipo de plantilla
+  let data = validPuntos.map((p, idx) => {
+    const rawX = getPointX(p) ?? 0;
     const x = Number(rawX);
-    // Para presión, en el gráfico se representa el error de desempeño o corrección (Ref - IBC)
-    const rawY = isPresion
-      ? (p.errorDesempeno !== undefined ? p.errorDesempeno : p.correccion !== undefined ? p.correccion : (-(Number(p.error) || 0)))
-      : (p.errorSistematico ?? p.error ?? 0);
+
+    let rawY = 0;
+    if (isPresion) {
+      // Para presión, en el gráfico se representa el error de desempeño o corrección (Ref - IBC)
+      rawY =
+        p.errorDesempeno !== undefined && p.errorDesempeno !== null
+          ? p.errorDesempeno
+          : p.correccion !== undefined && p.correccion !== null
+          ? p.correccion
+          : -(Number(p.error) || 0);
+    } else if (isBascula) {
+      // Para básculas, usar el error de indicación E = I - mc (nunca errorSistematico que en BD tiene default 0)
+      if (p.error !== undefined && p.error !== null && p.error !== '' && Number(p.error) !== 0) {
+        rawY = Number(p.error);
+      } else {
+        const prom = pickNonZero(p.indicacionPromedio, p.promedio);
+        const masa = pickNonZero(p.valorMasaConvencional, p.valorPatron, p.cargaNominal, p.valorNominal);
+        if (prom !== undefined && masa !== undefined && prom > 0 && masa > 0) {
+          rawY = Number((prom - masa).toFixed(4));
+        } else {
+          rawY = Number(p.error ?? 0);
+        }
+      }
+    } else if (isMicropipeta) {
+      rawY =
+        p.errorSistematico !== undefined && p.errorSistematico !== null && Number(p.errorSistematico) !== 0
+          ? Number(p.errorSistematico)
+          : Number(p.error ?? p.errorSistematico ?? 0);
+    } else {
+      rawY = Number(p.error ?? p.errorSistematico ?? 0);
+    }
+
     const y = Number(rawY) || 0;
     const u = Number(p.incertidumbreExpandida) || 0;
     const rawEmp = isPresion
       ? 3.0
-      : (p.emp !== undefined
-        ? Number(p.emp)
-        : p.empSistematicoPct
-        ? (Number(p.empSistematicoPct) * x) / 100
-        : 0);
+      : p.emp !== undefined && Number(p.emp) > 0
+      ? Number(p.emp)
+      : p.empSistematicoPct
+      ? (Number(p.empSistematicoPct) * x) / 100
+      : 0;
     const emp = isNaN(rawEmp) ? 0 : rawEmp;
-    return { x, y, u, emp };
+    return { x, y, u, emp, idx };
   });
+
+  // Si en báscula todos los puntos quedaron con el mismo X (ej. 0 por registro antiguo sin cargaNominal),
+  // distribuirlos horizontalmente usando los escalones nominales de carga
+  if (isBascula && data.length > 1) {
+    const uniqueX = new Set(data.map((d) => Math.round(d.x * 100)));
+    if (uniqueX.size <= 1) {
+      data = data.map((d, idx) => ({
+        ...d,
+        x: defaultCargasBascula[idx] ?? (idx + 1) * 30,
+      }));
+    }
+  }
+
+  // Ordenar por carga / valor X ascendente para trazado horizontal limpio de izquierda a derecha
+  if (isBascula || isPresion) {
+    data = [...data].sort((a, b) => a.x - b.x);
+  }
 
   const xValues = data.map((d) => d.x);
   const minX = Math.min(...xValues);

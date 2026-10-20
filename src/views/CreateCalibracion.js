@@ -18,6 +18,7 @@ import {
   promedio,
   desviacionEstandar,
   detectarTipoPlantillaCalibracion,
+  obtenerObservacionesPorPlantilla,
 } from '../utils/metrologyEngine';
 import CalibrationChart from '../components/CalibrationChart';
 import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
@@ -684,6 +685,8 @@ export default function CreateCalibracion() {
   const desvRep = desviacionEstandar(repetibilidadBascula.lecturas);
   const puntosBasculaCalculados = puntosBascula.map((p) =>
     calcularPuntoBascula({
+      cargaNominal: p.cargaNominal ?? p.valorPatron,
+      valorMasaConvencional: p.valorMasaConvencional ?? p.valorPatron,
       valorPatron: p.valorPatron,
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
@@ -791,8 +794,10 @@ export default function CreateCalibracion() {
       puntosParaGuardar = puntosBasculaCalculados.map((p, idx) => ({
         ...p,
         puntoNumero: idx + 1,
-        valorNominal: p.valorPatron,
+        cargaNominal: p.cargaNominal ?? p.valorNominal ?? p.valorPatron,
+        valorNominal: p.cargaNominal ?? p.valorNominal ?? p.valorPatron,
         valorPatron: p.valorPatron,
+        valorMasaConvencional: p.valorMasaConvencional ?? p.valorPatron,
       }));
       datosCalibracion = {
         repetibilidadBascula: {
@@ -847,7 +852,7 @@ export default function CreateCalibracion() {
       procedimiento,
       datosCalibracion,
       dictamenGlobal: dictamenCalculado,
-      observaciones,
+      observaciones: obtenerObservacionesPorPlantilla(tipoPlantilla, observaciones),
       calibro: {
         ...calibro,
         firma: firmaCalibro,
@@ -1178,7 +1183,17 @@ export default function CreateCalibracion() {
                 <input
                   type="text"
                   value={datosEquipo.nombre}
-                  onChange={(e) => setDatosEquipo({ ...datosEquipo, nombre: e.target.value })}
+                  onChange={(e) => {
+                    const nuevoNombre = e.target.value;
+                    setDatosEquipo({ ...datosEquipo, nombre: nuevoNombre });
+                    const meta = detectarTipoPlantillaCalibracion(nuevoNombre);
+                    if (
+                      (meta.tipo === 'masa_bascula' || meta.tipo === 'volumen_micropipeta') &&
+                      meta.tipo !== tipoPlantilla
+                    ) {
+                      setTipoPlantilla(meta.tipo);
+                    }
+                  }}
                   required
                   placeholder="Ej: EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
@@ -2528,7 +2543,12 @@ export default function CreateCalibracion() {
                               const val = Number(e.target.value);
                               setPuntosBascula((prev) => {
                                 const n = [...prev];
-                                n[idx].valorPatron = val;
+                                n[idx] = {
+                                  ...n[idx],
+                                  cargaNominal: Math.abs(val - Math.round(val)) < 0.01 ? Math.round(val) : val,
+                                  valorPatron: val,
+                                  valorMasaConvencional: val,
+                                };
                                 return n;
                               });
                             }}
@@ -2622,6 +2642,7 @@ export default function CreateCalibracion() {
             <CalibrationChart
               puntos={puntosBasculaCalculados}
               unidad={datosEquipo.unidad}
+              tipoPlantilla="masa_bascula"
               titulo={`Curva de Exactitud: Error de Carga vs. Carga Patrón (${datosEquipo.unidad})`}
             />
           </div>
@@ -3071,12 +3092,49 @@ export default function CreateCalibracion() {
 
           {/* Firmas Digitales */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
-            {/* Firma Calibrador */}
+            {/* Firma Calibrador / Ejecutado por */}
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, background: '#f8fafc' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 13.5, color: '#0f172a' }}>
-                Firma: Realizó la Calibración (Metrólogo / Calibrador)
+                Ejecutado por (Realizó la Calibración)
               </h4>
               <div style={{ marginBottom: 8 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 3 }}>
+                  Nombre (Ejecutado por) *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Nombre del técnico / ingeniero ejecutor"
+                  value={calibro.nombre}
+                  onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 8,
+                    fontWeight: 600,
+                  }}
+                />
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 3 }}>
+                  Cargo / Especialidad *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Cargo (Ej: Metrólogo Responsable / Ingeniero Biomédico)"
+                  value={calibro.cargo}
+                  onChange={(e) => setCalibro({ ...calibro, cargo: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 8,
+                    fontWeight: 600,
+                  }}
+                />
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
+                  Código de Técnico Ejecutor (Opcional, Ej: TSC31 / ISC24)
+                </label>
                 <input
                   type="text"
                   placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
@@ -3087,29 +3145,7 @@ export default function CreateCalibracion() {
                     padding: '6px 8px',
                     borderRadius: 4,
                     border: '1px solid #cbd5e1',
-                    marginBottom: 6,
-                    fontWeight: 700,
                   }}
-                />
-                <input
-                  type="text"
-                  placeholder="Nombre del técnico/ingeniero"
-                  value={calibro.nombre}
-                  onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    borderRadius: 4,
-                    border: '1px solid #cbd5e1',
-                    marginBottom: 6,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Cargo / Especialidad"
-                  value={calibro.cargo}
-                  onChange={(e) => setCalibro({ ...calibro, cargo: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
                 />
               </div>
 

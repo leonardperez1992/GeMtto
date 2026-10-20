@@ -12,6 +12,8 @@ import {
   calcularFactorZ,
   promedio,
   desviacionEstandar,
+  resolverTipoPlantillaCertificado,
+  obtenerObservacionesPorPlantilla,
 } from '../utils/metrologyEngine';
 import CalibrationChart from '../components/CalibrationChart';
 import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
@@ -223,11 +225,6 @@ export default function EditCalibracion() {
     firma: '',
   });
 
-  const OBS_BASCULA_DEFAULT =
-    'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
-  const OBS_MICROPIPETA_DEFAULT =
-    'El instrumento volumétrico accionado por pistón fue calibrado por el método gravimétrico según NTC-ISO 8655-6:2014 en condiciones ambientales controladas de laboratorio. Se verificó el correcto desplazamiento del émbolo, eyección de punta y ausencia de goteo en el cono portapuntas.';
-
   const [observaciones, setObservaciones] = useState('');
 
   useEffect(() => {
@@ -239,11 +236,12 @@ export default function EditCalibracion() {
 
       if (resCert?.success && resCert.certificado) {
         const c = resCert.certificado;
+        const plantillaEfectiva = resolverTipoPlantillaCertificado(c);
         setConsecutivo(c.numeroCertificado || '');
         setFechaCalibracion(c.fechaCalibracion || '');
         setFechaEmision(c.fechaEmision || '');
         setFechaProximaCalibracion(c.fechaProximaCalibracion || '');
-        setTipoPlantilla(c.tipoPlantilla || 'presion_tensiometro');
+        setTipoPlantilla(plantillaEfectiva);
         if (c.datosEquipo) setDatosEquipo((prev) => ({ ...prev, ...c.datosEquipo }));
         if (c.datosCliente) setDatosCliente((prev) => ({ ...prev, ...c.datosCliente }));
         if (c.condicionesAmbientales) setCondiciones((prev) => ({ ...prev, ...c.condicionesAmbientales }));
@@ -252,25 +250,22 @@ export default function EditCalibracion() {
           setPatronesLista(c.patronesLista);
         }
         if (c.procedimiento) setProcedimiento(c.procedimiento);
-        const obsCargada = c.observaciones || '';
-        const esObsTensiometro = /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman/i.test(obsCargada);
-        if (c.tipoPlantilla === 'masa_bascula') {
-          setObservaciones(!obsCargada || esObsTensiometro ? OBS_BASCULA_DEFAULT : obsCargada);
-        } else if (c.tipoPlantilla === 'volumen_micropipeta') {
-          setObservaciones(
-            !obsCargada || esObsTensiometro || /ipfna/i.test(obsCargada)
-              ? OBS_MICROPIPETA_DEFAULT
-              : obsCargada
-          );
-        } else if (c.observaciones) {
-          setObservaciones(c.observaciones);
-        }
+        setObservaciones(obtenerObservacionesPorPlantilla(plantillaEfectiva, c.observaciones));
         if (c.calibro) setCalibro((prev) => ({ ...prev, ...c.calibro }));
         if (c.aprobo) setAprobo((prev) => ({ ...prev, ...c.aprobo }));
 
         const dc = c.datosCalibracion || {};
+        const sonPuntosTensiometro =
+          Array.isArray(dc.puntos) &&
+          dc.puntos.some(
+            (p) =>
+              (Number(p.indicacionIBC) === 300 || Number(p.valorPatron) === 300) &&
+              !p.pesasUtilizadas &&
+              !(Number(p.valorMasaConvencional) > 0) &&
+              !(Number(p.volumenSeleccionado) > 0)
+          );
 
-        if (c.tipoPlantilla === 'presion_tensiometro') {
+        if (plantillaEfectiva === 'presion_tensiometro') {
           if (dc.hermeticidad) setHermeticidad(dc.hermeticidad);
           if (dc.errorCero) setErrorCero(dc.errorCero);
           if (dc.puntos && dc.puntos.length > 0) {
@@ -303,22 +298,25 @@ export default function EditCalibracion() {
               })
             );
           }
-        } else if (c.tipoPlantilla === 'masa_bascula') {
+        } else if (plantillaEfectiva === 'masa_bascula') {
           if (dc.repetibilidadBascula) setRepetibilidadBascula(dc.repetibilidadBascula);
           if (dc.excentricidadBascula) setExcentricidadBascula(dc.excentricidadBascula);
-          if (dc.puntos && dc.puntos.length > 0) {
+          if (dc.puntos && dc.puntos.length > 0 && !sonPuntosTensiometro) {
+            const cargasDefault = [5, 40, 80, 120, 150];
             setPuntosBascula(
-              dc.puntos.map((p) => {
+              dc.puntos.map((p, idx) => {
                 const valPat =
-                  p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== ''
+                  p.valorPatron !== undefined && p.valorPatron !== null && p.valorPatron !== '' && Number(p.valorPatron) > 0
                     ? Number(p.valorPatron)
-                    : Number(p.valorNominal || 0);
+                    : (Number(p.valorNominal) > 0 ? Number(p.valorNominal) : (cargasDefault[idx] ?? (idx + 1) * 30));
                 const cargaNom =
-                  p.cargaNominal !== undefined && p.cargaNominal !== null
+                  p.cargaNominal !== undefined && p.cargaNominal !== null && Number(p.cargaNominal) > 0
                     ? Number(p.cargaNominal)
-                    : (p.valorNominal !== undefined && p.valorNominal !== null ? Number(p.valorNominal) : valPat);
+                    : (p.valorNominal !== undefined && p.valorNominal !== null && Number(p.valorNominal) > 0
+                        ? Number(p.valorNominal)
+                        : Math.round(valPat));
                 const valMasaConv =
-                  p.valorMasaConvencional !== undefined && p.valorMasaConvencional !== null
+                  p.valorMasaConvencional !== undefined && p.valorMasaConvencional !== null && Number(p.valorMasaConvencional) > 0
                     ? Number(p.valorMasaConvencional)
                     : valPat;
                 return {
@@ -328,12 +326,20 @@ export default function EditCalibracion() {
                   lecturas:
                     Array.isArray(p.lecturas) && p.lecturas.length > 0
                       ? p.lecturas
-                      : [p.promedio || 0, p.promedio || 0, p.promedio || 0],
+                      : [p.promedio || cargaNom, p.promedio || cargaNom, p.promedio || cargaNom],
                 };
               })
             );
+          } else {
+            setPuntosBascula([
+              { cargaNominal: 5, valorPatron: 5.000103, valorMasaConvencional: 5.000103, lecturas: [5.0, 5.0, 5.0] },
+              { cargaNominal: 40, valorPatron: 39.99996, valorMasaConvencional: 39.99996, lecturas: [40.2, 40.2, 40.2] },
+              { cargaNominal: 80, valorPatron: 79.99992, valorMasaConvencional: 79.99992, lecturas: [80.3, 80.4, 80.4] },
+              { cargaNominal: 120, valorPatron: 119.99988, valorMasaConvencional: 119.99988, lecturas: [120.3, 120.4, 120.4] },
+              { cargaNominal: 150, valorPatron: 149.99989, valorMasaConvencional: 149.99989, lecturas: [150.4, 150.5, 150.5] },
+            ]);
           }
-        } else if (c.tipoPlantilla === 'volumen_micropipeta') {
+        } else if (plantillaEfectiva === 'volumen_micropipeta') {
           if (dc.micropipetaInfo) {
             setMicropipetaInfo((prev) => ({ ...prev, ...dc.micropipetaInfo }));
             if (dc.micropipetaInfo.tipoPunta || dc.micropipetaInfo.liquidoEnsayo) {
@@ -344,7 +350,7 @@ export default function EditCalibracion() {
               }));
             }
           }
-          if (dc.puntos && dc.puntos.length > 0) {
+          if (dc.puntos && dc.puntos.length > 0 && !sonPuntosTensiometro) {
             setPuntosMicropipeta(
               dc.puntos.map((p) => {
                 const nom =
@@ -506,12 +512,14 @@ export default function EditCalibracion() {
   );
 
   const desvRep = desviacionEstandar(repetibilidadBascula.lecturas);
-  const puntosBasculaCalculados = puntosBascula.map((p) =>
-    calcularPuntoBascula({
-      cargaNominal: p.cargaNominal ?? p.valorPatron,
-      valorNominal: p.cargaNominal ?? p.valorPatron,
-      valorPatron: p.valorPatron,
-      valorMasaConvencional: p.valorMasaConvencional ?? p.valorPatron,
+  const puntosBasculaCalculados = puntosBascula.map((p) => {
+    const cNom = Number(p.cargaNominal) > 0 ? Number(p.cargaNominal) : Number(p.valorPatron || 0);
+    const mConv = Number(p.valorMasaConvencional) > 0 ? Number(p.valorMasaConvencional) : Number(p.valorPatron || cNom);
+    return calcularPuntoBascula({
+      cargaNominal: cNom,
+      valorNominal: cNom,
+      valorPatron: Number(p.valorPatron) > 0 ? Number(p.valorPatron) : cNom,
+      valorMasaConvencional: mConv,
       lecturas: p.lecturas,
       resolucionEquipo: datosEquipo.resolucion,
       patronInfo: datosPatron,
@@ -519,8 +527,8 @@ export default function EditCalibracion() {
       errorExcentricidadMax: excentricidadBascula.errorMaximo,
       desvRepetibilidad: desvRep,
       emp: datosEquipo.resolucion * 2,
-    })
-  );
+    });
+  });
 
   const puntosMicropipetaCalculados = puntosMicropipeta.map((p) =>
     calcularPuntoMicropipeta({
@@ -2067,7 +2075,12 @@ export default function EditCalibracion() {
                               const val = Number(e.target.value);
                               setPuntosBascula((prev) => {
                                 const n = [...prev];
-                                n[idx].valorPatron = val;
+                                n[idx] = {
+                                  ...n[idx],
+                                  cargaNominal: Math.abs(val - Math.round(val)) < 0.01 ? Math.round(val) : val,
+                                  valorPatron: val,
+                                  valorMasaConvencional: val,
+                                };
                                 return n;
                               });
                             }}
@@ -2138,6 +2151,7 @@ export default function EditCalibracion() {
             <CalibrationChart
               puntos={puntosBasculaCalculados}
               unidad={datosEquipo.unidad}
+              tipoPlantilla="masa_bascula"
               titulo={`Curva de Exactitud: Error de Carga vs. Carga Patrón (${datosEquipo.unidad})`}
             />
           </div>
@@ -2559,12 +2573,49 @@ export default function EditCalibracion() {
 
           {/* Firmas Digitales */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 20 }}>
-            {/* Firma Calibrador */}
+            {/* Firma Calibrador / Ejecutado por */}
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, background: '#f8fafc' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 13.5, color: '#0f172a' }}>
-                Firma: Realizó la Calibración (Metrólogo / Calibrador)
+                Ejecutado por (Realizó la Calibración)
               </h4>
               <div style={{ marginBottom: 8 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 3 }}>
+                  Nombre (Ejecutado por) *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Nombre del técnico / ingeniero ejecutor"
+                  value={calibro.nombre || ''}
+                  onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 8,
+                    fontWeight: 600,
+                  }}
+                />
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 3 }}>
+                  Cargo / Especialidad *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Cargo (Ej: Metrólogo Responsable / Ingeniero Biomédico)"
+                  value={calibro.cargo || ''}
+                  onChange={(e) => setCalibro({ ...calibro, cargo: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e1',
+                    marginBottom: 8,
+                    fontWeight: 600,
+                  }}
+                />
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
+                  Código de Técnico Ejecutor (Opcional, Ej: TSC31 / ISC24)
+                </label>
                 <input
                   type="text"
                   placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
@@ -2575,29 +2626,7 @@ export default function EditCalibracion() {
                     padding: '6px 8px',
                     borderRadius: 4,
                     border: '1px solid #cbd5e1',
-                    marginBottom: 6,
-                    fontWeight: 700,
                   }}
-                />
-                <input
-                  type="text"
-                  placeholder="Nombre del técnico/ingeniero"
-                  value={calibro.nombre || ''}
-                  onChange={(e) => setCalibro({ ...calibro, nombre: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    borderRadius: 4,
-                    border: '1px solid #cbd5e1',
-                    marginBottom: 6,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Cargo / Especialidad"
-                  value={calibro.cargo || ''}
-                  onChange={(e) => setCalibro({ ...calibro, cargo: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e1' }}
                 />
               </div>
 

@@ -5,6 +5,10 @@ import { apiCalibraciones } from '../utils/api';
 import request from '../utils/request';
 import CalibrationChart from '../components/CalibrationChart';
 import ExcentricidadDiagram from '../components/ExcentricidadDiagram';
+import {
+  resolverTipoPlantillaCertificado,
+  obtenerObservacionesPorPlantilla,
+} from '../utils/metrologyEngine';
 import { SlPrinter } from 'react-icons/sl';
 import { FaArrowLeft, FaEdit, FaPrint } from 'react-icons/fa';
 
@@ -69,7 +73,6 @@ export default function CertificadoPdf() {
     fechaProximaCalibracion,
     datosEquipo = {},
     datosCliente = {},
-    tipoPlantilla,
     condicionesAmbientales = {},
     patron = {},
     patronesLista = [],
@@ -77,12 +80,33 @@ export default function CertificadoPdf() {
     declaracionTrazabilidad,
     datosCalibracion = {},
     dictamenGlobal,
-    observaciones,
+    observaciones: rawObservaciones,
     calibro = {},
     aprobo = {},
   } = certificado;
 
+  const tipoPlantilla = resolverTipoPlantillaCertificado(certificado);
+  const observaciones = obtenerObservacionesPorPlantilla(tipoPlantilla, rawObservaciones);
+
+  const pickPos = (...vals) => {
+    for (const v of vals) {
+      if (v !== undefined && v !== null && v !== '' && !isNaN(Number(v)) && Number(v) !== 0) {
+        return Number(v);
+      }
+    }
+    return 0;
+  };
+
   const puntos = datosCalibracion.puntos || [];
+  const sonPuntosTensiometro =
+    Array.isArray(puntos) &&
+    puntos.some(
+      (p) =>
+        (Number(p.indicacionIBC) === 300 || Number(p.valorPatron) === 300) &&
+        !p.pesasUtilizadas &&
+        !(Number(p.valorMasaConvencional) > 0) &&
+        !(Number(p.volumenSeleccionado) > 0)
+    );
   const repBascula = datosCalibracion.repetibilidadBascula || {};
   const excBascula = datosCalibracion.excentricidadBascula || {};
   const hermeticidad = datosCalibracion.hermeticidad || {};
@@ -95,7 +119,37 @@ export default function CertificadoPdf() {
     { puntoNumero: 4, cargaNominal: 120, valorMasaConvencional: 119.99988, valorPatron: 119.99988, lecturas: [120.3, 120.4, 120.4], promedio: 120.4, indicacionPromedio: 120.4, error: 0.3667, incertidumbreExpandida: 0.29, factorK: 2, emp: 0.4, cumple: true },
     { puntoNumero: 5, cargaNominal: 150, valorMasaConvencional: 149.99989, valorPatron: 149.99989, lecturas: [150.4, 150.5, 150.5], promedio: 150.5, indicacionPromedio: 150.5, error: 0.4667, incertidumbreExpandida: 0.36, factorK: 2, emp: 0.5, cumple: true },
   ];
-  const puntosBasculaDisplay = (puntos && puntos.length > 0) ? puntos : defaultPuntosBascula;
+  const rawPuntosBascula =
+    puntos && puntos.length > 0 && !sonPuntosTensiometro ? puntos : defaultPuntosBascula;
+  const cargasDefaultEscalon = [5, 40, 80, 120, 150];
+  const puntosBasculaDisplay = rawPuntosBascula.map((p, idx) => {
+    const fallbackCarga = cargasDefaultEscalon[idx] ?? (idx + 1) * 30;
+    const rawCarga = pickPos(p.cargaNominal, p.valorNominal, p.valorPatron, p.valorMasaConvencional) || fallbackCarga;
+    const cNom = Math.abs(rawCarga - Math.round(rawCarga)) < 0.01 ? Math.round(rawCarga) : rawCarga;
+    const masaConv = pickPos(p.valorMasaConvencional, p.valorPatron, cNom);
+    const lects =
+      Array.isArray(p.lecturas) && p.lecturas.length >= 3
+        ? p.lecturas
+        : [pickPos(p.promedio, p.indicacionPromedio, cNom), pickPos(p.promedio, p.indicacionPromedio, cNom), pickPos(p.promedio, p.indicacionPromedio, cNom)];
+    const prom =
+      pickPos(p.indicacionPromedio, p.promedio) ||
+      lects.reduce((a, b) => a + Number(b), 0) / lects.length;
+    const err =
+      p.error !== undefined && p.error !== null && Number(p.error) !== 0
+        ? Number(p.error)
+        : Number((prom - masaConv).toFixed(4));
+    return {
+      ...p,
+      cargaNominal: cNom,
+      valorNominal: cNom,
+      valorMasaConvencional: masaConv,
+      valorPatron: masaConv,
+      lecturas: lects,
+      indicacionPromedio: prom,
+      promedio: prom,
+      error: err,
+    };
+  });
 
   const defaultPatronesBascula = [
     {
@@ -130,7 +184,8 @@ export default function CertificadoPdf() {
     { puntoNumero: 2, nominal: 25, volumenSeleccionado: 25, volumenCalculado: 25.14, promedio: 25.14, error: 0.1, errorSistematico: 0.1, incertidumbreExpandida: 5.8, factorK: 2.0, errorAleatorio: 0.08, desviacionEstandar: 0.08, cumple: true },
     { puntoNumero: 3, nominal: 5, volumenSeleccionado: 5, volumenCalculado: 5.09, promedio: 5.09, error: 0.1, errorSistematico: 0.1, incertidumbreExpandida: 5.8, factorK: 2.0, errorAleatorio: 0.08, desviacionEstandar: 0.08, cumple: true },
   ];
-  const puntosMicropipetaDisplay = (puntos && puntos.length > 0) ? puntos : defaultPuntosMicropipeta;
+  const puntosMicropipetaDisplay =
+    puntos && puntos.length > 0 && !sonPuntosTensiometro ? puntos : defaultPuntosMicropipeta;
 
   const formatComma = (val, decs = null) => {
     if (val === undefined || val === null || val === '') return '0';
@@ -770,33 +825,37 @@ export default function CertificadoPdf() {
                     )}
                   </div>
 
-                  {/* Ejecutado por: Recuadro con código */}
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 8 }}>
+                  {/* Ejecutado por */}
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
                       Ejecutado por:
                     </div>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        border: '2.5px solid #0f172a',
-                        padding: '10px 28px',
-                        borderRadius: 6,
-                        background: '#f8fafc',
-                        minWidth: 160,
-                      }}
-                    >
-                      <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
-                        CÓDIGO TÉCNICO AUTORIZADO
+                    {calibro.firma ? (
+                      <img
+                        src={calibro.firma}
+                        alt="Firma Ejecutado Por"
+                        style={{ height: 60, maxWidth: 220, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {calibro.codigo && (
+                          <span style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '4px 14px', borderRadius: 4, background: '#f8fafc' }}>
+                            {calibro.codigo}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '4px 0' }}>
-                        {calibro.codigo || 'TSC31'}
-                      </div>
-                      {calibro.nombre && (
-                        <div style={{ fontSize: 11, color: '#334155', fontWeight: 700 }}>
-                          {calibro.nombre}
-                        </div>
-                      )}
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 13.5, color: '#0f172a', marginTop: 6 }}>
+                      {calibro.nombre || 'Ing. Metrólogo Biomédico'}
                     </div>
+                    <div style={{ fontSize: 11.5, color: '#0284c7', fontWeight: 800 }}>
+                      {calibro.cargo || 'Metrólogo Responsable'}
+                    </div>
+                    {calibro.codigo && calibro.firma && (
+                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2, fontWeight: 700 }}>
+                        Código Técnico: {calibro.codigo}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -902,31 +961,30 @@ export default function CertificadoPdf() {
                   </div>
 
                   {/* Ejecutado por */}
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Ejecutado por:
                     </div>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        border: '2px solid #0f172a',
-                        padding: '8px 24px',
-                        borderRadius: 5,
-                        background: '#f8fafc',
-                        minWidth: 140,
-                      }}
-                    >
-                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b' }}>
-                        CÓDIGO TÉCNICO
+                    {calibro.firma ? (
+                      <img
+                        src={calibro.firma}
+                        alt="Firma Ejecutado Por"
+                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {calibro.codigo && (
+                          <span style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 12px', borderRadius: 4, background: '#f8fafc' }}>
+                            {calibro.codigo}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '2px 0' }}>
-                        {calibro.codigo || 'TSC31'}
-                      </div>
-                      {calibro.nombre && (
-                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
-                          {calibro.nombre}
-                        </div>
-                      )}
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
+                      {calibro.nombre || 'Ing. Metrólogo Biomédico'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
+                      {calibro.cargo || 'Metrólogo Responsable'}
                     </div>
                   </div>
                 </div>
@@ -1383,33 +1441,37 @@ export default function CertificadoPdf() {
                     )}
                   </div>
 
-                  {/* Ejecutado por: Recuadro con código */}
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                  {/* Ejecutado por */}
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Ejecutado por:
                     </div>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        border: '2.5px solid #0f172a',
-                        padding: '8px 24px',
-                        borderRadius: 6,
-                        background: '#f8fafc',
-                        minWidth: 150,
-                      }}
-                    >
-                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b', letterSpacing: 0.5 }}>
-                        CÓDIGO TÉCNICO AUTORIZADO
+                    {calibro.firma ? (
+                      <img
+                        src={calibro.firma}
+                        alt="Firma Ejecutado Por"
+                        style={{ height: 56, maxWidth: 220, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {calibro.codigo && (
+                          <span style={{ fontSize: 17, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 14px', borderRadius: 4, background: '#f8fafc' }}>
+                            {calibro.codigo}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '3px 0' }}>
-                        {calibro.codigo || 'ISC24'}
-                      </div>
-                      {calibro.nombre && (
-                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
-                          {calibro.nombre}
-                        </div>
-                      )}
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 13, color: '#0f172a', marginTop: 4 }}>
+                      {calibro.nombre || 'Ing. Metrólogo Biomédico'}
                     </div>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
+                      {calibro.cargo || 'Metrólogo Responsable'}
+                    </div>
+                    {calibro.codigo && calibro.firma && (
+                      <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2, fontWeight: 700 }}>
+                        Código Técnico: {calibro.codigo}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1516,31 +1578,30 @@ export default function CertificadoPdf() {
                   </div>
 
                   {/* Ejecutado por */}
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                  <div style={{ textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: 8 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Ejecutado por:
                     </div>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        border: '2px solid #0f172a',
-                        padding: '8px 24px',
-                        borderRadius: 5,
-                        background: '#f8fafc',
-                        minWidth: 140,
-                      }}
-                    >
-                      <div style={{ fontSize: 9.5, fontWeight: 800, color: '#64748b' }}>
-                        CÓDIGO TÉCNICO
+                    {calibro.firma ? (
+                      <img
+                        src={calibro.firma}
+                        alt="Firma Ejecutado Por"
+                        style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {calibro.codigo && (
+                          <span style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 12px', borderRadius: 4, background: '#f8fafc' }}>
+                            {calibro.codigo}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', letterSpacing: 2, margin: '2px 0' }}>
-                        {calibro.codigo || 'ISC24'}
-                      </div>
-                      {calibro.nombre && (
-                        <div style={{ fontSize: 10.5, color: '#334155', fontWeight: 700 }}>
-                          {calibro.nombre}
-                        </div>
-                      )}
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
+                      {calibro.nombre || 'Ing. Metrólogo Biomédico'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
+                      {calibro.cargo || 'Metrólogo Responsable'}
                     </div>
                   </div>
                 </div>
@@ -1678,9 +1739,12 @@ export default function CertificadoPdf() {
                           <td colSpan={2} style={{ height: 12 }} />
                         </tr>
                         <tr>
-                          <td style={{ fontWeight: 800, padding: '5px 4px' }}>CALIBRADO POR</td>
+                          <td style={{ fontWeight: 800, padding: '5px 4px' }}>EJECUTADO POR</td>
                           <td style={{ padding: '5px 4px', textTransform: 'uppercase', fontWeight: 700 }}>
-                            {calibro.nombre || 'ALBEIRO MIRANDA'}
+                            <div>{calibro.nombre || 'ALBEIRO MIRANDA'}</div>
+                            <div style={{ fontSize: 10, color: '#0284c7', fontWeight: 800 }}>
+                              {calibro.cargo || 'METRÓLOGO RESPONSABLE'}
+                            </div>
                           </td>
                         </tr>
                       </tbody>
@@ -1878,26 +1942,54 @@ export default function CertificadoPdf() {
                   </div>
                 </div>
 
-                {/* APROBADO POR */}
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 36, margin: '10px 0 12px 0' }}>
-                  <div style={{ fontWeight: 900, fontSize: 12, color: '#0f172a', paddingBottom: 6 }}>
-                    APROBADO POR
-                  </div>
-                  <div style={{ textAlign: 'center', minWidth: 220 }}>
+                {/* APROBADO POR Y EJECUTADO POR */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'end', margin: '10px 0 12px 0' }}>
+                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 6 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#475569', marginBottom: 4 }}>
+                      APROBADO POR:
+                    </div>
                     {aprobo.firma ? (
                       <img
                         src={aprobo.firma}
                         alt="Firma Aprobado Por"
-                        style={{ height: 54, maxWidth: 220, objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                        style={{ height: 48, maxWidth: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }}
                       />
                     ) : (
-                      <div style={{ height: 42 }} />
+                      <div style={{ height: 38 }} />
                     )}
-                    {aprobo.nombre && (
-                      <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>
-                        {aprobo.nombre}
+                    <div style={{ fontSize: 11.5, fontWeight: 900, color: '#0f172a', marginTop: 2 }}>
+                      {aprobo.nombre || 'Ing. Fernando Castañeda Meriño'}
+                    </div>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0284c7' }}>
+                      {aprobo.cargo || 'Director Técnico'}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'center', borderTop: '1.5px solid #0f172a', paddingTop: 6 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#475569', marginBottom: 4 }}>
+                      EJECUTADO POR:
+                    </div>
+                    {calibro.firma ? (
+                      <img
+                        src={calibro.firma}
+                        alt="Firma Ejecutado Por"
+                        style={{ height: 48, maxWidth: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                      />
+                    ) : (
+                      <div style={{ height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {calibro.codigo && (
+                          <span style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', letterSpacing: 1, border: '1px solid #cbd5e1', padding: '2px 10px', borderRadius: 4, background: '#f8fafc' }}>
+                            {calibro.codigo}
+                          </span>
+                        )}
                       </div>
                     )}
+                    <div style={{ fontSize: 11.5, fontWeight: 900, color: '#0f172a', marginTop: 2 }}>
+                      {calibro.nombre || 'Albeiro Miranda'}
+                    </div>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0284c7' }}>
+                      {calibro.cargo || 'Metrólogo Responsable'}
+                    </div>
                   </div>
                 </div>
 

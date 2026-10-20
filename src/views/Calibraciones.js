@@ -13,6 +13,7 @@ import {
   FaSearch,
 } from 'react-icons/fa';
 import { MdPrecisionManufacturing } from 'react-icons/md';
+import { resolverTipoPlantillaCertificado } from '../utils/metrologyEngine';
 
 export default function Calibraciones() {
   const [certificados, setCertificados] = useState([]);
@@ -370,7 +371,7 @@ export default function Calibraciones() {
               </tr>
             ) : (
               certificados.map((cert) => {
-                const badge = getBadgePlantilla(cert.tipoPlantilla);
+                const badge = getBadgePlantilla(resolverTipoPlantillaCertificado(cert));
                 return (
                   <tr
                     key={cert._id}

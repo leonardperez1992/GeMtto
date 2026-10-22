@@ -340,7 +340,7 @@ export default function CreateCalibracion() {
   });
 
   const OBS_TENSIOMETRO =
-    '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.';
+    'El límite de control del error máximo permitido, con base la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020 es de ± 3 mmHg.';
   const OBS_BASCULA =
     'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
   const OBS_MICROPIPETA =
@@ -837,11 +837,14 @@ export default function CreateCalibracion() {
       numeroCertificado: consecutivo,
       fechaCalibracion,
       fechaEmision,
-      fechaProximaCalibracion,
+      fechaProximaCalibracion: tipoPlantilla === 'presion_tensiometro' ? '' : fechaProximaCalibracion,
       equipoId: null,
       ipsId: null,
       datosEquipo,
-      datosCliente,
+      datosCliente:
+        tipoPlantilla === 'presion_tensiometro'
+          ? { ...datosCliente, sede: '', departamento: '', pais: '' }
+          : datosCliente,
       tipoPlantilla,
       condicionesAmbientales: condiciones,
       patron: {
@@ -1077,18 +1080,20 @@ export default function CreateCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Sede / Área
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.sede}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
-                  placeholder="Ej: Sede Principal / Sede Norte"
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Sede / Área
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.sede}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
+                    placeholder="Ej: Sede Principal / Sede Norte"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1116,31 +1121,35 @@ export default function CreateCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Departamento
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.departamento || ''}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
-                  placeholder="Ej: CESAR / ATLÁNTICO"
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Departamento
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.departamento || ''}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
+                    placeholder="Ej: CESAR / ATLÁNTICO"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  País
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.pais || 'COLOMBIA'}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
-                  placeholder="Ej: COLOMBIA"
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    País
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.pais || 'COLOMBIA'}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
+                    placeholder="Ej: COLOMBIA"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1472,17 +1481,19 @@ export default function CreateCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Próxima Calibración
-                </label>
-                <input
-                  type="date"
-                  value={fechaProximaCalibracion}
-                  onChange={(e) => setFechaProximaCalibracion(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Próxima Calibración
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaProximaCalibracion}
+                    onChange={(e) => setFechaProximaCalibracion(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

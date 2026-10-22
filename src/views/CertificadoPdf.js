@@ -494,16 +494,12 @@ export default function CertificadoPdf() {
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Sede / Área:</td>
-                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</td>
-                          </tr>
-                          <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Dirección:</td>
                             <td>{datosCliente.direccion || 'N/A'}</td>
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Ciudad:</td>
-                            <td>{datosCliente.ciudad || 'Colombia'}</td>
+                            <td>{datosCliente.ciudad || 'N/A'}</td>
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Contacto:</td>
@@ -892,8 +888,7 @@ export default function CertificadoPdf() {
                 <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
                     <div><strong>Solicitante:</strong> {datosCliente.nombre || 'N/A'}</div>
-                    <div><strong>Sede / Área:</strong> {datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</div>
-                    <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'N/A'} - {datosCliente.ciudad || 'Colombia'}</div>
+                    <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'N/A'} - {datosCliente.ciudad || 'N/A'}</div>
                     <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Esfigmomanómetro no invasivo'}</div>
                     <div><strong>Serie:</strong> <span style={{ fontWeight: 800, color: '#0284c7' }}>{datosEquipo.serie || 'N/A'}</span></div>
                     <div><strong>No. de Activo:</strong> {datosEquipo.nroActivo || datosEquipo.placaInventario || 'No presenta'}</div>

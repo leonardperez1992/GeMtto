@@ -656,9 +656,12 @@ export default function EditCalibracion() {
       numeroCertificado: consecutivo,
       fechaCalibracion,
       fechaEmision,
-      fechaProximaCalibracion,
+      fechaProximaCalibracion: tipoPlantilla === 'presion_tensiometro' ? '' : fechaProximaCalibracion,
       datosEquipo,
-      datosCliente,
+      datosCliente:
+        tipoPlantilla === 'presion_tensiometro'
+          ? { ...datosCliente, sede: '', departamento: '', pais: '' }
+          : datosCliente,
       tipoPlantilla,
       condicionesAmbientales: condiciones,
       patron: patronPayload,
@@ -787,17 +790,19 @@ export default function EditCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Sede / Área
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.sede}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Sede / Área
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.sede}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -823,31 +828,35 @@ export default function EditCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Departamento
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.departamento || ''}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
-                  placeholder="Ej: CESAR"
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Departamento
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.departamento || ''}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
+                    placeholder="Ej: CESAR"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  País
-                </label>
-                <input
-                  type="text"
-                  value={datosCliente.pais || 'COLOMBIA'}
-                  onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
-                  placeholder="Ej: COLOMBIA"
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    País
+                  </label>
+                  <input
+                    type="text"
+                    value={datosCliente.pais || 'COLOMBIA'}
+                    onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
+                    placeholder="Ej: COLOMBIA"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1137,17 +1146,19 @@ export default function EditCalibracion() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                  Próxima Calibración
-                </label>
-                <input
-                  type="date"
-                  value={fechaProximaCalibracion}
-                  onChange={(e) => setFechaProximaCalibracion(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                />
-              </div>
+              {tipoPlantilla !== 'presion_tensiometro' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                    Próxima Calibración
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaProximaCalibracion}
+                    onChange={(e) => setFechaProximaCalibracion(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -371,7 +371,8 @@ export default function Calibraciones() {
               </tr>
             ) : (
               certificados.map((cert) => {
-                const badge = getBadgePlantilla(resolverTipoPlantillaCertificado(cert));
+                const tipoPlantillaCert = resolverTipoPlantillaCertificado(cert);
+                const badge = getBadgePlantilla(tipoPlantillaCert);
                 return (
                   <tr
                     key={cert._id}
@@ -414,14 +415,18 @@ export default function Calibraciones() {
                         {cert.datosCliente?.nombre || 'IPS'}
                       </div>
                       <div style={{ fontSize: 11.5, color: '#64748b' }}>
-                        {cert.datosCliente?.sede || cert.datosEquipo?.ubicacion}
+                        {tipoPlantillaCert === 'presion_tensiometro'
+                          ? cert.datosEquipo?.ubicacion
+                          : cert.datosCliente?.sede || cert.datosEquipo?.ubicacion}
                       </div>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       {getDictamenBadge(cert.dictamenGlobal)}
                     </td>
                     <td style={{ padding: '12px 16px', color: '#475569', fontSize: 12.5 }}>
-                      {cert.fechaProximaCalibracion || 'N/A'}
+                      {tipoPlantillaCert === 'presion_tensiometro'
+                        ? 'N/A'
+                        : cert.fechaProximaCalibracion || 'N/A'}
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: 6 }}>

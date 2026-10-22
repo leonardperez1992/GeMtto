@@ -579,7 +579,7 @@ export const resolverTipoPlantillaCertificado = (certificado = {}) => {
 };
 
 export const OBS_DEFAULT_TENSIOMETRO =
-  '* La fuga de aire del equipo se dió a una razón de cambio de 17,27 mmHg por minuto. Según la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020, la fuga de aire para estos equipos debe ser menor a 4 mmHg por minuto.';
+  'El límite de control del error máximo permitido, con base la Recommendation Noninvasive non-automated sphygmomanometers OIML 148-2 Edition 2020 es de ± 3 mmHg.';
 
 export const OBS_DEFAULT_BASCULA =
   'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
@@ -605,7 +605,14 @@ export const obtenerObservacionesPorPlantilla = (tipoPlantilla, observacionesAct
     }
     return obs;
   }
-  if (!obs || obs === OBS_DEFAULT_BASCULA || obs === OBS_DEFAULT_MICROPIPETA || obs === 'NINGUNA' || obs === 'NO HAY OBSERVACIONES.') {
+  if (
+    !obs ||
+    obs === OBS_DEFAULT_BASCULA ||
+    obs === OBS_DEFAULT_MICROPIPETA ||
+    obs === 'NINGUNA' ||
+    obs === 'NO HAY OBSERVACIONES.' ||
+    /la fuga de aire del equipo se di[oó] a una raz[oó]n de cambio/i.test(obs)
+  ) {
     return OBS_DEFAULT_TENSIOMETRO;
   }
   return obs;

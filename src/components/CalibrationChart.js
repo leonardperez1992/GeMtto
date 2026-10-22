@@ -17,11 +17,15 @@ export default function CalibrationChart({
   height = 270,
 }) {
   const normUnidad = String(unidad || '').toLowerCase();
-  const isPresion = esPresion || tipoPlantilla === 'presion_tensiometro' || normUnidad === 'mmhg';
-  const isBascula = tipoPlantilla === 'masa_bascula' || (!isPresion && (normUnidad === 'kg' || normUnidad === 'g'));
+  const isTermoTemp = tipoPlantilla === 'termohigrometro_temp' || (tipoPlantilla === 'termohigrometro' && normUnidad.includes('c'));
+  const isTermoHum = tipoPlantilla === 'termohigrometro_hum' || (tipoPlantilla === 'termohigrometro' && normUnidad.includes('%'));
+  const isTermo = isTermoTemp || isTermoHum;
+  const isPresion = !isTermo && (esPresion || tipoPlantilla === 'presion_tensiometro' || normUnidad === 'mmhg');
+  const isBascula = !isTermo && (tipoPlantilla === 'masa_bascula' || (!isPresion && (normUnidad === 'kg' || normUnidad === 'g')));
   const isMicropipeta =
-    tipoPlantilla === 'volumen_micropipeta' ||
-    (!isPresion && !isBascula && (normUnidad === 'µl' || normUnidad === 'ul' || normUnidad === 'ml'));
+    !isTermo &&
+    (tipoPlantilla === 'volumen_micropipeta' ||
+      (!isPresion && !isBascula && (normUnidad === 'µl' || normUnidad === 'ul' || normUnidad === 'ml')));
 
   if (!puntos || puntos.length === 0) {
     return (
@@ -44,8 +48,8 @@ export default function CalibrationChart({
     );
   }
 
-  const padding = isPresion || isBascula || isMicropipeta
-    ? { top: 28, right: 35, bottom: 48, left: 75 }
+  const padding = isPresion || isBascula || isMicropipeta || isTermo
+    ? { top: 28, right: 35, bottom: 48, left: 78 }
     : { top: 35, right: 35, bottom: 45, left: 60 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
@@ -67,6 +71,9 @@ export default function CalibrationChart({
 
   const getPointX = (p) => {
     if (!p) return undefined;
+    if (isTermo) {
+      return pickNonZero(p.valorReferencia, p.valorPatron, p.valorNominal, p.nominal);
+    }
     if (isBascula) {
       return pickNonZero(p.cargaNominal, p.valorNominal, p.valorPatron, p.valorMasaConvencional);
     }
@@ -77,6 +84,7 @@ export default function CalibrationChart({
       return pickNonZero(p.indicacionIBC, p.valorPatron, p.valorNominal, p.nominal);
     }
     return pickNonZero(
+      p.valorReferencia,
       p.cargaNominal,
       p.valorPatron,
       p.valorNominal,
@@ -123,6 +131,14 @@ export default function CalibrationChart({
           rawY = Number(p.error ?? 0);
         }
       }
+    } else if (isTermo) {
+      if (p.error !== undefined && p.error !== null && p.error !== '') {
+        rawY = Number(p.error);
+      } else {
+        const prom = pickNonZero(p.promedio, p.indicacionPromedio);
+        const ref = pickNonZero(p.valorReferencia, p.valorPatron, p.valorNominal);
+        rawY = prom !== undefined && ref !== undefined ? Number((prom - ref).toFixed(3)) : 0;
+      }
     } else if (isMicropipeta) {
       rawY =
         p.errorSistematico !== undefined && p.errorSistematico !== null && Number(p.errorSistematico) !== 0
@@ -158,7 +174,7 @@ export default function CalibrationChart({
   }
 
   // Ordenar por carga / valor X ascendente para trazado horizontal limpio de izquierda a derecha
-  if (isBascula || isPresion) {
+  if (isBascula || isPresion || isTermo) {
     data = [...data].sort((a, b) => a.x - b.x);
   }
 
@@ -184,7 +200,45 @@ export default function CalibrationChart({
   let microMaxX = 60;
   let xTicksMicro = [0, 10, 20, 30, 40, 50, 60];
 
-  if (isBascula) {
+  let termoMinY = -0.12;
+  let termoMaxY = 0.06;
+  let termoMinX = 10;
+  let termoMaxX = 42;
+  let xTicksTermo = [10, 14, 18, 22, 26, 30, 34, 38, 42];
+
+  if (isTermoTemp) {
+    const minErr = Math.min(...data.map((d) => d.y - 0.02), -0.12);
+    const maxErr = Math.max(...data.map((d) => d.y + 0.02), 0.06);
+    const stepY = Math.max(0.02, Number((Math.ceil(((maxErr - minErr) / 9) * 50) / 50).toFixed(3)));
+    termoMinY = Math.min(-0.12, Number((Math.floor(minErr / stepY) * stepY).toFixed(3)));
+    termoMaxY = Math.max(0.06, Number((Math.ceil(maxErr / stepY) * stepY).toFixed(3)));
+    yTicks = [];
+    for (let v = termoMaxY; v >= termoMinY - 0.0001; v -= stepY) {
+      yTicks.push(Number(v.toFixed(3)));
+    }
+    termoMinX = Math.min(10, Math.floor((minX - 2) / 4) * 4);
+    termoMaxX = Math.max(42, Math.ceil((maxX + 2) / 4) * 4);
+    xTicksTermo = [];
+    for (let vx = termoMinX; vx <= termoMaxX + 0.01; vx += 4) {
+      xTicksTermo.push(vx);
+    }
+  } else if (isTermoHum) {
+    const minErr = Math.min(...data.map((d) => d.y), -0.8);
+    const maxErr = Math.max(...data.map((d) => d.y), 0.6);
+    const stepY = Math.max(0.2, Number((Math.ceil(((maxErr - minErr) / 7) * 5) / 5).toFixed(3)));
+    termoMinY = Math.min(-0.8, Number((Math.floor(minErr / stepY) * stepY).toFixed(3)));
+    termoMaxY = Math.max(0.6, Number((Math.ceil(maxErr / stepY) * stepY).toFixed(3)));
+    yTicks = [];
+    for (let v = termoMaxY; v >= termoMinY - 0.0001; v -= stepY) {
+      yTicks.push(Number(v.toFixed(3)));
+    }
+    termoMinX = Math.min(20, Math.floor((minX - 5) / 5) * 5);
+    termoMaxX = Math.max(80, Math.ceil((maxX + 5) / 5) * 5);
+    xTicksTermo = [];
+    for (let vx = termoMinX; vx <= termoMaxX + 0.01; vx += 5) {
+      xTicksTermo.push(vx);
+    }
+  } else if (isBascula) {
     const minValY = Math.min(...data.map((d) => d.y - (d.u || 0)), -0.1);
     const maxValY = Math.max(...data.map((d) => d.y + (d.u || 0)), 0.6);
     basculaMinY = Math.min(-0.2, Number((Math.floor(minValY * 5) / 5).toFixed(2)));
@@ -242,6 +296,7 @@ export default function CalibrationChart({
   }
 
   const formatVal = (v) => {
+    if (isTermo) return Number(v).toFixed(3).replace('.', ',');
     if (isPresion) return Number(v).toFixed(2).replace('.', ',');
     if (isBascula) return Number(v).toFixed(2).replace('.', ',');
     if (isMicropipeta) return Number(v).toFixed(2).replace('.', ',');
@@ -253,6 +308,9 @@ export default function CalibrationChart({
 
   // Funciones de escala
   const getXPos = (val) => {
+    if (isTermo) {
+      return padding.left + ((val - termoMinX) / (termoMaxX - termoMinX)) * plotWidth;
+    }
     if (isBascula) {
       return padding.left + ((val - basculaMinX) / (basculaMaxX - basculaMinX)) * plotWidth;
     }
@@ -266,6 +324,13 @@ export default function CalibrationChart({
   };
 
   const getYPos = (val) => {
+    if (isTermo) {
+      return (
+        padding.top +
+        plotHeight -
+        ((val - termoMinY) / (termoMaxY - termoMinY)) * plotHeight
+      );
+    }
     if (isBascula) {
       return (
         padding.top +
@@ -281,7 +346,9 @@ export default function CalibrationChart({
 
   const chartTitle =
     titulo ||
-    (isPresion
+    (isTermo
+      ? 'Curva de Calibración'
+      : isPresion
       ? 'PRUEBA DE PARÁMETROS'
       : isBascula
       ? 'ERROR, INCERTIDUMBRE EXPANDIDA Y CARGAS'
@@ -330,22 +397,21 @@ export default function CalibrationChart({
           strokeWidth="1.2"
         />
 
-        {/* Líneas de cuadrícula vertical para micropipeta */}
-        {isMicropipeta &&
-          xTicksMicro.map((valX, idx) => {
-            const xPos = getXPos(valX);
-            return (
-              <line
-                key={`vgrid-micro-${idx}`}
-                x1={xPos}
-                y1={padding.top}
-                x2={xPos}
-                y2={padding.top + plotHeight}
-                stroke="#e2e8f0"
-                strokeWidth="1"
-              />
-            );
-          })}
+        {/* Líneas de cuadrícula vertical para micropipeta o termohigrómetro */}
+        {(isMicropipeta ? xTicksMicro : isTermo ? xTicksTermo : []).map((valX, idx) => {
+          const xPos = getXPos(valX);
+          return (
+            <line
+              key={`vgrid-${idx}`}
+              x1={xPos}
+              y1={padding.top}
+              x2={xPos}
+              y2={padding.top + plotHeight}
+              stroke="#e2e8f0"
+              strokeWidth="1"
+            />
+          );
+        })}
 
         {/* Líneas de cuadrícula horizontal */}
         {yTicks.map((val, idx) => {
@@ -364,11 +430,11 @@ export default function CalibrationChart({
                   isEmpLimit
                     ? '#ef4444'
                     : isZero
-                    ? (isPresion || isMicropipeta ? '#94a3b8' : '#10b981')
+                    ? (isPresion || isMicropipeta || isTermo ? '#94a3b8' : '#10b981')
                     : '#e2e8f0'
                 }
                 strokeWidth={isEmpLimit ? '2' : isZero ? '1.3' : '1'}
-                strokeDasharray={(!isPresion && !isMicropipeta && isZero) ? '4 2' : 'none'}
+                strokeDasharray={(!isPresion && !isMicropipeta && !isTermo && isZero) ? '4 2' : 'none'}
               />
               <text
                 x={padding.left - 8}
@@ -415,7 +481,7 @@ export default function CalibrationChart({
         )}
 
         {/* Línea conectora de errores (solo para plantillas genéricas) */}
-        {!isPresion && !isBascula && !isMicropipeta && data.length > 1 && (
+        {!isPresion && !isBascula && !isMicropipeta && !isTermo && data.length > 1 && (
           <polyline
             fill="none"
             stroke="#0284c7"
@@ -423,6 +489,26 @@ export default function CalibrationChart({
             points={linePoints}
           />
         )}
+
+        {/* Ticks y etiquetas del eje X para termohigrómetros (ubicados junto al eje 0,000 como en el modelo) */}
+        {isTermo &&
+          xTicksTermo.map((valX, idx) => {
+            const xPos = getXPos(valX);
+            const zeroY = getYPos(0);
+            return (
+              <text
+                key={`xtick-termo-${idx}`}
+                x={xPos}
+                y={zeroY + 13}
+                textAnchor="middle"
+                fontSize="10.5"
+                fill="#475569"
+                fontWeight="600"
+              >
+                {valX}
+              </text>
+            );
+          })}
 
         {/* Ticks y etiquetas del eje X para básculas (escala continua 0 a 160 kg) */}
         {isBascula &&
@@ -484,48 +570,51 @@ export default function CalibrationChart({
         {data.map((d, idx) => {
           const cx = getXPos(d.x);
           const cy = getYPos(d.y);
-          const topU = getYPos(d.y + d.u);
-          const botU = getYPos(d.y - d.u);
+          const barDelta = isTermoTemp ? 0.02 : isTermoHum ? 0 : d.u;
+          const topU = getYPos(d.y + barDelta);
+          const botU = getYPos(d.y - barDelta);
 
           return (
             <g key={idx}>
               {/* Barra de incertidumbre vertical (± U) */}
-              {!isPresion && d.u > 0 && (
+              {!isPresion && barDelta > 0 && (
                 <>
                   <line
                     x1={cx}
                     y1={topU}
                     x2={cx}
                     y2={botU}
-                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
+                    stroke={isTermo ? '#64748b' : isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isTermo || isMicropipeta ? '1.4' : '1.8'}
                   />
                   <line
-                    x1={cx - 5}
+                    x1={cx - 4}
                     y1={topU}
-                    x2={cx + 5}
+                    x2={cx + 4}
                     y2={topU}
-                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
+                    stroke={isTermo ? '#64748b' : isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isTermo || isMicropipeta ? '1.4' : '1.8'}
                   />
                   <line
-                    x1={cx - 5}
+                    x1={cx - 4}
                     y1={botU}
-                    x2={cx + 5}
+                    x2={cx + 4}
                     y2={botU}
-                    stroke={isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
-                    strokeWidth={isMicropipeta ? '1.5' : '1.8'}
+                    stroke={isTermo ? '#64748b' : isMicropipeta ? '#334155' : isBascula ? '#0284c7' : '#0369a1'}
+                    strokeWidth={isTermo || isMicropipeta ? '1.4' : '1.8'}
                   />
                 </>
               )}
 
-              {/* Punto de Error: círculo con borde nítido (Rojo en micropipeta según formato ISO 8655-6) */}
+              {/* Punto de Error: círculo con borde nítido */}
               <circle
                 cx={cx}
                 cy={cy}
-                r={isPresion || isBascula || isMicropipeta ? '5.5' : '4.5'}
+                r={isTermo ? '3.8' : isPresion || isBascula || isMicropipeta ? '5.5' : '4.5'}
                 fill={
-                  isMicropipeta
+                  isTermo
+                    ? '#3b82f6'
+                    : isMicropipeta
                     ? '#dc2626'
                     : isPresion
                     ? '#000000'
@@ -533,12 +622,12 @@ export default function CalibrationChart({
                     ? '#0f172a'
                     : '#0284c7'
                 }
-                stroke="#ffffff"
+                stroke={isTermo ? 'none' : '#ffffff'}
                 strokeWidth="1.2"
               />
 
-              {/* Etiqueta de X en el eje (solo cuando NO es báscula ni micropipeta, que tienen su propio eje continuo) */}
-              {!isBascula && !isMicropipeta && (
+              {/* Etiqueta de X en el eje (solo cuando NO es báscula, micropipeta ni termohigrómetro) */}
+              {!isBascula && !isMicropipeta && !isTermo && (
                 <text
                   x={cx}
                   y={padding.top + plotHeight + 20}
@@ -557,13 +646,17 @@ export default function CalibrationChart({
         {/* Título de ejes */}
         <text
           x={padding.left + plotWidth / 2}
-          y={height - 6}
+          y={height - 10}
           textAnchor="middle"
-          fontSize="12.5"
-          fill="#0f172a"
-          fontWeight="900"
+          fontSize={isTermo ? '11.5' : '12.5'}
+          fill={isTermo ? '#475569' : '#0f172a'}
+          fontWeight={isTermo ? '600' : '900'}
         >
-          {isPresion
+          {isTermoTemp
+            ? 'TEMPERATURA °C'
+            : isTermoHum
+            ? 'HUMEDAD %'
+            : isPresion
             ? 'Presión (mmHg)'
             : isBascula
             ? 'Cargas (kg)'
@@ -577,11 +670,13 @@ export default function CalibrationChart({
           y="18"
           transform="rotate(-90)"
           textAnchor="middle"
-          fontSize="12"
-          fill="#0f172a"
-          fontWeight="900"
+          fontSize={isTermo ? '11' : '12'}
+          fill={isTermo ? '#334155' : '#0f172a'}
+          fontWeight={isTermo ? '700' : '900'}
         >
-          {isPresion
+          {isTermo
+            ? 'ERROR ± INCERTIDUMBRE'
+            : isPresion
             ? 'Error ± Incertidumbre (mmHg)'
             : isBascula
             ? 'Error ± Incertidumbre (kg)'
@@ -636,7 +731,7 @@ export default function CalibrationChart({
           </span>
         </div>
       ) : (
-        !isPresion && (
+        !isPresion && !isTermo && (
           <div
             style={{
               display: 'flex',

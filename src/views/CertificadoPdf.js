@@ -187,6 +187,71 @@ export default function CertificadoPdf() {
   const puntosMicropipetaDisplay =
     puntos && puntos.length > 0 && !sonPuntosTensiometro ? puntos : defaultPuntosMicropipeta;
 
+  const termohigrometroInfo = datosCalibracion.termohigrometroInfo || {};
+  const defaultPuntosTermoTemp = [
+    { puntoNumero: 1, valorReferencia: 16, promedio: 16.02, error: 0.02, correccion: -0.02, incertidumbreExpandida: 0.1055 },
+    { puntoNumero: 2, valorReferencia: 20, promedio: 19.92, error: -0.08, correccion: 0.08, incertidumbreExpandida: 0.1643 },
+    { puntoNumero: 3, valorReferencia: 30, promedio: 29.98, error: -0.02, correccion: 0.02, incertidumbreExpandida: 0.164 },
+    { puntoNumero: 4, valorReferencia: 40, promedio: 39.98, error: -0.02, correccion: 0.02, incertidumbreExpandida: 0.11 },
+  ];
+  const defaultPuntosTermoHum = [
+    { puntoNumero: 1, valorReferencia: 30, promedio: 29.4, error: -0.6, correccion: 0.6, incertidumbreExpandida: 1.3416 },
+    { puntoNumero: 2, valorReferencia: 45, promedio: 44.8, error: -0.2, correccion: 0.2, incertidumbreExpandida: 1.0954 },
+    { puntoNumero: 3, valorReferencia: 60, promedio: 60.4, error: 0.4, correccion: -0.4, incertidumbreExpandida: 1.342 },
+    { puntoNumero: 4, valorReferencia: 75, promedio: 75.2, error: 0.2, correccion: -0.2, incertidumbreExpandida: 2.387 },
+  ];
+
+  const rawPuntosTemp =
+    Array.isArray(datosCalibracion.puntosTemperatura) && datosCalibracion.puntosTemperatura.length > 0
+      ? datosCalibracion.puntosTemperatura
+      : Array.isArray(puntos) && puntos.some((p) => p.magnitud === 'temperatura')
+      ? puntos.filter((p) => p.magnitud === 'temperatura')
+      : defaultPuntosTermoTemp;
+
+  const rawPuntosHum =
+    Array.isArray(datosCalibracion.puntosHumedad) && datosCalibracion.puntosHumedad.length > 0
+      ? datosCalibracion.puntosHumedad
+      : Array.isArray(puntos) && puntos.some((p) => p.magnitud === 'humedad')
+      ? puntos.filter((p) => p.magnitud === 'humedad')
+      : defaultPuntosTermoHum;
+
+  const normalizarPuntoTermo = (p) => {
+    const ref = Number(p.valorReferencia ?? p.valorPatron ?? p.valorNominal ?? 0);
+    const prom = p.promedio !== undefined && p.promedio !== '' ? Number(p.promedio) : ref;
+    const err =
+      p.error !== undefined && p.error !== '' && Number(p.error) !== 0
+        ? Number(p.error)
+        : Number((prom - ref).toFixed(3));
+    const corr =
+      p.correccion !== undefined && p.correccion !== '' && Number(p.correccion) !== 0
+        ? Number(p.correccion)
+        : Number((-err).toFixed(3));
+    const uExp = Number(p.incertidumbreExpandida ?? 0.1);
+    return {
+      ...p,
+      valorReferencia: ref,
+      valorPatron: ref,
+      promedio: prom,
+      error: err,
+      correccion: corr,
+      incertidumbreExpandida: uExp,
+    };
+  };
+
+  const puntosTempDisplay = rawPuntosTemp.map(normalizarPuntoTermo);
+  const puntosHumDisplay = rawPuntosHum.map(normalizarPuntoTermo);
+
+  const calcErrorMaximoSigned = (lista) => {
+    if (!lista || lista.length === 0) return 0;
+    return lista.reduce((maxVal, item) => {
+      const e = Number(item.error || 0);
+      return Math.abs(e) >= Math.abs(maxVal) ? e : maxVal;
+    }, Number(lista[0].error || 0));
+  };
+
+  const errorMaximoTemp = calcErrorMaximoSigned(puntosTempDisplay);
+  const errorMaximoHum = calcErrorMaximoSigned(puntosHumDisplay);
+
   const formatComma = (val, decs = null) => {
     if (val === undefined || val === null || val === '') return '0';
     const num = Number(val);
@@ -995,10 +1060,6 @@ export default function CertificadoPdf() {
                             <td style={{ fontWeight: 800, color: '#0f172a' }}>{datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Sede / Área:</td>
-                            <td style={{ fontWeight: 600 }}>{datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</td>
-                          </tr>
-                          <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>NIT / CC:</td>
                             <td style={{ fontWeight: 700 }}>{datosCliente.nit || '890.201.216-5'}</td>
                           </tr>
@@ -1086,10 +1147,6 @@ export default function CertificadoPdf() {
                           <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Fecha de emisión:</td>
                             <td>{fechaEmision || fechaCalibracion}</td>
-                          </tr>
-                          <tr>
-                            <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Próxima calibración:</td>
-                            <td style={{ fontWeight: 700, color: '#0369a1' }}>{fechaProximaCalibracion || 'Recomendada a 12 meses'}</td>
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#334155', padding: '3.5px 0' }}>Lugar de calibración:</td>
@@ -1431,13 +1488,7 @@ export default function CertificadoPdf() {
                         style={{ height: 56, maxWidth: 220, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {calibro.codigo && (
-                          <span style={{ fontSize: 17, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 14px', borderRadius: 4, background: '#f8fafc' }}>
-                            {calibro.codigo}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ height: 56 }} />
                     )}
                     <div style={{ fontWeight: 900, fontSize: 13, color: '#0f172a', marginTop: 4 }}>
                       {calibro.nombre || 'Ing. Metrólogo Biomédico'}
@@ -1445,11 +1496,6 @@ export default function CertificadoPdf() {
                     <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 800 }}>
                       {calibro.cargo || 'Metrólogo Responsable'}
                     </div>
-                    {calibro.codigo && calibro.firma && (
-                      <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2, fontWeight: 700 }}>
-                        Código Técnico: {calibro.codigo}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -1486,7 +1532,6 @@ export default function CertificadoPdf() {
                 <div style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '10px 14px', marginBottom: 14, background: '#f8fafc' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, fontSize: 11, color: '#1e293b' }}>
                     <div><strong>Solicitante:</strong> {datosCliente.nombre || 'E.S.E. HOSPITAL UNIVERSITARIO DE SANTANDER'}</div>
-                    <div><strong>Sede / Área:</strong> {datosEquipo.servicio || datosCliente.sede || 'Servicio Médico'}</div>
                     <div><strong>Dirección / Ciudad:</strong> {datosCliente.direccion || 'Calle 45 # 54 - 10'} - {datosCliente.ciudad || 'Bucaramanga'}</div>
                     <div><strong>Ítem / Instrumento:</strong> {datosEquipo.nombre || 'Báscula Pesa Persona Digital'}</div>
                     <div><strong>Marca / Modelo:</strong> {datosEquipo.marca || 'seca'} / {datosEquipo.modelo || '803'}</div>
@@ -1567,13 +1612,7 @@ export default function CertificadoPdf() {
                         style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {calibro.codigo && (
-                          <span style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 12px', borderRadius: 4, background: '#f8fafc' }}>
-                            {calibro.codigo}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ height: 50 }} />
                     )}
                     <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
                       {calibro.nombre || 'Ing. Metrólogo Biomédico'}
@@ -1586,6 +1625,816 @@ export default function CertificadoPdf() {
               </div>
 
               {renderPieDePagina(1, 1, 'ANEXO TÉCNICO - GRÁFICAS DE DESEMPEÑO')}
+            </div>
+          </>
+        ) : tipoPlantilla === 'termohigrometro' ? (
+          <>
+            {/* ============================================================== */}
+            {/* HOJA 1: CERTIFICADO TERMOHIGRÓMETRO (PÁGINA 1 DE 4)            */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {/* Encabezado Hoja 1 */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 18,
+                  }}
+                >
+                  <div>
+                    <img
+                      src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
+                      alt="GEMTTO"
+                      style={{ maxHeight: 68, maxWidth: 220, objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: 11.5, fontWeight: 800, color: '#0c2340', lineHeight: 1.45 }}>
+                    <div>VERSIÓN: {termohigrometroInfo.versionFormato || '004'}</div>
+                    <div>FECHA: {termohigrometroInfo.fechaFormato || '18/09/2025'}</div>
+                  </div>
+                </div>
+
+                {/* Título Central */}
+                <div style={{ textAlign: 'center', marginBottom: 22 }}>
+                  <div style={{ fontSize: 16.5, fontWeight: 900, color: '#0f172a', letterSpacing: 0.4 }}>
+                    <span>CERTIFICADO DE CALIBRACIÓN Nº</span>
+                    <span style={{ color: '#dc2626', marginLeft: 18 }}>
+                      {numeroCertificado || 'CC-2026-12763'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0c2340', marginTop: 2 }}>
+                    CERTIFICATE OF CALIBRATION
+                  </div>
+                </div>
+
+                {/* INFORMACIÓN DEL INSTRUMENTO */}
+                <div style={{ marginBottom: 22 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 14,
+                    }}
+                  >
+                    INFORMACIÓN DEL INSTRUMENTO / Instrument Information
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 18, fontSize: 11.5 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <tbody>
+                        <tr>
+                          <td style={{ width: 170, fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>EQUIPO:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosEquipo.nombre || 'TERMOHIGROMETRO CON SONDA'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>MARCA:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosEquipo.marca || 'LWH'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>MODELO:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosEquipo.modelo || 'HTC-2'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>SERIE:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosEquipo.serie || 'TER20260440'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>INVENTARIO / PLACA</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosEquipo.placaInventario || datosEquipo.nroActivo || 'NO APLICA'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>LUGAR DE CALIBRACIÓN</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {condicionesAmbientales.lugarCalibracion || datosEquipo.ubicacion || 'LABORATORIO'}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ width: 175, fontWeight: 800, padding: '5px 0', color: '#0f172a' }}>
+                              FECHA DE INGRESO:
+                            </td>
+                            <td style={{ padding: '5px 0', color: '#0c2340', textAlign: 'right', textTransform: 'uppercase' }}>
+                              {datosEquipo.fechaRecepcion || fechaCalibracion}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 800, padding: '5px 0', color: '#0f172a' }}>
+                              FECHA DE CALIBRACIÓN:
+                            </td>
+                            <td style={{ padding: '5px 0', color: '#0c2340', textAlign: 'right', textTransform: 'uppercase' }}>
+                              {fechaCalibracion}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* INFORMACIÓN DEL SOLICITANTE Y CONDICIONES DE LA MEDICIÓN */}
+                <div style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1.15fr 1fr',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 14,
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                    }}
+                  >
+                    <div>INFORMACIÓN DEL SOLICITANTE / Customer</div>
+                    <div>CONDICIONES DE LA MEDICIÓN / Environment Conditions</div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 18, fontSize: 11.5 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <tbody>
+                        <tr>
+                          <td style={{ width: 145, fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>CLIENTE:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosCliente.nombre || 'EMPRESA MULTIACTIVA DE SALUD'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>NIT.</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340' }}>
+                            {datosCliente.nit || '900,345,765-1'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>TELÉFONO:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340' }}>
+                            {datosCliente.telefono || '3017444361'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>DIRECCIÓN:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosCliente.direccion || 'CALLE 14 # 11-93'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 800, padding: '6px 0', color: '#0f172a' }}>CIUDAD:</td>
+                          <td style={{ padding: '6px 0', color: '#0c2340', textTransform: 'uppercase' }}>
+                            {datosCliente.ciudad || 'AGUSTIN CODAZZI - CESAR'}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div style={{ paddingTop: 18 }}>
+                      <table style={{ width: '90%', borderCollapse: 'collapse' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ fontWeight: 800, padding: '3px 0', color: '#0f172a' }}>TEMPERATURA MINIMA:</td>
+                            <td style={{ padding: '3px 10px', textAlign: 'center', color: '#0c2340' }}>
+                              {termohigrometroInfo.tempMinima ?? condicionesAmbientales.temperaturaMinima ?? 16}
+                            </td>
+                            <td style={{ padding: '3px 0', color: '#0c2340' }}>°C</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 800, padding: '3px 0 12px 0', color: '#0f172a' }}>HUMEDAD REL. MINIMA:</td>
+                            <td style={{ padding: '3px 10px 12px 10px', textAlign: 'center', color: '#0c2340' }}>
+                              {termohigrometroInfo.humedadMinima ?? condicionesAmbientales.humedadMinima ?? 43}
+                            </td>
+                            <td style={{ padding: '3px 0 12px 0', color: '#0c2340' }}>%</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 800, padding: '3px 0', color: '#0f172a' }}>TEMPERATURA MAXIMA:</td>
+                            <td style={{ padding: '3px 10px', textAlign: 'center', color: '#0c2340' }}>
+                              {termohigrometroInfo.tempMaxima ?? condicionesAmbientales.temperaturaMaxima ?? 20}
+                            </td>
+                            <td style={{ padding: '3px 0', color: '#0c2340' }}>°C</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 800, padding: '3px 0', color: '#0f172a' }}>HUMEDAD REL. MAXIMA:</td>
+                            <td style={{ padding: '3px 10px', textAlign: 'center', color: '#0c2340' }}>
+                              {termohigrometroInfo.humedadMaxima ?? condicionesAmbientales.humedadMaxima ?? 54}
+                            </td>
+                            <td style={{ padding: '3px 0', color: '#0c2340' }}>%</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TRAZABILIDAD */}
+                <div style={{ marginBottom: 22 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 12,
+                    }}
+                  >
+                    TRAZABILIDAD / Traceability
+                  </div>
+
+                  <table
+                    style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      border: '1px solid #0c2340',
+                      fontSize: 11.2,
+                      textAlign: 'center',
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ background: '#0c2340', color: '#ffffff', fontWeight: 800 }}>
+                        <th style={{ border: '1px solid #0c2340', padding: '5px 8px' }}>EQUIPO</th>
+                        <th style={{ border: '1px solid #0c2340', padding: '5px 8px' }}>MODELO</th>
+                        <th style={{ border: '1px solid #0c2340', padding: '5px 8px' }}>SERIE</th>
+                        <th style={{ border: '1px solid #0c2340', padding: '5px 8px' }}>FECHA DE CALIBRACIÓN</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ border: '1px solid #0c2340', padding: '5px 8px', color: '#0c2340', textTransform: 'uppercase' }}>
+                          {patron.nombre || 'TERMOHIGROMETRO'}
+                        </td>
+                        <td style={{ border: '1px solid #0c2340', padding: '5px 8px', color: '#0c2340', textTransform: 'uppercase' }}>
+                          {patron.modelo || 'HTC-2'}
+                        </td>
+                        <td style={{ border: '1px solid #0c2340', padding: '5px 8px', color: '#0c2340', textTransform: 'uppercase' }}>
+                          {patron.serie || 'TER20230923423'}
+                        </td>
+                        <td style={{ border: '1px solid #0c2340', padding: '5px 8px', color: '#0c2340', textTransform: 'uppercase' }}>
+                          {patron.fechaCalibracion || patron.fechaVencimiento || '15 SEP 2025'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* INCERTIDUMBRE DE MEDICIÓN */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 10,
+                    }}
+                  >
+                    INCERTIDUMBRE DE MEDICIÓN / Measurement Uncertainty
+                  </div>
+                  <div style={{ fontSize: 11.2, color: '#0c2340', lineHeight: 1.5, marginBottom: 10 }}>
+                    La incertidumbre expandida de la medición se ha obtenido multiplicando la incertidumbre combinada por el factor de cobertura K=2, calculado conforme a los grados de libertad y el factor Student para una probabilidad de 95%.
+                  </div>
+                  <div style={{ fontSize: 11.2, color: '#0c2340', lineHeight: 1.5 }}>
+                    The measurement uncertainty estimated value was determinate for a confidence level of 95% with coverage factor k=2.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: 8, textAlign: 'right', fontSize: 11, fontWeight: 800, color: '#475569' }}>
+                Página 1 de 4
+              </div>
+            </div>
+
+            {/* Salto de Página */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ============================================================== */}
+            {/* HOJA 2: FIRMAS, MÉTODO Y NOTAS TERMOHIGRÓMETRO (PÁG 2 DE 4)    */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {/* Encabezado Hoja 2 */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 24,
+                  }}
+                >
+                  <div>
+                    <img
+                      src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
+                      alt="GEMTTO"
+                      style={{ maxHeight: 68, maxWidth: 220, objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0c2340' }}>
+                      CERTIFICADO DE CALIBRACIÓN Nº
+                    </div>
+                    <div style={{ fontSize: 13.5, fontWeight: 900, color: '#dc2626' }}>
+                      {numeroCertificado || 'CC-2026-12763'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Declaraciones Iniciales */}
+                <div style={{ fontSize: 11.2, color: '#0c2340', lineHeight: 1.55, marginBottom: 24 }}>
+                  <p style={{ margin: '0 0 12px 0' }}>
+                    Este certificado no podrá ser reproducido total o parcialmente excepto cuando se haya obtenido permiso por escrito del laboratorio. Los resultados contenidos en el presente certificado se refieren al momento y condiciones en que se realizaron las mediciones.
+                  </p>
+                  <p style={{ margin: '0 0 12px 0' }}>
+                    El laboratorio que lo emite no se responsabiliza de los perjuicios que puedan derivarse del uso inadecuado de los instrumentos calibrados.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    El usuario es responsable de la calibración de sus instrumentos a intervalos apropiados.
+                  </p>
+                </div>
+
+                {/* FIRMAS AUTORIZADAS */}
+                <div style={{ marginBottom: 26 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 18,
+                    }}
+                  >
+                    FIRMAS AUTORIZADAS / Autorized Signature
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'end', textAlign: 'center', padding: '10px 0' }}>
+                    <div>
+                      {calibro.firma ? (
+                        <img
+                          src={calibro.firma}
+                          alt="Firma Metrólogo"
+                          style={{ height: 58, maxWidth: 220, objectFit: 'contain', display: 'block', margin: '0 auto 6px auto' }}
+                        />
+                      ) : (
+                        <div style={{ height: 58 }} />
+                      )}
+                      <div style={{ fontSize: 11.8, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase' }}>
+                        {calibro.nombre || 'DIANA PAJARITO'}
+                      </div>
+                      <div style={{ fontSize: 11.2, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', marginTop: 2 }}>
+                        {calibro.cargo || 'METRÓLOGA BIOMÉDICO'}
+                      </div>
+                    </div>
+
+                    <div>
+                      {aprobo.firma ? (
+                        <img
+                          src={aprobo.firma}
+                          alt="Firma Director Técnico"
+                          style={{ height: 58, maxWidth: 220, objectFit: 'contain', display: 'block', margin: '0 auto 6px auto' }}
+                        />
+                      ) : (
+                        <div style={{ height: 58 }} />
+                      )}
+                      <div style={{ fontSize: 11.8, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase' }}>
+                        {aprobo.nombre || 'ING. FERNANDO CASTAÑEDA MERIÑO'}
+                      </div>
+                      <div style={{ fontSize: 11.2, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', marginTop: 2 }}>
+                        {aprobo.cargo || 'DIRECTOR TÉCNICO'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* MÉTODO DE CALIBRACIÓN */}
+                <div style={{ marginBottom: 22 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 10,
+                    }}
+                  >
+                    MÉTODO DE CALIBRACIÓN / Calibration Method
+                  </div>
+                  <div style={{ fontSize: 11.2, color: '#0c2340', lineHeight: 1.55 }}>
+                    Calibración realizada por método de comparación directa, este método se compara directa e instantáneamente los valores proporcionados por el equipo (Instrumento de medición o medida materializada) bajo calibración, contra los valores proporcionados por un patrón.
+                  </div>
+                </div>
+
+                {/* NOTAS */}
+                <div style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 10,
+                    }}
+                  >
+                    NOTAS / Notes
+                  </div>
+                  <div style={{ fontSize: 11.2, color: '#0c2340', lineHeight: 1.55 }}>
+                    <p style={{ margin: '0 0 12px 0' }}>
+                      ° {observaciones || 'Es responsabilidad del usuario establecer la fecha de una nueva calibración del instrumento. El tiempo de validez de los resultados contenidos en este certificado depende tanto de las características del instrumento calibrado como de las prácticas para su manejo y uso.'}
+                    </p>
+                    <p style={{ margin: '0 0 12px 0' }}>
+                      ° No es recomendable la reproducción parcial de este certificado, ya que puede dar lugar a interpretaciones equivocadas de sus resultados.
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      Partial reproduction may lead to misleading interpretations.
+                    </p>
+                  </div>
+                </div>
+
+                {/* RESULTADOS DE LA CALIBRACIÓN */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 12,
+                    }}
+                  >
+                    RESULTADOS DE LA CALIBRACIÓN / Calibration Results
+                  </div>
+                  <div style={{ fontSize: 11.2, color: '#0c2340', marginBottom: 16 }}>
+                    El valor corresponde al promedio de 5 mediciones en 5 puntos.
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11.8,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 4,
+                    }}
+                  >
+                    TEMPERATURA / Temperature
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: 8, textAlign: 'right', fontSize: 11, fontWeight: 800, color: '#475569' }}>
+                Página 2 de 4
+              </div>
+            </div>
+
+            {/* Salto de Página */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ============================================================== */}
+            {/* HOJA 3: TABLA Y GRÁFICA TEMPERATURA + TABLA HUMEDAD (PÁG 3/4)  */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {/* Encabezado Hoja 3 */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 14,
+                  }}
+                >
+                  <div>
+                    <img
+                      src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
+                      alt="GEMTTO"
+                      style={{ maxHeight: 64, maxWidth: 210, objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0c2340' }}>
+                      CERTIFICADO DE CALIBRACIÓN Nº
+                    </div>
+                    <div style={{ fontSize: 13.5, fontWeight: 900, color: '#dc2626' }}>
+                      {numeroCertificado || 'CC-2026-12763'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tabla de Temperatura */}
+                <table
+                  style={{
+                    width: '78%',
+                    margin: '0 auto 18px auto',
+                    borderCollapse: 'collapse',
+                    border: '1px solid #0c2340',
+                    fontSize: 11.2,
+                    textAlign: 'center',
+                  }}
+                >
+                  <thead>
+                    <tr style={{ background: '#0c2340', color: '#ffffff', fontWeight: 800 }}>
+                      <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '21%' }}>
+                        VALOR DE<br />REFERENCIA
+                      </th>
+                      <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '21%' }}>
+                        PROMEDIO
+                      </th>
+                      <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '16%' }}>
+                        ERROR
+                      </th>
+                      <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '18%' }}>
+                        CORRECCION
+                      </th>
+                      <th colSpan={2} style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '24%' }}>
+                        INCERTIDUMBRE
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {puntosTempDisplay.map((p, idx) => (
+                      <tr key={idx}>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155', fontWeight: 600 }}>
+                          {formatComma(p.valorReferencia)}
+                        </td>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                          {formatComma(p.promedio, 3)}
+                        </td>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                          {formatComma(p.error, 3)}
+                        </td>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                          {formatComma(p.correccion, 3)}
+                        </td>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 4px', width: 28, color: '#334155' }}>
+                          ±
+                        </td>
+                        <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                          {formatComma(p.incertidumbreExpandida)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* GRAFICO DE CALIBRACION TEMPERATURA */}
+                <div style={{ marginBottom: 18 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 14,
+                    }}
+                  >
+                    GRAFICO DE CALIBRACION / Chart
+                  </div>
+
+                  <div style={{ maxWidth: 520, margin: '0 auto 12px auto' }}>
+                    <CalibrationChart
+                      puntos={puntosTempDisplay}
+                      unidad="°C"
+                      tipoPlantilla="termohigrometro_temp"
+                      titulo="Curva de Calibración"
+                      width={500}
+                      height={240}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      maxWidth: 610,
+                      margin: '10px auto 0 auto',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: '#0c2340',
+                    }}
+                  >
+                    <div>
+                      <span>Símbolo de la unidad de medida</span>
+                      <span style={{ marginLeft: 18, color: '#0f172a', fontWeight: 900 }}>°C</span>
+                    </div>
+                    <div>
+                      <span>Error Máximo</span>
+                      <span style={{ marginLeft: 28, color: '#0f172a', fontWeight: 900 }}>
+                        {formatComma(errorMaximoTemp, 3)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* HUMEDAD */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      marginBottom: 8,
+                    }}
+                  >
+                    HUMEDAD / Humidity
+                  </div>
+
+                  <table
+                    style={{
+                      width: '82%',
+                      margin: '0 auto',
+                      borderCollapse: 'collapse',
+                      border: '1px solid #0c2340',
+                      fontSize: 11.2,
+                      textAlign: 'center',
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ background: '#0c2340', color: '#ffffff', fontWeight: 800 }}>
+                        <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '21%' }}>
+                          VALOR DE<br />REFERENCIA
+                        </th>
+                        <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '21%' }}>
+                          PROMEDIO
+                        </th>
+                        <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '16%' }}>
+                          ERROR
+                        </th>
+                        <th style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '18%' }}>
+                          CORRECCION
+                        </th>
+                        <th colSpan={2} style={{ border: '1px solid #0c2340', padding: '6px 8px', width: '24%' }}>
+                          INCERTIDUMBRE
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {puntosHumDisplay.map((p, idx) => (
+                        <tr key={idx}>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155', fontWeight: 600 }}>
+                            {formatComma(p.valorReferencia)}
+                          </td>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                            {formatComma(p.promedio, 3)}
+                          </td>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                            {formatComma(p.error, 3)}
+                          </td>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                            {formatComma(p.correccion, 3)}
+                          </td>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 4px', width: 28, color: '#334155' }}>
+                            ±
+                          </td>
+                          <td style={{ border: '1px dotted #475569', padding: '4.5px 8px', color: '#334155' }}>
+                            {formatComma(p.incertidumbreExpandida)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: 8, textAlign: 'right', fontSize: 11, fontWeight: 800, color: '#475569' }}>
+                Página 3 de 4
+              </div>
+            </div>
+
+            {/* Salto de Página */}
+            <div className="html2pdf__page-break" style={{ pageBreakAfter: 'always', breakAfter: 'page', height: 0, margin: 0 }} />
+
+            {/* ============================================================== */}
+            {/* HOJA 4: GRÁFICA HUMEDAD Y CIERRE DEL CERTIFICADO (PÁG 4 DE 4)  */}
+            {/* ============================================================== */}
+            <div className="certificado-hoja">
+              <div>
+                {/* Encabezado Hoja 4 */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 18,
+                  }}
+                >
+                  <div>
+                    <img
+                      src={process.env.PUBLIC_URL + '/img/logoGemtto.png'}
+                      alt="GEMTTO"
+                      style={{ maxHeight: 68, maxWidth: 220, objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: '#0c2340' }}>
+                      CERTIFICADO DE CALIBRACIÓN Nº
+                    </div>
+                    <div style={{ fontSize: 13.5, fontWeight: 900, color: '#dc2626' }}>
+                      {numeroCertificado || 'CC-2026-12763'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* GRAFICO DE CALIBRACION HUMEDAD */}
+                <div style={{ marginBottom: 30 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      borderBottom: '2.5px solid #0c2340',
+                      paddingBottom: 5,
+                      marginBottom: 18,
+                    }}
+                  >
+                    GRAFICO DE CALIBRACION / Chart
+                  </div>
+
+                  <div style={{ maxWidth: 520, margin: '0 auto 14px auto' }}>
+                    <CalibrationChart
+                      puntos={puntosHumDisplay}
+                      unidad="%"
+                      tipoPlantilla="termohigrometro_hum"
+                      titulo="Curva de Calibración"
+                      width={500}
+                      height={250}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      maxWidth: 610,
+                      margin: '14px auto 0 auto',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: '#0c2340',
+                    }}
+                  >
+                    <div>
+                      <span>Símbolo de la unidad de medida</span>
+                      <span style={{ marginLeft: 18, color: '#0f172a', fontWeight: 900 }}>%</span>
+                    </div>
+                    <div>
+                      <span>Error Máximo</span>
+                      <span style={{ marginLeft: 28, color: '#0f172a', fontWeight: 900 }}>
+                        {formatComma(errorMaximoHum, 3)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FIN DEL CERTIFICADO */}
+                <div style={{ textAlign: 'center', marginTop: 36 }}>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: '#0f172a', letterSpacing: 0.4 }}>
+                    FIN DEL CERTIFICADO
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#0c2340', marginTop: 2 }}>
+                    END OF CERTIFICATED
+                  </div>
+                </div>
+              </div>
+
+              {/* Pie de página Hoja 4 */}
+              <div
+                style={{
+                  marginTop: 'auto',
+                  paddingTop: 10,
+                  borderTop: '1.5px solid #0c2340',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: 11.5,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                }}
+              >
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  GEMTTO S.A.S. • Laboratorio de Metrología Biomédica • Certificado Nº {numeroCertificado}
+                </div>
+                <div style={{ fontSize: 11, color: '#475569' }}>Página 4 de 4</div>
+              </div>
             </div>
           </>
         ) : (
@@ -1686,18 +2535,6 @@ export default function CertificadoPdf() {
                           <td style={{ fontWeight: 800, padding: '5px 4px' }}>CIUDAD</td>
                           <td style={{ padding: '5px 4px', textTransform: 'uppercase' }}>
                             {datosCliente.ciudad || 'AGUSTIN CODAZZI'}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style={{ fontWeight: 800, padding: '5px 4px' }}>DEPARTAMENTO</td>
-                          <td style={{ padding: '5px 4px', textTransform: 'uppercase' }}>
-                            {datosCliente.departamento || 'CESAR'}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style={{ fontWeight: 800, padding: '5px 4px' }}>PAÍS</td>
-                          <td style={{ padding: '5px 4px', textTransform: 'uppercase' }}>
-                            {datosCliente.pais || 'COLOMBIA'}
                           </td>
                         </tr>
                         <tr>
@@ -1954,13 +2791,7 @@ export default function CertificadoPdf() {
                         style={{ height: 48, maxWidth: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }}
                       />
                     ) : (
-                      <div style={{ height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {calibro.codigo && (
-                          <span style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', letterSpacing: 1, border: '1px solid #cbd5e1', padding: '2px 10px', borderRadius: 4, background: '#f8fafc' }}>
-                            {calibro.codigo}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ height: 38 }} />
                     )}
                     <div style={{ fontSize: 11.5, fontWeight: 900, color: '#0f172a', marginTop: 2 }}>
                       {calibro.nombre || 'Albeiro Miranda'}

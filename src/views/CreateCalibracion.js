@@ -32,6 +32,7 @@ import {
   FaEraser,
   FaBalanceScale,
   FaFlask,
+  FaThermometerHalf,
 } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 
@@ -86,27 +87,37 @@ export default function CreateCalibracion() {
 
     const defaultNombre = tipo === 'masa_bascula'
       ? 'Báscula Pesa Persona Digital'
-      : (tipo === 'volumen_micropipeta' ? 'EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN' : 'Esfigmomanómetro Aneroide');
+      : tipo === 'volumen_micropipeta'
+      ? 'EQUIPO VOLUMÉTRICO ACCIONADO POR PISTÓN'
+      : tipo === 'termohigrometro'
+      ? 'TERMOHIGROMETRO CON SONDA'
+      : 'Esfigmomanómetro Aneroide';
 
-    const defaultUnidad = tipo === 'masa_bascula' ? 'kg' : (tipo === 'volumen_micropipeta' ? 'µl' : 'mmHg');
-    const defaultRes = tipo === 'masa_bascula' ? 0.1 : (tipo === 'volumen_micropipeta' ? 0.5 : 2);
+    const defaultUnidad = tipo === 'masa_bascula'
+      ? 'kg'
+      : tipo === 'volumen_micropipeta'
+      ? 'µl'
+      : tipo === 'termohigrometro'
+      ? '°C / %HR'
+      : 'mmHg';
+    const defaultRes = tipo === 'masa_bascula' ? 0.1 : tipo === 'volumen_micropipeta' ? 0.5 : tipo === 'termohigrometro' ? 0.1 : 2;
 
     return {
       nombre: eqName || defaultNombre,
       tipoInstrumento: 'VARIABLE',
-      marca: eqMarca || (tipo === 'volumen_micropipeta' ? 'BIOHIT' : 'No presenta'),
-      modelo: eqModelo || (tipo === 'volumen_micropipeta' ? '5-50 uL' : 'No presenta'),
-      serie: eqSerie || (tipo === 'volumen_micropipeta' ? '14578608' : 'No presenta'),
-      placaInventario: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : ''),
-      nroActivo: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : 'No presenta'),
+      marca: eqMarca || (tipo === 'volumen_micropipeta' ? 'BIOHIT' : tipo === 'termohigrometro' ? 'LWH' : 'No presenta'),
+      modelo: eqModelo || (tipo === 'volumen_micropipeta' ? '5-50 uL' : tipo === 'termohigrometro' ? 'HTC-2' : 'No presenta'),
+      serie: eqSerie || (tipo === 'volumen_micropipeta' ? '14578608' : tipo === 'termohigrometro' ? 'TER20260440' : 'No presenta'),
+      placaInventario: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : tipo === 'termohigrometro' ? 'NO APLICA' : ''),
+      nroActivo: eqPlaca || (tipo === 'volumen_micropipeta' ? 'NO REGISTRA' : tipo === 'termohigrometro' ? 'NO APLICA' : 'No presenta'),
       idGlobal: 'NO REGISTRA',
       intervaloMin: '5 µl',
       intervaloMax: '50 µl',
       baseAjuste: 'Ex',
       temperaturaRef: '20 °C',
       fechaRecepcion: new Date().toISOString().split('T')[0],
-      ubicacion: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : 'Sede Principal - Selección Donante'),
-      servicio: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : 'Selección Donante'),
+      ubicacion: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : tipo === 'termohigrometro' ? 'LABORATORIO' : 'Sede Principal - Selección Donante'),
+      servicio: eqServicio || eqUbicacion || (tipo === 'volumen_micropipeta' ? 'LABORATORIO CLINICO' : tipo === 'termohigrometro' ? 'LABORATORIO' : 'Selección Donante'),
       resolucion: defaultRes,
       unidad: defaultUnidad,
       divisionEscala: '0,1 kg',
@@ -139,8 +150,12 @@ export default function CreateCalibracion() {
     metodoCalibracion: 'Comparación directa',
     temperatura: 21.8,
     incertTemperatura: 0.6,
+    temperaturaMinima: 16,
+    temperaturaMaxima: 20,
     humedadRelativa: 58,
     incertHumedad: 0.5,
+    humedadMinima: 43,
+    humedadMaxima: 54,
     presionAtmosferica: 1013,
     incertPresion: 0.42,
     tipoPunta: 'GENERICA',
@@ -325,6 +340,30 @@ export default function CreateCalibracion() {
     },
   ]);
 
+  // 4. Datos específicos Termohigrómetro (Temperatura °C y Humedad Relativa %)
+  const [termohigrometroInfo, setTermohigrometroInfo] = useState({
+    tempMinima: 16,
+    tempMaxima: 20,
+    humedadMinima: 43,
+    humedadMaxima: 54,
+    versionFormato: '004',
+    fechaFormato: '18/09/2025',
+  });
+
+  const [puntosTemperatura, setPuntosTemperatura] = useState([
+    { valorReferencia: 16, promedio: 16.020, error: 0.020, correccion: -0.020, incertidumbreExpandida: 0.1055, factorK: 2 },
+    { valorReferencia: 20, promedio: 19.920, error: -0.080, correccion: 0.080, incertidumbreExpandida: 0.1643, factorK: 2 },
+    { valorReferencia: 30, promedio: 29.980, error: -0.020, correccion: 0.020, incertidumbreExpandida: 0.164, factorK: 2 },
+    { valorReferencia: 40, promedio: 39.980, error: -0.020, correccion: 0.020, incertidumbreExpandida: 0.110, factorK: 2 },
+  ]);
+
+  const [puntosHumedad, setPuntosHumedad] = useState([
+    { valorReferencia: 30, promedio: 29.400, error: -0.600, correccion: 0.600, incertidumbreExpandida: 1.3416, factorK: 2 },
+    { valorReferencia: 45, promedio: 44.800, error: -0.200, correccion: 0.200, incertidumbreExpandida: 1.0954, factorK: 2 },
+    { valorReferencia: 60, promedio: 60.400, error: 0.400, correccion: -0.400, incertidumbreExpandida: 1.342, factorK: 2 },
+    { valorReferencia: 75, promedio: 75.200, error: 0.200, correccion: -0.200, incertidumbreExpandida: 2.387, factorK: 2 },
+  ]);
+
   // Responsables y firmas
   const [calibro, setCalibro] = useState({
     codigo: 'TSC31',
@@ -345,12 +384,16 @@ export default function CreateCalibracion() {
     'El instrumento de pesar de funcionamiento no automático (IPFNA) fue calibrado en su lugar de uso (Taller Biomédico). Se verificó retorno a cero, nivelación mecánica y estabilidad de lectura. Se adhiere etiqueta metrológica de calibración indicando fecha y vigencia.';
   const OBS_MICROPIPETA =
     'El instrumento volumétrico accionado por pistón fue calibrado por el método gravimétrico según NTC-ISO 8655-6:2014 en condiciones ambientales controladas de laboratorio. Se verificó el correcto desplazamiento del émbolo, eyección de punta y ausencia de goteo en el cono portapuntas.';
+  const OBS_TERMOHIGROMETRO =
+    'Para los sensores de temperatura y humedad relativa, el procedimiento para la calibración está basado en un método de comparación directa, las mediciones son realizadas en cinco puntos diferentes de un medio de calibración en el cual también se realizan mediciones al IBC tanto en temperatura como en humedad relativa.';
 
   const [observaciones, setObservaciones] = useState(
     tipoPlantilla === 'masa_bascula'
       ? OBS_BASCULA
       : tipoPlantilla === 'volumen_micropipeta'
       ? OBS_MICROPIPETA
+      : tipoPlantilla === 'termohigrometro'
+      ? OBS_TERMOHIGROMETRO
       : OBS_TENSIOMETRO
   );
 
@@ -575,9 +618,60 @@ export default function CreateCalibracion() {
         !prev ||
         prev === OBS_TENSIOMETRO ||
         prev === OBS_BASCULA ||
+        prev === OBS_TERMOHIGROMETRO ||
         prev === 'NINGUNA' ||
         /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|ipfna/i.test(prev)
           ? OBS_MICROPIPETA
+          : prev
+      );
+    } else if (tipoPlantilla === 'termohigrometro') {
+      setProcedimiento(
+        'Para los sensores de temperatura y humedad relativa, el procedimiento para la calibración está basado en un método de comparación directa, las mediciones son realizadas en cinco puntos diferentes de un medio de calibración en el cual también se realizan mediciones al IBC tanto en temperatura como en humedad relativa.'
+      );
+      setDatosEquipo((prev) => ({
+        ...prev,
+        nombre:
+          prev.nombre &&
+          !prev.nombre.includes('Esfigmomanómetro') &&
+          !prev.nombre.includes('Báscula') &&
+          !prev.nombre.includes('VOLUMÉTRICO')
+            ? prev.nombre
+            : 'TERMOHIGROMETRO CON SONDA',
+        marca: prev.marca && prev.marca !== 'No presenta' && prev.marca !== 'seca' && prev.marca !== 'BIOHIT' ? prev.marca : 'LWH',
+        modelo: prev.modelo && prev.modelo !== 'No presenta' && prev.modelo !== '803' && prev.modelo !== '5-50 uL' ? prev.modelo : 'HTC-2',
+        serie: prev.serie && prev.serie !== 'No presenta' && prev.serie !== '8803325172348' && prev.serie !== '14578608' ? prev.serie : 'TER20260440',
+        nroActivo: prev.nroActivo && prev.nroActivo !== 'No presenta' && prev.nroActivo !== 'ATCI003859' ? prev.nroActivo : 'NO APLICA',
+        placaInventario: prev.placaInventario || 'NO APLICA',
+        ubicacion: prev.ubicacion && !prev.ubicacion.includes('Selección Donante') ? prev.ubicacion : 'LABORATORIO',
+        servicio: prev.servicio && !prev.servicio.includes('Selección Donante') ? prev.servicio : 'LABORATORIO',
+        unidad: '°C / %HR',
+        resolucion: 0.1,
+      }));
+      setDatosPatron((prev) => ({
+        ...prev,
+        nombre: prev.nombre && prev.nombre !== 'Módulo de Presión' ? prev.nombre : 'TERMOHIGROMETRO',
+        marca: prev.marca && prev.marca !== 'FLUKE' ? prev.marca : 'LWH',
+        modelo: prev.modelo && prev.modelo !== '2700G-BG100K' ? prev.modelo : 'HTC-2',
+        serie: prev.serie && prev.serie !== '4023109' ? prev.serie : 'TER20230923423',
+        fechaCalibracion: prev.fechaCalibracion && prev.fechaCalibracion !== '2025-05-12' ? prev.fechaCalibracion : '2025-09-15',
+      }));
+      setCondiciones((prev) => ({
+        ...prev,
+        lugarCalibracion: 'LABORATORIO',
+        metodoCalibracion: 'Comparación directa',
+        temperaturaMinima: prev.temperaturaMinima ?? 16,
+        temperaturaMaxima: prev.temperaturaMaxima ?? 20,
+        humedadMinima: prev.humedadMinima ?? 43,
+        humedadMaxima: prev.humedadMaxima ?? 54,
+      }));
+      setObservaciones((prev) =>
+        !prev ||
+        prev === OBS_TENSIOMETRO ||
+        prev === OBS_BASCULA ||
+        prev === OBS_MICROPIPETA ||
+        prev === 'NINGUNA' ||
+        /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|ipfna|gravim/i.test(prev)
+          ? OBS_TERMOHIGROMETRO
           : prev
       );
     }
@@ -831,20 +925,71 @@ export default function CreateCalibracion() {
         },
         puntos: puntosParaGuardar,
       };
+    } else if (tipoPlantilla === 'termohigrometro') {
+      const pTemp = puntosTemperatura.map((p, idx) => {
+        const ref = Number(p.valorReferencia ?? p.valorPatron ?? 0);
+        const prom = Number(p.promedio ?? ref);
+        const err = p.error !== undefined && p.error !== '' ? Number(p.error) : Number((prom - ref).toFixed(3));
+        const corr = p.correccion !== undefined && p.correccion !== '' ? Number(p.correccion) : Number((-err).toFixed(3));
+        const inc = Number(p.incertidumbreExpandida ?? 0.1055);
+        return {
+          puntoNumero: idx + 1,
+          magnitud: 'temperatura',
+          valorNominal: ref,
+          valorPatron: ref,
+          valorReferencia: ref,
+          promedio: prom,
+          error: err,
+          correccion: corr,
+          incertidumbreExpandida: inc,
+          factorK: Number(p.factorK ?? 2),
+          cumple: true,
+        };
+      });
+      const pHum = puntosHumedad.map((p, idx) => {
+        const ref = Number(p.valorReferencia ?? p.valorPatron ?? 0);
+        const prom = Number(p.promedio ?? ref);
+        const err = p.error !== undefined && p.error !== '' ? Number(p.error) : Number((prom - ref).toFixed(3));
+        const corr = p.correccion !== undefined && p.correccion !== '' ? Number(p.correccion) : Number((-err).toFixed(3));
+        const inc = Number(p.incertidumbreExpandida ?? 1.3416);
+        return {
+          puntoNumero: idx + 1,
+          magnitud: 'humedad',
+          valorNominal: ref,
+          valorPatron: ref,
+          valorReferencia: ref,
+          promedio: prom,
+          error: err,
+          correccion: corr,
+          incertidumbreExpandida: inc,
+          factorK: Number(p.factorK ?? 2),
+          cumple: true,
+        };
+      });
+      puntosParaGuardar = [...pTemp, ...pHum];
+      datosCalibracion = {
+        termohigrometroInfo: {
+          ...termohigrometroInfo,
+          tempMinima: condiciones.temperaturaMinima ?? termohigrometroInfo.tempMinima ?? 16,
+          tempMaxima: condiciones.temperaturaMaxima ?? termohigrometroInfo.tempMaxima ?? 20,
+          humedadMinima: condiciones.humedadMinima ?? termohigrometroInfo.humedadMinima ?? 43,
+          humedadMaxima: condiciones.humedadMaxima ?? termohigrometroInfo.humedadMaxima ?? 54,
+        },
+        puntosTemperatura: pTemp,
+        puntosHumedad: pHum,
+        puntos: puntosParaGuardar,
+      };
     }
 
     const payload = {
       numeroCertificado: consecutivo,
       fechaCalibracion,
       fechaEmision,
-      fechaProximaCalibracion: tipoPlantilla === 'presion_tensiometro' ? '' : fechaProximaCalibracion,
+      fechaProximaCalibracion: '',
       equipoId: null,
       ipsId: null,
       datosEquipo,
-      datosCliente:
-        tipoPlantilla === 'presion_tensiometro'
-          ? { ...datosCliente, sede: '', departamento: '', pais: '' }
-          : datosCliente,
+      datosCliente: { ...datosCliente, sede: '', departamento: '', pais: '' },
       tipoPlantilla,
       condicionesAmbientales: condiciones,
       patron: {
@@ -858,7 +1003,7 @@ export default function CreateCalibracion() {
       observaciones: obtenerObservacionesPorPlantilla(tipoPlantilla, observaciones),
       calibro: {
         ...calibro,
-        codigo: tipoPlantilla === 'presion_tensiometro' ? '' : calibro.codigo,
+        codigo: '',
         firma: firmaCalibro,
       },
       aprobo: {
@@ -1043,6 +1188,32 @@ export default function CreateCalibracion() {
                 </div>
               </div>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setTipoPlantilla('termohigrometro')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '14px 16px',
+                borderRadius: 10,
+                border: tipoPlantilla === 'termohigrometro' ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                background: tipoPlantilla === 'termohigrometro' ? '#f0f9ff' : '#ffffff',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <FaThermometerHalf size={26} color={tipoPlantilla === 'termohigrometro' ? '#0284c7' : '#64748b'} />
+              <div>
+                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 14 }}>
+                  Termohigrómetros (Temp. y HR)
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  Temperatura (°C) y Humedad Relativa (%) • Comparación directa
+                </div>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -1081,21 +1252,6 @@ export default function CreateCalibracion() {
                 />
               </div>
 
-              {tipoPlantilla !== 'presion_tensiometro' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                    Sede / Área
-                  </label>
-                  <input
-                    type="text"
-                    value={datosCliente.sede}
-                    onChange={(e) => setDatosCliente({ ...datosCliente, sede: e.target.value })}
-                    placeholder="Ej: Sede Principal / Sede Norte"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-              )}
-
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
                   NIT / Identificación
@@ -1121,36 +1277,6 @@ export default function CreateCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
-
-              {tipoPlantilla !== 'presion_tensiometro' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                    Departamento
-                  </label>
-                  <input
-                    type="text"
-                    value={datosCliente.departamento || ''}
-                    onChange={(e) => setDatosCliente({ ...datosCliente, departamento: e.target.value })}
-                    placeholder="Ej: CESAR / ATLÁNTICO"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-              )}
-
-              {tipoPlantilla !== 'presion_tensiometro' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                    País
-                  </label>
-                  <input
-                    type="text"
-                    value={datosCliente.pais || 'COLOMBIA'}
-                    onChange={(e) => setDatosCliente({ ...datosCliente, pais: e.target.value })}
-                    placeholder="Ej: COLOMBIA"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
@@ -1198,7 +1324,7 @@ export default function CreateCalibracion() {
                     setDatosEquipo({ ...datosEquipo, nombre: nuevoNombre });
                     const meta = detectarTipoPlantillaCalibracion(nuevoNombre);
                     if (
-                      (meta.tipo === 'masa_bascula' || meta.tipo === 'volumen_micropipeta') &&
+                      (meta.tipo === 'masa_bascula' || meta.tipo === 'volumen_micropipeta' || meta.tipo === 'termohigrometro') &&
                       meta.tipo !== tipoPlantilla
                     ) {
                       setTipoPlantilla(meta.tipo);
@@ -1481,20 +1607,6 @@ export default function CreateCalibracion() {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                 />
               </div>
-
-              {tipoPlantilla !== 'presion_tensiometro' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
-                    Próxima Calibración
-                  </label>
-                  <input
-                    type="date"
-                    value={fechaProximaCalibracion}
-                    onChange={(e) => setFechaProximaCalibracion(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -2049,6 +2161,78 @@ export default function CreateCalibracion() {
                       value={condiciones.liquidoEnsayo || 'Agua grado 3'}
                       onChange={(e) => setCondiciones({ ...condiciones, liquidoEnsayo: e.target.value })}
                       placeholder="Ej: Agua grado 3"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {tipoPlantilla === 'termohigrometro' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Temperatura Mínima (°C)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={condiciones.temperaturaMinima ?? 16}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCondiciones({ ...condiciones, temperaturaMinima: val });
+                        setTermohigrometroInfo((prev) => ({ ...prev, tempMinima: val }));
+                      }}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Temperatura Máxima (°C)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={condiciones.temperaturaMaxima ?? 20}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCondiciones({ ...condiciones, temperaturaMaxima: val });
+                        setTermohigrometroInfo((prev) => ({ ...prev, tempMaxima: val }));
+                      }}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Humedad Rel. Mínima (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={condiciones.humedadMinima ?? 43}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCondiciones({ ...condiciones, humedadMinima: val });
+                        setTermohigrometroInfo((prev) => ({ ...prev, humedadMinima: val }));
+                      }}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                      Humedad Rel. Máxima (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={condiciones.humedadMaxima ?? 54}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCondiciones({ ...condiciones, humedadMaxima: val });
+                        setTermohigrometroInfo((prev) => ({ ...prev, humedadMaxima: val }));
+                      }}
                       style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
                     />
                   </div>
@@ -3053,6 +3237,369 @@ export default function CreateCalibracion() {
           </div>
         )}
 
+        {/* ===================== PLANTILLA 4: TERMOHIGRÓMETROS (TEMPERATURA Y HUMEDAD RELATIVA) ===================== */}
+        {tipoPlantilla === 'termohigrometro' && (
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 12,
+              border: '1px solid #e2e8f0',
+              padding: 20,
+              marginBottom: 20,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+            }}
+          >
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                3. RESULTADOS DE LA CALIBRACIÓN — TERMOHIGRÓMETRO (TEMPERATURA °C Y HUMEDAD RELATIVA %)
+              </h3>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+                Al modificar el Valor de Referencia o el Promedio se calculan automáticamente el Error y la Corrección (también editables manualmente).
+              </p>
+            </div>
+
+            {/* BLOQUE A: TEMPERATURA (°C) */}
+            <div style={{ marginBottom: 28, border: '1px solid #e2e8f0', borderRadius: 10, padding: 16, background: '#f8fafc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#0369a1' }}>
+                  A. TEMPERATURA / Temperature (°C)
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPuntosTemperatura((prev) => [
+                      ...prev,
+                      {
+                        valorReferencia: prev.length > 0 ? Number(prev[prev.length - 1].valorReferencia) + 10 : 25,
+                        promedio: prev.length > 0 ? Number(prev[prev.length - 1].valorReferencia) + 10 : 25,
+                        error: 0.0,
+                        correccion: 0.0,
+                        incertidumbreExpandida: 0.110,
+                        factorK: 2,
+                      },
+                    ])
+                  }
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPlus size={10} /> + Añadir Punto Temperatura
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center', background: '#ffffff' }}>
+                  <thead>
+                    <tr style={{ background: '#cbd5e1', borderBottom: '2px solid #94a3b8', color: '#0f172a' }}>
+                      <th style={{ padding: '8px 6px' }}>#</th>
+                      <th style={{ padding: '8px 8px' }}>Valor de Referencia (°C)</th>
+                      <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Promedio (°C)</th>
+                      <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Error (°C)</th>
+                      <th style={{ padding: '8px 8px' }}>Corrección (°C)</th>
+                      <th style={{ padding: '8px 8px', background: '#fef3c7' }}>Incertidumbre (± °C)</th>
+                      <th style={{ padding: '8px 6px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {puntosTemperatura.map((p, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '6px', fontWeight: 700 }}>{idx + 1}</td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.valorReferencia}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosTemperatura((prev) => {
+                                const n = [...prev];
+                                const prom = Number(n[idx].promedio ?? val);
+                                const err = Number((prom - val).toFixed(3));
+                                n[idx] = { ...n[idx], valorReferencia: val, error: err, correccion: Number((-err).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 700 }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.promedio}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosTemperatura((prev) => {
+                                const n = [...prev];
+                                const ref = Number(n[idx].valorReferencia ?? 0);
+                                const err = Number((val - ref).toFixed(3));
+                                n[idx] = { ...n[idx], promedio: val, error: err, correccion: Number((-err).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 95, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #93c5fd', fontWeight: 700, color: '#0369a1' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.error}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosTemperatura((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], error: val, correccion: Number((-val).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #93c5fd', fontWeight: 700, color: '#dc2626' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.correccion}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosTemperatura((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], correccion: val };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 700 }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#fffbeb' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.incertidumbreExpandida}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosTemperatura((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], incertidumbreExpandida: val };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 95, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #fcd34d', fontWeight: 700, color: '#b45309' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px' }}>
+                          {puntosTemperatura.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setPuntosTemperatura((prev) => prev.filter((_, i) => i !== idx))}
+                              style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                              title="Eliminar punto"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <CalibrationChart
+                puntos={puntosTemperatura.map((p) => ({
+                  ...p,
+                  valorNominal: p.valorReferencia,
+                  valorPatron: p.valorReferencia,
+                }))}
+                unidad="°C"
+                tipoPlantilla="termohigrometro_temp"
+                titulo="Curva de Calibración"
+              />
+            </div>
+
+            {/* BLOQUE B: HUMEDAD RELATIVA (%) */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 16, background: '#f8fafc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#0369a1' }}>
+                  B. HUMEDAD / Humidity (% HR)
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPuntosHumedad((prev) => [
+                      ...prev,
+                      {
+                        valorReferencia: prev.length > 0 ? Number(prev[prev.length - 1].valorReferencia) + 15 : 50,
+                        promedio: prev.length > 0 ? Number(prev[prev.length - 1].valorReferencia) + 15 : 50,
+                        error: 0.0,
+                        correccion: 0.0,
+                        incertidumbreExpandida: 1.342,
+                        factorK: 2,
+                      },
+                    ])
+                  }
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPlus size={10} /> + Añadir Punto Humedad
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, textAlign: 'center', background: '#ffffff' }}>
+                  <thead>
+                    <tr style={{ background: '#cbd5e1', borderBottom: '2px solid #94a3b8', color: '#0f172a' }}>
+                      <th style={{ padding: '8px 6px' }}>#</th>
+                      <th style={{ padding: '8px 8px' }}>Valor de Referencia (%)</th>
+                      <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Promedio (%)</th>
+                      <th style={{ padding: '8px 8px', background: '#e0f2fe' }}>Error (%)</th>
+                      <th style={{ padding: '8px 8px' }}>Corrección (%)</th>
+                      <th style={{ padding: '8px 8px', background: '#fef3c7' }}>Incertidumbre (± %)</th>
+                      <th style={{ padding: '8px 6px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {puntosHumedad.map((p, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '6px', fontWeight: 700 }}>{idx + 1}</td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.valorReferencia}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosHumedad((prev) => {
+                                const n = [...prev];
+                                const prom = Number(n[idx].promedio ?? val);
+                                const err = Number((prom - val).toFixed(3));
+                                n[idx] = { ...n[idx], valorReferencia: val, error: err, correccion: Number((-err).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 700 }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.promedio}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosHumedad((prev) => {
+                                const n = [...prev];
+                                const ref = Number(n[idx].valorReferencia ?? 0);
+                                const err = Number((val - ref).toFixed(3));
+                                n[idx] = { ...n[idx], promedio: val, error: err, correccion: Number((-err).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 95, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #93c5fd', fontWeight: 700, color: '#0369a1' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#f0f9ff' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.error}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosHumedad((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], error: val, correccion: Number((-val).toFixed(3)) };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #93c5fd', fontWeight: 700, color: '#dc2626' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.correccion}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosHumedad((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], correccion: val };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 90, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 700 }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 8px', background: '#fffbeb' }}>
+                          <input
+                            type="number"
+                            step="any"
+                            value={p.incertidumbreExpandida}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setPuntosHumedad((prev) => {
+                                const n = [...prev];
+                                n[idx] = { ...n[idx], incertidumbreExpandida: val };
+                                return n;
+                              });
+                            }}
+                            style={{ width: 95, padding: '5px 6px', textAlign: 'center', borderRadius: 4, border: '1px solid #fcd34d', fontWeight: 700, color: '#b45309' }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px' }}>
+                          {puntosHumedad.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setPuntosHumedad((prev) => prev.filter((_, i) => i !== idx))}
+                              style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                              title="Eliminar punto"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <CalibrationChart
+                puntos={puntosHumedad.map((p) => ({
+                  ...p,
+                  valorNominal: p.valorReferencia,
+                  valorPatron: p.valorReferencia,
+                }))}
+                unidad="%"
+                tipoPlantilla="termohigrometro_hum"
+                titulo="Curva de Calibración"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Sección 4: Dictamen Global, Observaciones y Firmas */}
         <div
           style={{
@@ -3144,25 +3691,6 @@ export default function CreateCalibracion() {
                     fontWeight: 600,
                   }}
                 />
-                {tipoPlantilla !== 'presion_tensiometro' && (
-                  <>
-                    <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
-                      Código de Técnico Ejecutor (Opcional, Ej: TSC31 / ISC24)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
-                      value={calibro.codigo}
-                      onChange={(e) => setCalibro({ ...calibro, codigo: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '6px 8px',
-                        borderRadius: 4,
-                        border: '1px solid #cbd5e1',
-                      }}
-                    />
-                  </>
-                )}
               </div>
 
               <div style={{ border: '1px dashed #cbd5e1', borderRadius: 6, background: '#ffffff', height: 110 }}>

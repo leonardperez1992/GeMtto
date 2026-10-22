@@ -100,6 +100,8 @@ export default function Calibraciones() {
         return { label: 'Báscula / Masa', bg: '#fef3c7', color: '#b45309' };
       case 'volumen_micropipeta':
         return { label: 'Micropipeta / Volumen', bg: '#f3e8ff', color: '#7e22ce' };
+      case 'termohigrometro':
+        return { label: 'Termohigrómetro / Temp. y HR', bg: '#d1fae5', color: '#047857' };
       default:
         return { label: tipo, bg: '#f1f5f9', color: '#475569' };
     }
@@ -313,6 +315,7 @@ export default function Calibraciones() {
             <option value="presion_tensiometro">Tensiómetro / Presión</option>
             <option value="masa_bascula">Báscula / Masa</option>
             <option value="volumen_micropipeta">Micropipeta / Volumen</option>
+            <option value="termohigrometro">Termohigrómetro / Temp. y HR</option>
           </select>
         </div>
 
@@ -415,18 +418,14 @@ export default function Calibraciones() {
                         {cert.datosCliente?.nombre || 'IPS'}
                       </div>
                       <div style={{ fontSize: 11.5, color: '#64748b' }}>
-                        {tipoPlantillaCert === 'presion_tensiometro'
-                          ? cert.datosEquipo?.ubicacion
-                          : cert.datosCliente?.sede || cert.datosEquipo?.ubicacion}
+                        {cert.datosEquipo?.ubicacion}
                       </div>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       {getDictamenBadge(cert.dictamenGlobal)}
                     </td>
                     <td style={{ padding: '12px 16px', color: '#475569', fontSize: 12.5 }}>
-                      {tipoPlantillaCert === 'presion_tensiometro'
-                        ? 'N/A'
-                        : cert.fechaProximaCalibracion || 'N/A'}
+                      N/A
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: 6 }}>

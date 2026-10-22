@@ -467,6 +467,22 @@ export const detectarTipoPlantillaCalibracion = (nombreEquipo) => {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+  // 0. Termohigrómetros / Termómetros / Higrómetros
+  if (
+    norm.includes('termohigrometro') ||
+    norm.includes('termometro') ||
+    norm.includes('higrometro') ||
+    norm.includes('datalogger') ||
+    norm.includes('temperatura')
+  ) {
+    return {
+      tipo: 'termohigrometro',
+      etiqueta: 'Termohigrómetro / Temp. y HR',
+      badgeColor: '#047857',
+      badgeBg: '#d1fae5',
+    };
+  }
+
   // 1. Micropipetas / Pipetas / Aparatos volumétricos accionados por pistón
   if (
     norm.includes('micropipeta') ||
@@ -540,6 +556,19 @@ export const resolverTipoPlantillaCertificado = (certificado = {}) => {
   const procedimiento = String(certificado?.procedimiento || '').toLowerCase();
 
   if (
+    nombre.includes('termohigrometro') ||
+    nombre.includes('termometro') ||
+    nombre.includes('higrometro') ||
+    nombre.includes('datalogger') ||
+    unidad.includes('°c') ||
+    certificado?.tipoPlantilla === 'termohigrometro' ||
+    (Array.isArray(certificado?.datosCalibracion?.puntosTemperatura) &&
+      certificado.datosCalibracion.puntosTemperatura.length > 0)
+  ) {
+    return 'termohigrometro';
+  }
+
+  if (
     nombre.includes('micropipeta') ||
     nombre.includes('pipeta') ||
     nombre.includes('dispensador') ||
@@ -586,6 +615,9 @@ export const OBS_DEFAULT_BASCULA =
 
 export const OBS_DEFAULT_MICROPIPETA = 'NO HAY OBSERVACIONES.';
 
+export const OBS_DEFAULT_TERMOHIGROMETRO =
+  'Es responsabilidad del usuario establecer la fecha de una nueva calibración del instrumento. El tiempo de validez de los resultados contenidos en este certificado depende tanto de las características del instrumento calibrado como de las prácticas para su manejo y uso.';
+
 export const contieneTextoFugaTensiometro = (texto = '') =>
   /fuga|oiml\s*148|mmhg|sphygmomanometer|esfigmoman|hermeticidad|brazalete|neumatic/i.test(
     String(texto || '')
@@ -593,6 +625,12 @@ export const contieneTextoFugaTensiometro = (texto = '') =>
 
 export const obtenerObservacionesPorPlantilla = (tipoPlantilla, observacionesActuales = '') => {
   const obs = String(observacionesActuales || '').trim();
+  if (tipoPlantilla === 'termohigrometro') {
+    if (!obs || contieneTextoFugaTensiometro(obs) || /ipfna|8655|portapuntas|pist[oó]n/i.test(obs) || obs === 'NO HAY OBSERVACIONES.' || obs === 'NINGUNA') {
+      return OBS_DEFAULT_TERMOHIGROMETRO;
+    }
+    return obs;
+  }
   if (tipoPlantilla === 'masa_bascula') {
     if (!obs || contieneTextoFugaTensiometro(obs) || /8655|portapuntas|pist[oó]n/i.test(obs) || obs === 'NO HAY OBSERVACIONES.' || obs === 'NINGUNA') {
       return OBS_DEFAULT_BASCULA;

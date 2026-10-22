@@ -833,13 +833,7 @@ export default function CertificadoPdf() {
                         style={{ height: 60, maxWidth: 220, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {calibro.codigo && (
-                          <span style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '4px 14px', borderRadius: 4, background: '#f8fafc' }}>
-                            {calibro.codigo}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ height: 60 }} />
                     )}
                     <div style={{ fontWeight: 900, fontSize: 13.5, color: '#0f172a', marginTop: 6 }}>
                       {calibro.nombre || 'Ing. Metrólogo Biomédico'}
@@ -847,11 +841,6 @@ export default function CertificadoPdf() {
                     <div style={{ fontSize: 11.5, color: '#0284c7', fontWeight: 800 }}>
                       {calibro.cargo || 'Metrólogo Responsable'}
                     </div>
-                    {calibro.codigo && calibro.firma && (
-                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2, fontWeight: 700 }}>
-                        Código Técnico: {calibro.codigo}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -967,13 +956,7 @@ export default function CertificadoPdf() {
                         style={{ height: 50, maxWidth: 200, objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {calibro.codigo && (
-                          <span style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', letterSpacing: 1.5, border: '1.5px solid #cbd5e1', padding: '3px 12px', borderRadius: 4, background: '#f8fafc' }}>
-                            {calibro.codigo}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ height: 50 }} />
                     )}
                     <div style={{ fontWeight: 900, fontSize: 12.5, color: '#0f172a', marginTop: 4 }}>
                       {calibro.nombre || 'Ing. Metrólogo Biomédico'}

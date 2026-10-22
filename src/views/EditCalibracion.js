@@ -672,6 +672,7 @@ export default function EditCalibracion() {
       observaciones,
       calibro: {
         ...calibro,
+        codigo: tipoPlantilla === 'presion_tensiometro' ? '' : calibro.codigo,
         firma: firmaCalibroFinal,
       },
       aprobo: {
@@ -2624,21 +2625,25 @@ export default function EditCalibracion() {
                     fontWeight: 600,
                   }}
                 />
-                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
-                  Código de Técnico Ejecutor (Opcional, Ej: TSC31 / ISC24)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
-                  value={calibro.codigo || ''}
-                  onChange={(e) => setCalibro({ ...calibro, codigo: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    borderRadius: 4,
-                    border: '1px solid #cbd5e1',
-                  }}
-                />
+                {tipoPlantilla !== 'presion_tensiometro' && (
+                  <>
+                    <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
+                      Código de Técnico Ejecutor (Opcional, Ej: TSC31 / ISC24)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Código de Técnico Ejecutor (Ej: TSC31)"
+                      value={calibro.codigo || ''}
+                      onChange={(e) => setCalibro({ ...calibro, codigo: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        borderRadius: 4,
+                        border: '1px solid #cbd5e1',
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               {calibro.firma ? (

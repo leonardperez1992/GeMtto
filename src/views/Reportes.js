@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { apiReportes, apiIps } from '../utils/api';
@@ -14,6 +14,9 @@ import {
   FaTools,
   FaWrench,
   FaFilter,
+  FaPrint,
+  FaCheckSquare,
+  FaTimes,
 } from 'react-icons/fa';
 import { GoSearch, GoEye } from 'react-icons/go';
 import { CiEdit } from 'react-icons/ci';
@@ -35,6 +38,7 @@ const matchesInstitucion = (eqInst, targetInst) => {
 };
 
 function Reportes() {
+  const navigate = useNavigate();
   const reduxUser = useSelector((state) => state.user);
   const isNonAdmin = Boolean(reduxUser && reduxUser.rol !== 'admin');
   const userInstitucion = (reduxUser?.institucion || '').trim();
@@ -47,6 +51,7 @@ function Reportes() {
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncingFull, setIsSyncingFull] = useState(false);
+  const [selectedReportes, setSelectedReportes] = useState([]);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -240,6 +245,43 @@ function Reportes() {
     return filteredReportes.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredReportes, currentPage, itemsPerPage]);
 
+  const isPageAllSelected = useMemo(() => {
+    if (paginatedReportes.length === 0) return false;
+    return paginatedReportes.every((item) => selectedReportes.includes(item._id));
+  }, [paginatedReportes, selectedReportes]);
+
+  const toggleSelectReporte = (id) => {
+    setSelectedReportes((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectPage = () => {
+    const pageIds = paginatedReportes.map((item) => item._id);
+    if (isPageAllSelected) {
+      setSelectedReportes((prev) => prev.filter((id) => !pageIds.includes(id)));
+    } else {
+      setSelectedReportes((prev) => Array.from(new Set([...prev, ...pageIds])));
+    }
+  };
+
+  const selectAllFiltered = () => {
+    const allIds = filteredReportes.map((item) => item._id);
+    setSelectedReportes(allIds);
+  };
+
+  const handlePrintSelected = () => {
+    if (selectedReportes.length === 0) {
+      alert('Por favor seleccione al menos un reporte para imprimir.');
+      return;
+    }
+    if (selectedReportes.length === 1) {
+      navigate(`/reporte?id=${selectedReportes[0]}`);
+    } else {
+      navigate(`/reporte?ids=${selectedReportes.join(',')}`);
+    }
+  };
+
   const renderBadgeTipo = (tipo) => {
     const t = String(tipo || '').toUpperCase();
     if (t.includes('PREVENTIVO')) {
@@ -428,6 +470,29 @@ function Reportes() {
             >
               <FaFileSignature size={14} color="#38bdf8" /> Firmar Masivos
             </Link>
+
+            {selectedReportes.length > 0 && (
+              <button
+                type="button"
+                onClick={handlePrintSelected}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: '#047857',
+                  color: '#ffffff',
+                  padding: '10px 18px',
+                  borderRadius: '8px',
+                  fontWeight: '800',
+                  fontSize: '13.5px',
+                  border: '1px solid #10b981',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                }}
+              >
+                <FaPrint size={14} /> Imprimir Seleccionados ({selectedReportes.length})
+              </button>
+            )}
           </div>
         </div>
 
@@ -583,7 +648,7 @@ function Reportes() {
           </div>
         </div>
 
-        {/* Info contador de reportes filtrados */}
+        {/* Info contador de reportes filtrados y barra de selección múltiple */}
         {!loading && (
           <div
             style={{
@@ -594,30 +659,138 @@ function Reportes() {
               fontSize: '13px',
               color: '#94a3b8',
               flexWrap: 'wrap',
-              gap: '8px',
+              gap: '10px',
             }}
           >
-            <span>
-              Mostrando <strong style={{ color: '#38bdf8' }}>{paginatedReportes.length}</strong> de{' '}
-              <strong style={{ color: '#f8fafc' }}>{filteredReportes.length}</strong> reportes
-              {filteredReportes.length !== reportes.length && (
-                <span> (filtrados de un total de {reportes.length})</span>
-              )}
-            </span>
-            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
-              <span
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <span>
+                Mostrando <strong style={{ color: '#38bdf8' }}>{paginatedReportes.length}</strong> de{' '}
+                <strong style={{ color: '#f8fafc' }}>{filteredReportes.length}</strong> reportes
+                {filteredReportes.length !== reportes.length && (
+                  <span> (filtrados de un total de {reportes.length})</span>
+                )}
+              </span>
+
+              <button
+                type="button"
+                onClick={toggleSelectPage}
                 style={{
-                  backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: '#1e293b',
                   color: '#38bdf8',
-                  padding: '3px 10px',
-                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
                 }}
               >
-                Filtros activos aplicados
-              </span>
-            )}
+                <FaCheckSquare size={12} />{' '}
+                {isPageAllSelected
+                  ? 'Deseleccionar página actual'
+                  : `Seleccionar página (${paginatedReportes.length})`}
+              </button>
+
+              {filteredReportes.length > paginatedReportes.length &&
+                selectedReportes.length < filteredReportes.length && (
+                  <button
+                    type="button"
+                    onClick={selectAllFiltered}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: '#1e293b',
+                      color: '#cbd5e1',
+                      border: '1px solid #334155',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Seleccionar todos los filtrados ({filteredReportes.length})
+                  </button>
+                )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {selectedReportes.length > 0 && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.14)',
+                    border: '1px solid rgba(16, 185, 129, 0.45)',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <span style={{ color: '#6ee7b7', fontWeight: '700', fontSize: '12.5px' }}>
+                    ✓ {selectedReportes.length} seleccionado(s)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handlePrintSelected}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      backgroundColor: '#059669',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <FaPrint size={11} /> Imprimir / PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReportes([])}
+                    title="Limpiar selección"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      backgroundColor: 'transparent',
+                      color: '#fca5a5',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <FaTimes size={10} /> Limpiar
+                  </button>
+                </div>
+              )}
+
+              {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
+                <span
+                  style={{
+                    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                    color: '#38bdf8',
+                    padding: '3px 10px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                  }}
+                >
+                  Filtros activos aplicados
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -632,6 +805,15 @@ function Reportes() {
               <table className="tabla-reportes" style={{ margin: 0, width: '100%' }}>
                 <thead>
                   <tr>
+                    <th style={{ width: '42px', textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={isPageAllSelected}
+                        onChange={toggleSelectPage}
+                        title="Seleccionar o deseleccionar todos los reportes de esta página"
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0284c7' }}
+                      />
+                    </th>
                     <th style={{ width: '85px' }}>Nº REPORTE</th>
                     <th>TIPO SERVICIO</th>
                     <th style={{ width: '90px' }}>FECHA</th>
@@ -647,14 +829,30 @@ function Reportes() {
                 <tbody>
                   {paginatedReportes.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      <td colSpan="11" style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
                         No se encontraron reportes.
                       </td>
                     </tr>
                   ) : (
                     paginatedReportes.map(function (item) {
+                      const isSelected = selectedReportes.includes(item._id);
                       return (
-                        <tr key={item._id}>
+                        <tr
+                          key={item._id}
+                          style={
+                            isSelected
+                              ? { backgroundColor: 'rgba(56, 189, 248, 0.12)' }
+                              : undefined
+                          }
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectReporte(item._id)}
+                              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0284c7' }}
+                            />
+                          </td>
                           <td>
                             <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>#{item?.numero_reporte}</strong>
                           </td>

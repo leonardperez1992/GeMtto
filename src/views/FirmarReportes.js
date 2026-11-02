@@ -4,10 +4,10 @@ import { useSelector } from 'react-redux';
 import { apiReportes, apiFirmarReportes, apiIps } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
+import { SignatureModeControls } from '../utils/signatureImageToPoints';
 import Pagination from '../components/Pagination';
 import {
   FaFileSignature,
-  FaEraser,
   FaCheckCircle,
   FaFilter,
   FaSync,
@@ -586,18 +586,10 @@ function FirmarReportes() {
                   marginBottom: '6px',
                 }}
               >
-                DIBUJE SU FIRMA AQUÍ:
+                DIBUJE SU FIRMA O SUBA UNA IMAGEN:
               </label>
               <SignaturePadBox canvasRef={firmaIngRef} borderColor="#0284c7" />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                <button
-                  type="button"
-                  className="btn-limpiar-firma"
-                  onClick={() => firmaIngRef.current?.clear()}
-                >
-                  <FaEraser /> Limpiar Firma
-                </button>
-              </div>
+              <SignatureModeControls canvasRef={firmaIngRef} />
             </div>
 
             {/* Nombre Input */}
@@ -666,18 +658,10 @@ function FirmarReportes() {
                   marginBottom: '6px',
                 }}
               >
-                DIBUJE SU FIRMA AQUÍ:
+                DIBUJE SU FIRMA O SUBA UNA IMAGEN:
               </label>
               <SignaturePadBox canvasRef={firmaRecref} borderColor="#10b981" />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                <button
-                  type="button"
-                  className="btn-limpiar-firma"
-                  onClick={() => firmaRecref.current?.clear()}
-                >
-                  <FaEraser /> Limpiar Firma
-                </button>
-              </div>
+              <SignatureModeControls canvasRef={firmaRecref} />
             </div>
 
             {/* Nombre Input */}

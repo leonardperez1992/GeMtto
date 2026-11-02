@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
+import { SignatureModeControls } from '../utils/signatureImageToPoints';
 import {
   apiCrearCalibracion,
   apiSiguienteConsecutivoCalibracion,
@@ -29,7 +30,6 @@ import {
   FaTimesCircle,
   FaPlus,
   FaTrash,
-  FaEraser,
   FaBalanceScale,
   FaFlask,
   FaThermometerHalf,
@@ -3700,24 +3700,7 @@ export default function CreateCalibracion() {
                   canvasProps={{ width: 340, height: 110, className: 'sigCanvas' }}
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => firmaCalibroRef.current?.clear()}
-                style={{
-                  marginTop: 6,
-                  padding: '4px 8px',
-                  borderRadius: 4,
-                  border: '1px solid #cbd5e1',
-                  background: '#ffffff',
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                <FaEraser size={11} /> Limpiar Firma
-              </button>
+              <SignatureModeControls canvasRef={firmaCalibroRef} theme="light" />
             </div>
 
             {/* Firma Aprobador */}
@@ -3755,24 +3738,7 @@ export default function CreateCalibracion() {
                   canvasProps={{ width: 340, height: 110, className: 'sigCanvas' }}
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => firmaAproboRef.current?.clear()}
-                style={{
-                  marginTop: 6,
-                  padding: '4px 8px',
-                  borderRadius: 4,
-                  border: '1px solid #cbd5e1',
-                  background: '#ffffff',
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                <FaEraser size={11} /> Limpiar Firma
-              </button>
+              <SignatureModeControls canvasRef={firmaAproboRef} theme="light" />
             </div>
           </div>
         </div>

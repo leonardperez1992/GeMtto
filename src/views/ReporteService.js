@@ -10,6 +10,7 @@ import {
 } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
+import { SignatureModeControls } from '../utils/signatureImageToPoints';
 import {
   FaFileAlt,
   FaHospital,
@@ -24,7 +25,6 @@ import {
   FaFileUpload,
   FaSave,
   FaArrowLeft,
-  FaEraser,
   FaBolt,
   FaPen,
 } from 'react-icons/fa';
@@ -919,7 +919,7 @@ function ReporteService() {
                   {/* Firma Ingeniero */}
                   <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
                     <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
-                      DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
+                      DIBUJE SU FIRMA O SUBA UNA IMAGEN:
                     </div>
                     <div
                       style={{
@@ -943,20 +943,12 @@ function ReporteService() {
                         minWidth={0.8}
                       />
                     </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn-limpiar-firma"
-                        onClick={() => firmaIngRef.current?.clear()}
-                      >
-                        <FaEraser /> Limpiar Firma
-                      </button>
-                    </div>
+                    <SignatureModeControls canvasRef={firmaIngRef} />
                   </td>
                   {/* Firma Recibe */}
                   <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
                     <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
-                      DIBUJE SU FIRMA AQUÍ (RESPUESTA INSTANTÁNEA):
+                      DIBUJE SU FIRMA O SUBA UNA IMAGEN:
                     </div>
                     <div
                       style={{
@@ -980,15 +972,7 @@ function ReporteService() {
                         ref={firmaRecref}
                       />
                     </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn-limpiar-firma"
-                        onClick={() => firmaRecref.current?.clear()}
-                      >
-                        <FaEraser /> Limpiar Firma
-                      </button>
-                    </div>
+                    <SignatureModeControls canvasRef={firmaRecref} />
                   </td>
                 </tr>
                 <tr>

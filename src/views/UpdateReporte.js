@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiObtenerReporte, apiUpdateReporte } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
+import { SignatureModeControls } from '../utils/signatureImageToPoints';
 import {
   FaEdit,
   FaHospital,
@@ -16,7 +17,6 @@ import {
   FaSignature,
   FaSave,
   FaArrowLeft,
-  FaEraser,
 } from 'react-icons/fa';
 
 function UpdateReporte() {
@@ -599,7 +599,7 @@ function UpdateReporte() {
                   {/* Firma Ingeniero */}
                   <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
                     <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
-                      FIRMA DEL INGENIERO:
+                      FIRMA DEL INGENIERO (MANUAL O IMAGEN):
                     </div>
                     <div
                       style={{
@@ -623,20 +623,15 @@ function UpdateReporte() {
                         minWidth={0.8}
                       />
                     </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn-limpiar-firma"
-                        onClick={() => firmaIngRef.current?.clear()}
-                      >
-                        <FaEraser /> Limpiar Firma
-                      </button>
-                    </div>
+                    <SignatureModeControls
+                      canvasRef={firmaIngRef}
+                      onClearExtra={() => setReporte((prev) => ({ ...prev, firma_ingeniero: null }))}
+                    />
                   </td>
                   {/* Firma Recibe */}
                   <td colSpan={2} style={{ padding: '16px', textAlign: 'center', verticalAlign: 'middle', backgroundColor: '#0f172a' }}>
                     <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 'bold', marginBottom: '6px' }}>
-                      FIRMA DE QUIEN RECIBE:
+                      FIRMA DE QUIEN RECIBE (MANUAL O IMAGEN):
                     </div>
                     <div
                       style={{
@@ -660,15 +655,10 @@ function UpdateReporte() {
                         ref={firmaRecref}
                       />
                     </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn-limpiar-firma"
-                        onClick={() => firmaRecref.current?.clear()}
-                      >
-                        <FaEraser /> Limpiar Firma
-                      </button>
-                    </div>
+                    <SignatureModeControls
+                      canvasRef={firmaRecref}
+                      onClearExtra={() => setReporte((prev) => ({ ...prev, firma_recibe: null }))}
+                    />
                   </td>
                 </tr>
                 <tr>

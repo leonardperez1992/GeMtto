@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { apiObtenerReporte, apiUpdateReporte } from '../utils/api';
+import { apiObtenerReporte, apiUpdateReporte, apiActMtto } from '../utils/api';
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import { SignatureModeControls } from '../utils/signatureImageToPoints';
+import { extraerParametroYReferencia } from '../utils/actMttoHelper';
 import {
   FaEdit,
   FaHospital,
@@ -17,6 +18,7 @@ import {
   FaSignature,
   FaSave,
   FaArrowLeft,
+  FaBolt,
 } from 'react-icons/fa';
 
 function UpdateReporte() {
@@ -115,6 +117,42 @@ function UpdateReporte() {
   const handleSave = (e) => {
     const { name, value } = e.target;
     setReporte((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCargarParametrosProtocolo = async () => {
+    try {
+      const response = await request({ link: apiActMtto, method: 'GET' });
+      if (response && response.success && Array.isArray(response.actmtto)) {
+        const eqName = String(reporte.equipo || '').trim().toUpperCase();
+        const match = response.actmtto.find(
+          (a) =>
+            String(a.equipo || '').trim().toUpperCase() === eqName ||
+            String(a.equipo || '').trim().toUpperCase().includes(eqName)
+        );
+        if (!match) {
+          alert(`No se encontró un protocolo predefinido para "${reporte.equipo}".`);
+          return;
+        }
+        const p1 = extraerParametroYReferencia(match, 1);
+        const p2 = extraerParametroYReferencia(match, 2);
+        const p3 = extraerParametroYReferencia(match, 3);
+        const p4 = extraerParametroYReferencia(match, 4);
+
+        setReporte((prev) => ({
+          ...prev,
+          parametro1: p1.parametro || prev.parametro1 || '',
+          valor_programado1: p1.valorReferencia || prev.valor_programado1 || '',
+          parametro2: p2.parametro || prev.parametro2 || '',
+          valor_programado2: p2.valorReferencia || prev.valor_programado2 || '',
+          parametro3: p3.parametro || prev.parametro3 || '',
+          valor_programado3: p3.valorReferencia || prev.valor_programado3 || '',
+          parametro4: p4.parametro || prev.parametro4 || '',
+          valor_programado4: p4.valorReferencia || prev.valor_programado4 || '',
+        }));
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const UpdateReport = async (e) => {
@@ -496,15 +534,40 @@ function UpdateReporte() {
                 {/* 7. Verificacion de Parametros */}
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
-                    <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <span>
+                        <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                        7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
+                      </span>
+                      {reporte.tipo_servicio === 'MTTO PREVENTIVO' && (
+                        <button
+                          type="button"
+                          onClick={handleCargarParametrosProtocolo}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '5px 12px',
+                            backgroundColor: '#0284c7',
+                            color: '#ffffff',
+                            border: '1px solid #38bdf8',
+                            borderRadius: '6px',
+                            fontSize: '11.5px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <FaBolt color="#fde047" /> Cargar Parámetros y Referencias
+                        </button>
+                      )}
+                    </div>
                   </th>
                 </tr>
                 {reporte.tipo_servicio === 'MTTO PREVENTIVO' ? (
                   <>
                     <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
                       <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
-                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR DE REFERENCIA / PROGRAMADO (TOLERANCIA)</td>
                       <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
                     </tr>
                     {[1, 2, 3, 4].map((idx) => (

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiActMtto } from '../utils/api';
 import request from '../utils/request';
+import { extraerParametroYReferencia } from '../utils/actMttoHelper';
 import { LuClipboardEdit } from 'react-icons/lu';
 import { HiOutlineDocumentPlus } from 'react-icons/hi2';
 import { GoSearch } from 'react-icons/go';
@@ -81,24 +82,51 @@ function ActMtto() {
               <thead>
                 <tr>
                   <th>EQUIPO</th>
-                  <th>PARAMETRO 1</th>
-                  <th>PARAMETRO 2</th>
-                  <th>PARAMETRO 3</th>
-                  <th>PARAMETRO 4</th>
-                  <th>PARAMETRO 5</th>
+                  <th>PARÁMETRO 1 / REF.</th>
+                  <th>PARÁMETRO 2 / REF.</th>
+                  <th>PARÁMETRO 3 / REF.</th>
+                  <th>PARÁMETRO 4 / REF.</th>
+                  <th>PARÁMETRO 5 / REF.</th>
                   <th>ACCIÓN</th>
                 </tr>
               </thead>
               <tbody>
                 {actividades.map(function (item) {
+                  const renderCeldaParam = (idx) => {
+                    const { parametro, valorReferencia } = extraerParametroYReferencia(item, idx);
+                    if (!parametro) return <span style={{ color: '#64748b' }}>NA</span>;
+                    return (
+                      <div>
+                        <div style={{ fontWeight: '600' }}>{parametro}</div>
+                        {valorReferencia && (
+                          <div
+                            style={{
+                              marginTop: '3px',
+                              display: 'inline-block',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              color: '#38bdf8',
+                              backgroundColor: 'rgba(56, 189, 248, 0.14)',
+                              border: '1px solid rgba(56, 189, 248, 0.35)',
+                              borderRadius: '4px',
+                              padding: '1px 6px',
+                            }}
+                          >
+                            Ref: {valorReferencia}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  };
+
                   return (
-                    <tr>
+                    <tr key={item?._id || item?.equipo}>
                       <td>{item?.equipo}</td>
-                      <td>{item?.parametro1}</td>
-                      <td>{item?.parametro2}</td>
-                      <td>{item?.parametro3}</td>
-                      <td>{item?.parametro4}</td>
-                      <td>{item?.parametro5}</td>
+                      <td>{renderCeldaParam(1)}</td>
+                      <td>{renderCeldaParam(2)}</td>
+                      <td>{renderCeldaParam(3)}</td>
+                      <td>{renderCeldaParam(4)}</td>
+                      <td>{renderCeldaParam(5)}</td>
                       <td>
                         <Link
                           to={`/editaract?id=${item?._id}`}

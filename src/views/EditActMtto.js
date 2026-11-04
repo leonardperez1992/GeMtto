@@ -7,6 +7,10 @@ import {
 } from '../utils/api';
 import request from '../utils/request';
 import {
+  normalizarActMttoParaFormulario,
+  construirPayloadParametrosActMtto,
+} from '../utils/actMttoHelper';
+import {
   FaClipboardList,
   FaMicrochip,
   FaSlidersH,
@@ -24,10 +28,15 @@ function EditActMtto() {
     equipo: '',
     actividades: '',
     parametro1: '',
+    valor_referencia1: '',
     parametro2: '',
+    valor_referencia2: '',
     parametro3: '',
+    valor_referencia3: '',
     parametro4: '',
+    valor_referencia4: '',
     parametro5: '',
+    valor_referencia5: '',
   });
 
   const getActmtto = async (id) => {
@@ -38,7 +47,7 @@ function EditActMtto() {
         body: { id },
       });
       if (response && response.success && response.actmtto) {
-        setActmtto(response.actmtto);
+        setActmtto(normalizarActMttoParaFormulario(response.actmtto));
       } else {
         alert(`${response?.message || 'Error al obtener la actividad'}`);
       }
@@ -73,17 +82,14 @@ function EditActMtto() {
 
     setLoading(true);
     try {
+      const parametrosPayload = construirPayloadParametrosActMtto(actmtto);
       const response = await request({
         link: apiSetActMtto,
         body: {
           id: actmtto._id,
           equipo: actmtto.equipo.trim().toUpperCase(),
           actividades: actmtto.actividades,
-          parametro1: actmtto.parametro1 || 'NA',
-          parametro2: actmtto.parametro2 || 'NA',
-          parametro3: actmtto.parametro3 || 'NA',
-          parametro4: actmtto.parametro4 || 'NA',
-          parametro5: actmtto.parametro5 || 'NA',
+          ...parametrosPayload,
         },
         method: 'POST',
       });
@@ -217,24 +223,79 @@ function EditActMtto() {
               />
             </div>
 
-            {/* 3. Parámetros de Prueba */}
+            {/* 3. Parámetros de Prueba y Valores de Referencia */}
             <div style={{ borderTop: '1px solid #334155', paddingTop: '18px' }}>
               <label style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                <FaSlidersH /> PARÁMETROS DE VERIFICACIÓN SUGERIDOS:
+                <FaSlidersH /> PARÁMETROS DE VERIFICACIÓN Y VALORES DE REFERENCIA:
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+              <div
+                style={{
+                  border: '1px solid #334155',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  backgroundColor: '#0f172a',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '60px 1fr 1fr',
+                    backgroundColor: '#0f2b48',
+                    color: '#38bdf8',
+                    fontWeight: '700',
+                    fontSize: '12px',
+                    padding: '10px 14px',
+                    borderBottom: '1px solid #334155',
+                    gap: '12px',
+                  }}
+                >
+                  <div style={{ textAlign: 'center' }}>Nº</div>
+                  <div>PARÁMETRO EVALUADO</div>
+                  <div>VALOR DE REFERENCIA / TOLERANCIA</div>
+                </div>
+
                 {[1, 2, 3, 4, 5].map((idx) => (
-                  <div key={idx}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                      Parámetro {idx}:
-                    </label>
-                    <input
-                      className="input-report"
-                      name={`parametro${idx}`}
-                      type="text"
-                      value={actmtto[`parametro${idx}`] || ''}
-                      onChange={handleSave}
-                    />
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '60px 1fr 1fr',
+                      gap: '12px',
+                      padding: '10px 14px',
+                      alignItems: 'center',
+                      borderBottom: idx < 5 ? '1px solid #1e293b' : 'none',
+                    }}
+                  >
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        fontWeight: '700',
+                        fontSize: '12.5px',
+                        color: '#94a3b8',
+                      }}
+                    >
+                      #{idx}
+                    </div>
+                    <div>
+                      <input
+                        className="input-report"
+                        name={`parametro${idx}`}
+                        type="text"
+                        placeholder={`Parámetro ${idx}`}
+                        value={actmtto[`parametro${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        className="input-report"
+                        name={`valor_referencia${idx}`}
+                        type="text"
+                        placeholder={`Valor de referencia ${idx} (Ej. 120V ± 5%)`}
+                        value={actmtto[`valor_referencia${idx}`] || ''}
+                        onChange={handleSave}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

@@ -11,6 +11,7 @@ import {
 import request from '../utils/request';
 import SignatureCanvas from 'react-signature-canvas';
 import { SignatureModeControls } from '../utils/signatureImageToPoints';
+import { extraerParametroYReferencia } from '../utils/actMttoHelper';
 import {
   FaFileAlt,
   FaHospital,
@@ -144,15 +145,23 @@ function ReporteService() {
           );
           if (match) {
             setActmto(match.actividades);
+            const p1 = extraerParametroYReferencia(match, 1);
+            const p2 = extraerParametroYReferencia(match, 2);
+            const p3 = extraerParametroYReferencia(match, 3);
+            const p4 = extraerParametroYReferencia(match, 4);
             setReporte((prev) => {
               const isPreventivo = prev.tipo_servicio === 'MTTO PREVENTIVO';
               return {
                 ...prev,
                 desc_servicio: isPreventivo ? match.actividades : prev.desc_servicio,
-                parametro1: isPreventivo ? (prev.parametro1 || match.parametro1 || '') : '',
-                parametro2: isPreventivo ? (prev.parametro2 || match.parametro2 || '') : '',
-                parametro3: isPreventivo ? (prev.parametro3 || match.parametro3 || '') : '',
-                parametro4: isPreventivo ? (prev.parametro4 || match.parametro4 || '') : '',
+                parametro1: isPreventivo ? (prev.parametro1 || p1.parametro || '') : '',
+                valor_programado1: isPreventivo ? (prev.valor_programado1 || p1.valorReferencia || '') : '',
+                parametro2: isPreventivo ? (prev.parametro2 || p2.parametro || '') : '',
+                valor_programado2: isPreventivo ? (prev.valor_programado2 || p2.valorReferencia || '') : '',
+                parametro3: isPreventivo ? (prev.parametro3 || p3.parametro || '') : '',
+                valor_programado3: isPreventivo ? (prev.valor_programado3 || p3.valorReferencia || '') : '',
+                parametro4: isPreventivo ? (prev.parametro4 || p4.parametro || '') : '',
+                valor_programado4: isPreventivo ? (prev.valor_programado4 || p4.valorReferencia || '') : '',
               };
             });
           }
@@ -249,6 +258,10 @@ function ReporteService() {
   const handleTipoServicio = (tipo) => {
     const isPreventivo = tipo === 'MTTO PREVENTIVO';
     const match = actividadesFiltradas.length > 0 ? actividadesFiltradas[0] : null;
+    const p1 = extraerParametroYReferencia(match, 1);
+    const p2 = extraerParametroYReferencia(match, 2);
+    const p3 = extraerParametroYReferencia(match, 3);
+    const p4 = extraerParametroYReferencia(match, 4);
 
     setReporte((prev) => ({
       ...prev,
@@ -261,18 +274,18 @@ function ReporteService() {
         isPreventivo
           ? (prev.desc_servicio || match?.actividades || actMto || '')
           : (tipo === 'MTTO CORRECTIVO' ? '' : prev.desc_servicio),
-      // Solo cargar parámetros si es mantenimiento preventivo
-      parametro1: isPreventivo ? (match?.parametro1 || prev.parametro1 || '') : '',
-      valor_programado1: isPreventivo ? prev.valor_programado1 : '',
+      // Solo cargar parámetros y valores de referencia si es mantenimiento preventivo
+      parametro1: isPreventivo ? (p1.parametro || prev.parametro1 || '') : '',
+      valor_programado1: isPreventivo ? (p1.valorReferencia || prev.valor_programado1 || '') : '',
       valor_medido1: isPreventivo ? prev.valor_medido1 : '',
-      parametro2: isPreventivo ? (match?.parametro2 || prev.parametro2 || '') : '',
-      valor_programado2: isPreventivo ? prev.valor_programado2 : '',
+      parametro2: isPreventivo ? (p2.parametro || prev.parametro2 || '') : '',
+      valor_programado2: isPreventivo ? (p2.valorReferencia || prev.valor_programado2 || '') : '',
       valor_medido2: isPreventivo ? prev.valor_medido2 : '',
-      parametro3: isPreventivo ? (match?.parametro3 || prev.parametro3 || '') : '',
-      valor_programado3: isPreventivo ? prev.valor_programado3 : '',
+      parametro3: isPreventivo ? (p3.parametro || prev.parametro3 || '') : '',
+      valor_programado3: isPreventivo ? (p3.valorReferencia || prev.valor_programado3 || '') : '',
       valor_medido3: isPreventivo ? prev.valor_medido3 : '',
-      parametro4: isPreventivo ? (match?.parametro4 || prev.parametro4 || '') : '',
-      valor_programado4: isPreventivo ? prev.valor_programado4 : '',
+      parametro4: isPreventivo ? (p4.parametro || prev.parametro4 || '') : '',
+      valor_programado4: isPreventivo ? (p4.valorReferencia || prev.valor_programado4 || '') : '',
       valor_medido4: isPreventivo ? prev.valor_medido4 : '',
     }));
 
@@ -289,15 +302,24 @@ function ReporteService() {
     if (actividadesFiltradas.length > 0) {
       const selectedItem = actividadesFiltradas[0];
       const isPreventivo = reporte.tipo_servicio === 'MTTO PREVENTIVO';
+      const p1 = extraerParametroYReferencia(selectedItem, 1);
+      const p2 = extraerParametroYReferencia(selectedItem, 2);
+      const p3 = extraerParametroYReferencia(selectedItem, 3);
+      const p4 = extraerParametroYReferencia(selectedItem, 4);
+
       setActmto(selectedItem.actividades);
       setReporte((prev) => ({
         ...prev,
         desc_servicio: selectedItem.actividades,
-        // Solo cargar parámetros si es mantenimiento preventivo
-        parametro1: isPreventivo ? (selectedItem.parametro1 || '') : '',
-        parametro2: isPreventivo ? (selectedItem.parametro2 || '') : '',
-        parametro3: isPreventivo ? (selectedItem.parametro3 || '') : '',
-        parametro4: isPreventivo ? (selectedItem.parametro4 || '') : '',
+        // Solo cargar parámetros y valores de referencia si es mantenimiento preventivo
+        parametro1: isPreventivo ? (p1.parametro || '') : '',
+        valor_programado1: isPreventivo ? (p1.valorReferencia || prev.valor_programado1 || '') : '',
+        parametro2: isPreventivo ? (p2.parametro || '') : '',
+        valor_programado2: isPreventivo ? (p2.valorReferencia || prev.valor_programado2 || '') : '',
+        parametro3: isPreventivo ? (p3.parametro || '') : '',
+        valor_programado3: isPreventivo ? (p3.valorReferencia || prev.valor_programado3 || '') : '',
+        parametro4: isPreventivo ? (p4.parametro || '') : '',
+        valor_programado4: isPreventivo ? (p4.valorReferencia || prev.valor_programado4 || '') : '',
       }));
     } else {
       alert(`No se encontró un protocolo de mantenimiento predefinido para "${equipo?.equipo || reporte.equipo}". Puedes escribirlo manualmente.`);
@@ -790,7 +812,7 @@ function ReporteService() {
                   <>
                     <tr style={{ backgroundColor: '#0f172a', fontWeight: '700', fontSize: '12.5px', color: '#94a3b8' }}>
                       <td style={{ width: '30%' }}>PARÁMETRO EVALUADO</td>
-                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR PROGRAMADO (TOLERANCIA)</td>
+                      <td colSpan={2} style={{ width: '40%', textAlign: 'center' }}>VALOR DE REFERENCIA / PROGRAMADO (TOLERANCIA)</td>
                       <td style={{ width: '30%', textAlign: 'center' }}>VALOR MEDIDO</td>
                     </tr>
                     {[1, 2, 3, 4].map((idx) => (

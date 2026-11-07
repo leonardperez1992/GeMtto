@@ -207,7 +207,8 @@ function Informes() {
         const matchModelo = dato.modelo && dato.modelo.toLowerCase().includes(q);
         const matchTipo = dato.tipo_servicio && dato.tipo_servicio.toLowerCase().includes(q);
         const matchIng = dato.nombre_ingeniero && dato.nombre_ingeniero.toLowerCase().includes(q);
-        return matchNum || matchSerie || matchInst || matchServ || matchEq || matchMarca || matchModelo || matchTipo || matchIng;
+        const matchObs = dato.observaciones && dato.observaciones.toLowerCase().includes(q);
+        return matchNum || matchSerie || matchInst || matchServ || matchEq || matchMarca || matchModelo || matchTipo || matchIng || matchObs;
       }
 
       return true;
@@ -319,8 +320,7 @@ function Informes() {
         'INSTITUCIÓN / IPS': r.institucion || '',
         'SERVICIO': r.servicio || '',
         'TIPO DE SERVICIO': r.tipo_servicio || '',
-        'PROBLEMA REPORTADO': r.problema_reportado || '',
-        'DESCRIPCIÓN DEL SERVICIO': r.desc_servicio || '',
+        'OBSERVACIONES': r.observaciones || '',
         'REPUESTOS INSTALADOS': repuestos,
         'CANTIDADES': cantidades,
         'ESTADO FINAL': r.estado_final || 'FUNCIONANDO',
@@ -343,8 +343,7 @@ function Informes() {
       { wch: 28 }, // INSTITUCION
       { wch: 20 }, // SERVICIO
       { wch: 22 }, // TIPO DE SERVICIO
-      { wch: 35 }, // PROBLEMA
-      { wch: 45 }, // DESCRIPCION
+      { wch: 45 }, // OBSERVACIONES
       { wch: 28 }, // REPUESTOS
       { wch: 14 }, // CANTIDADES
       { wch: 22 }, // ESTADO FINAL

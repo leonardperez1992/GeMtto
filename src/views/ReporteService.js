@@ -183,15 +183,16 @@ function ReporteService() {
 
         // Auto-select city if currentInstitucion matches
         if (currentInstitucion) {
+          const instNorm = currentInstitucion.trim().toUpperCase();
           const matchIps = response.ips.find(
             (item) =>
-              (item.ips && item.ips.toUpperCase() === currentInstitucion.toUpperCase()) ||
-              (item.nombre && item.nombre.toUpperCase() === currentInstitucion.toUpperCase())
+              (item.ips && item.ips.trim().toUpperCase() === instNorm) ||
+              (item.nombre && item.nombre.trim().toUpperCase() === instNorm)
           );
           if (matchIps && matchIps.ciudad) {
             const city = matchIps.ciudad.trim().toUpperCase();
-            setCiudad(city);
-            setReporte((prev) => ({ ...prev, ciudad: city }));
+            setCiudad((prev) => prev || city);
+            setReporte((prev) => ({ ...prev, ciudad: prev.ciudad || city }));
           }
         }
       }
@@ -546,23 +547,24 @@ function ReporteService() {
                   </td>
                   <td colSpan={2}>
                     <strong style={{ color: '#38bdf8', marginRight: '8px' }}>CIUDAD:</strong>
-                    <select
+                    <input
+                      type="text"
+                      list="ciudades-ips-list"
                       className="input-report"
                       style={{ maxWidth: '240px', display: 'inline-block' }}
+                      placeholder="Escriba o seleccione la ciudad..."
                       value={ciudad}
                       onChange={(e) => {
                         setCiudad(e.target.value);
                         setReporte((prev) => ({ ...prev, ciudad: e.target.value }));
                       }}
                       required
-                    >
-                      <option value="">-- Seleccionar Ciudad --</option>
+                    />
+                    <datalist id="ciudades-ips-list">
                       {ciudades.map((cityName, idx) => (
-                        <option key={idx} value={cityName}>
-                          {cityName}
-                        </option>
+                        <option key={idx} value={cityName} />
                       ))}
-                    </select>
+                    </datalist>
                   </td>
                 </tr>
 

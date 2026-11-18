@@ -37,6 +37,33 @@ const matchesInstitucion = (eqInst, targetInst) => {
   return n1 === n2 || n1.includes(n2) || n2.includes(n1);
 };
 
+const normalizarFechaISO = (fechaStr) => {
+  if (!fechaStr) return '';
+  const str = String(fechaStr).trim();
+  const matchYMD = str.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (matchYMD) {
+    const y = matchYMD[1];
+    const m = matchYMD[2].padStart(2, '0');
+    const d = matchYMD[3].padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  const matchDMY = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
+  if (matchDMY) {
+    const d = matchDMY[1].padStart(2, '0');
+    const m = matchDMY[2].padStart(2, '0');
+    let y = matchDMY[3];
+    if (y.length === 2) y = `20${y}`;
+    return `${y}-${m}-${d}`;
+  }
+  try {
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().slice(0, 10);
+    }
+  } catch (e) {}
+  return '';
+};
+
 function Reportes() {
   const navigate = useNavigate();
   const reduxUser = useSelector((state) => state.user);
@@ -48,7 +75,8 @@ function Reportes() {
   const [selectedIps, setSelectedIps] = useState('');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [selectedTipo, setSelectedTipo] = useState('');
-  const [selectedFecha, setSelectedFecha] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncingFull, setIsSyncingFull] = useState(false);
@@ -220,10 +248,14 @@ function Reportes() {
         }
       }
 
-      // 4. Filtro por Fecha
-      if (selectedFecha) {
-        const fechaReporte = String(dato.fecha || '').trim().slice(0, 10);
-        if (fechaReporte !== selectedFecha) return false;
+      // 4. Filtro por Rango de Fechas (Desde / Hasta)
+      if (fechaDesde || fechaHasta) {
+        const fechaReporte = normalizarFechaISO(dato.fecha);
+        if (!fechaReporte) return false;
+        const minF = fechaDesde && fechaHasta && fechaDesde > fechaHasta ? fechaHasta : fechaDesde;
+        const maxF = fechaDesde && fechaHasta && fechaDesde > fechaHasta ? fechaDesde : fechaHasta;
+        if (minF && fechaReporte < minF) return false;
+        if (maxF && fechaReporte > maxF) return false;
       }
 
       // 5. Búsqueda por texto libre
@@ -244,7 +276,7 @@ function Reportes() {
 
       return true;
     });
-  }, [reportes, selectedIps, selectedServicio, selectedTipo, selectedFecha, buscar, isNonAdmin, userInstitucion]);
+  }, [reportes, selectedIps, selectedServicio, selectedTipo, fechaDesde, fechaHasta, buscar, isNonAdmin, userInstitucion]);
 
   // Paginated slice
   const paginatedReportes = useMemo(() => {
@@ -520,16 +552,17 @@ function Reportes() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaFilter /> Filtrar Reportes por Institución, Servicio, Tipo de Mantenimiento y Fecha:
+              <FaFilter /> Filtrar Reportes por Institución, Servicio, Tipo de Mantenimiento y Rango de Fechas:
             </div>
-            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || selectedFecha || buscar) && (
+            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || fechaDesde || fechaHasta || buscar) && (
               <button
                 type="button"
                 onClick={() => {
                   if (!isNonAdmin) setSelectedIps('');
                   setSelectedServicio('');
                   setSelectedTipo('');
-                  setSelectedFecha('');
+                  setFechaDesde('');
+                  setFechaHasta('');
                   setBuscar('');
                   setCurrentPage(1);
                 }}
@@ -552,7 +585,7 @@ function Reportes() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(195px, 1fr))',
               gap: '14px',
             }}
           >
@@ -631,16 +664,33 @@ function Reportes() {
               </select>
             </div>
 
-            {/* 4. Filtro por Fecha */}
+            {/* 4. Fecha Desde */}
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
-                Fecha del Servicio:
+                Fecha Desde:
               </label>
               <input
                 type="date"
-                value={selectedFecha}
+                value={fechaDesde}
                 onChange={(e) => {
-                  setSelectedFecha(e.target.value);
+                  setFechaDesde(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '8px 12px', fontSize: '13px', width: '100%', colorScheme: 'dark', cursor: 'pointer' }}
+              />
+            </div>
+
+            {/* 5. Fecha Hasta */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Fecha Hasta:
+              </label>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => {
+                  setFechaHasta(e.target.value);
                   setCurrentPage(1);
                 }}
                 className="input-report"
@@ -801,7 +851,7 @@ function Reportes() {
                 </div>
               )}
 
-              {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || selectedFecha || buscar) && (
+              {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || fechaDesde || fechaHasta || buscar) && (
                 <span
                   style={{
                     backgroundColor: 'rgba(56, 189, 248, 0.12)',

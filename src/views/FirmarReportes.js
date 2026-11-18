@@ -33,6 +33,33 @@ const matchesInstitucion = (eqInst, targetInst) => {
   return n1 === n2 || n1.includes(n2) || n2.includes(n1);
 };
 
+const normalizarFechaISO = (fechaStr) => {
+  if (!fechaStr) return '';
+  const str = String(fechaStr).trim();
+  const matchYMD = str.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (matchYMD) {
+    const y = matchYMD[1];
+    const m = matchYMD[2].padStart(2, '0');
+    const d = matchYMD[3].padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  const matchDMY = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
+  if (matchDMY) {
+    const d = matchDMY[1].padStart(2, '0');
+    const m = matchDMY[2].padStart(2, '0');
+    let y = matchDMY[3];
+    if (y.length === 2) y = `20${y}`;
+    return `${y}-${m}-${d}`;
+  }
+  try {
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().slice(0, 10);
+    }
+  } catch (e) {}
+  return '';
+};
+
 function SignaturePadBox({ canvasRef, borderColor = '#0284c7' }) {
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 350, height: 140 });
@@ -97,6 +124,8 @@ function FirmarReportes() {
   const [selectedIps, setSelectedIps] = useState('');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [filtroEstadoFirma, setFiltroEstadoFirma] = useState('TODOS');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [reporteFirma, setReporteFirma] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncingFull, setIsSyncingFull] = useState(false);
@@ -320,7 +349,17 @@ function FirmarReportes() {
         if (!hasIng || !hasRec) return false;
       }
 
-      // 4. Búsqueda por texto libre
+      // 4. Filtro por Rango de Fechas (Desde / Hasta)
+      if (fechaDesde || fechaHasta) {
+        const fechaReporte = normalizarFechaISO(dato.fecha);
+        if (!fechaReporte) return false;
+        const minF = fechaDesde && fechaHasta && fechaDesde > fechaHasta ? fechaHasta : fechaDesde;
+        const maxF = fechaDesde && fechaHasta && fechaDesde > fechaHasta ? fechaDesde : fechaHasta;
+        if (minF && fechaReporte < minF) return false;
+        if (maxF && fechaReporte > maxF) return false;
+      }
+
+      // 5. Búsqueda por texto libre
       if (q) {
         const match =
           (dato.numero_reporte && String(dato.numero_reporte).toLowerCase().includes(q)) ||
@@ -337,7 +376,7 @@ function FirmarReportes() {
 
       return true;
     });
-  }, [reportes, selectedIps, selectedServicio, filtroEstadoFirma, buscar, isNonAdmin, userInstitucion]);
+  }, [reportes, selectedIps, selectedServicio, filtroEstadoFirma, fechaDesde, fechaHasta, buscar, isNonAdmin, userInstitucion]);
 
   // Selección masiva de reportes filtrados
   const filteredIds = useMemo(() => filteredReportes.map((r) => r._id), [filteredReportes]);
@@ -362,6 +401,8 @@ function FirmarReportes() {
     if (!isNonAdmin) setSelectedIps('');
     setSelectedServicio('');
     setFiltroEstadoFirma('TODOS');
+    setFechaDesde('');
+    setFechaHasta('');
     setBuscar('');
     setCurrentPage(1);
   };
@@ -768,9 +809,9 @@ function FirmarReportes() {
                 gap: '8px',
               }}
             >
-              <FaFilter /> Filtrar Reportes por Institución y Servicio:
+              <FaFilter /> Filtrar Reportes por Institución, Servicio y Rango de Fechas:
             </div>
-            {((!isNonAdmin && selectedIps) || selectedServicio || filtroEstadoFirma !== 'TODOS' || buscar) && (
+            {((!isNonAdmin && selectedIps) || selectedServicio || filtroEstadoFirma !== 'TODOS' || fechaDesde || fechaHasta || buscar) && (
               <button
                 type="button"
                 onClick={handleResetFilters}
@@ -796,7 +837,7 @@ function FirmarReportes() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(195px, 1fr))',
               gap: '14px',
             }}
           >
@@ -893,6 +934,56 @@ function FirmarReportes() {
                 <option value="SIN_RECIBE">Falta Firma de Recibido</option>
                 <option value="FIRMADOS">Completamente Firmados</option>
               </select>
+            </div>
+
+            {/* 4. Fecha Desde */}
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#94a3b8',
+                  marginBottom: '6px',
+                }}
+              >
+                Fecha Desde:
+              </label>
+              <input
+                type="date"
+                value={fechaDesde}
+                onChange={(e) => {
+                  setFechaDesde(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '8px 12px', fontSize: '13px', width: '100%', colorScheme: 'dark', cursor: 'pointer' }}
+              />
+            </div>
+
+            {/* 5. Fecha Hasta */}
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#94a3b8',
+                  marginBottom: '6px',
+                }}
+              >
+                Fecha Hasta:
+              </label>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => {
+                  setFechaHasta(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '8px 12px', fontSize: '13px', width: '100%', colorScheme: 'dark', cursor: 'pointer' }}
+              />
             </div>
           </div>
         </div>

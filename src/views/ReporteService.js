@@ -138,30 +138,18 @@ function ReporteService() {
         const sorted = response.actmtto.sort((a, b) => (a.equipo || '').localeCompare(b.equipo || ''));
         setAllActMtos(sorted);
 
-        // Preload protocol if matching
+        // Preload protocol description if matching (verification parameters are only loaded on demand)
         if (equipoNombre) {
           const match = sorted.find(
             (a) => a.equipo?.trim().toUpperCase() === equipoNombre.trim().toUpperCase()
           );
           if (match) {
             setActmto(match.actividades);
-            const p1 = extraerParametroYReferencia(match, 1);
-            const p2 = extraerParametroYReferencia(match, 2);
-            const p3 = extraerParametroYReferencia(match, 3);
-            const p4 = extraerParametroYReferencia(match, 4);
             setReporte((prev) => {
               const isPreventivo = prev.tipo_servicio === 'MTTO PREVENTIVO';
               return {
                 ...prev,
                 desc_servicio: isPreventivo ? match.actividades : prev.desc_servicio,
-                parametro1: isPreventivo ? (prev.parametro1 || p1.parametro || '') : '',
-                valor_programado1: isPreventivo ? (prev.valor_programado1 || p1.valorReferencia || '') : '',
-                parametro2: isPreventivo ? (prev.parametro2 || p2.parametro || '') : '',
-                valor_programado2: isPreventivo ? (prev.valor_programado2 || p2.valorReferencia || '') : '',
-                parametro3: isPreventivo ? (prev.parametro3 || p3.parametro || '') : '',
-                valor_programado3: isPreventivo ? (prev.valor_programado3 || p3.valorReferencia || '') : '',
-                parametro4: isPreventivo ? (prev.parametro4 || p4.parametro || '') : '',
-                valor_programado4: isPreventivo ? (prev.valor_programado4 || p4.valorReferencia || '') : '',
               };
             });
           }
@@ -259,10 +247,6 @@ function ReporteService() {
   const handleTipoServicio = (tipo) => {
     const isPreventivo = tipo === 'MTTO PREVENTIVO';
     const match = actividadesFiltradas.length > 0 ? actividadesFiltradas[0] : null;
-    const p1 = extraerParametroYReferencia(match, 1);
-    const p2 = extraerParametroYReferencia(match, 2);
-    const p3 = extraerParametroYReferencia(match, 3);
-    const p4 = extraerParametroYReferencia(match, 4);
 
     setReporte((prev) => ({
       ...prev,
@@ -275,18 +259,18 @@ function ReporteService() {
         isPreventivo
           ? (prev.desc_servicio || match?.actividades || actMto || '')
           : (tipo === 'MTTO CORRECTIVO' ? '' : prev.desc_servicio),
-      // Solo cargar parámetros y valores de referencia si es mantenimiento preventivo
-      parametro1: isPreventivo ? (p1.parametro || prev.parametro1 || '') : '',
-      valor_programado1: isPreventivo ? (p1.valorReferencia || prev.valor_programado1 || '') : '',
+      // Si no es preventivo, limpiar parámetros; si es preventivo, conservar solo los que el usuario haya cargado
+      parametro1: isPreventivo ? prev.parametro1 : '',
+      valor_programado1: isPreventivo ? prev.valor_programado1 : '',
       valor_medido1: isPreventivo ? prev.valor_medido1 : '',
-      parametro2: isPreventivo ? (p2.parametro || prev.parametro2 || '') : '',
-      valor_programado2: isPreventivo ? (p2.valorReferencia || prev.valor_programado2 || '') : '',
+      parametro2: isPreventivo ? prev.parametro2 : '',
+      valor_programado2: isPreventivo ? prev.valor_programado2 : '',
       valor_medido2: isPreventivo ? prev.valor_medido2 : '',
-      parametro3: isPreventivo ? (p3.parametro || prev.parametro3 || '') : '',
-      valor_programado3: isPreventivo ? (p3.valorReferencia || prev.valor_programado3 || '') : '',
+      parametro3: isPreventivo ? prev.parametro3 : '',
+      valor_programado3: isPreventivo ? prev.valor_programado3 : '',
       valor_medido3: isPreventivo ? prev.valor_medido3 : '',
-      parametro4: isPreventivo ? (p4.parametro || prev.parametro4 || '') : '',
-      valor_programado4: isPreventivo ? (p4.valorReferencia || prev.valor_programado4 || '') : '',
+      parametro4: isPreventivo ? prev.parametro4 : '',
+      valor_programado4: isPreventivo ? prev.valor_programado4 : '',
       valor_medido4: isPreventivo ? prev.valor_medido4 : '',
     }));
 
@@ -302,29 +286,61 @@ function ReporteService() {
   const handleCargarProtocoloDirecto = () => {
     if (actividadesFiltradas.length > 0) {
       const selectedItem = actividadesFiltradas[0];
-      const isPreventivo = reporte.tipo_servicio === 'MTTO PREVENTIVO';
+      setActmto(selectedItem.actividades);
+      setReporte((prev) => ({
+        ...prev,
+        desc_servicio: selectedItem.actividades,
+      }));
+    } else {
+      alert(`No se encontró un protocolo de mantenimiento predefinido para "${equipo?.equipo || reporte.equipo}". Puedes escribirlo manualmente.`);
+    }
+  };
+
+  const handleCargarParametrosVerificacion = () => {
+    if (actividadesFiltradas.length > 0) {
+      const selectedItem = actividadesFiltradas[0];
       const p1 = extraerParametroYReferencia(selectedItem, 1);
       const p2 = extraerParametroYReferencia(selectedItem, 2);
       const p3 = extraerParametroYReferencia(selectedItem, 3);
       const p4 = extraerParametroYReferencia(selectedItem, 4);
 
-      setActmto(selectedItem.actividades);
+      if (!p1.parametro && !p2.parametro && !p3.parametro && !p4.parametro) {
+        alert(`El protocolo de "${equipo?.equipo || reporte.equipo}" no tiene parámetros de verificación predefinidos. Puedes escribirlos manualmente.`);
+        return;
+      }
+
       setReporte((prev) => ({
         ...prev,
-        desc_servicio: selectedItem.actividades,
-        // Solo cargar parámetros y valores de referencia si es mantenimiento preventivo
-        parametro1: isPreventivo ? (p1.parametro || '') : '',
-        valor_programado1: isPreventivo ? (p1.valorReferencia || prev.valor_programado1 || '') : '',
-        parametro2: isPreventivo ? (p2.parametro || '') : '',
-        valor_programado2: isPreventivo ? (p2.valorReferencia || prev.valor_programado2 || '') : '',
-        parametro3: isPreventivo ? (p3.parametro || '') : '',
-        valor_programado3: isPreventivo ? (p3.valorReferencia || prev.valor_programado3 || '') : '',
-        parametro4: isPreventivo ? (p4.parametro || '') : '',
-        valor_programado4: isPreventivo ? (p4.valorReferencia || prev.valor_programado4 || '') : '',
+        parametro1: p1.parametro || prev.parametro1 || '',
+        valor_programado1: p1.valorReferencia || prev.valor_programado1 || '',
+        parametro2: p2.parametro || prev.parametro2 || '',
+        valor_programado2: p2.valorReferencia || prev.valor_programado2 || '',
+        parametro3: p3.parametro || prev.parametro3 || '',
+        valor_programado3: p3.valorReferencia || prev.valor_programado3 || '',
+        parametro4: p4.parametro || prev.parametro4 || '',
+        valor_programado4: p4.valorReferencia || prev.valor_programado4 || '',
       }));
     } else {
-      alert(`No se encontró un protocolo de mantenimiento predefinido para "${equipo?.equipo || reporte.equipo}". Puedes escribirlo manualmente.`);
+      alert(`No se encontró un protocolo con parámetros predefinidos para "${equipo?.equipo || reporte.equipo}". Puedes ingresarlos manualmente.`);
     }
+  };
+
+  const handleLimpiarParametrosVerificacion = () => {
+    setReporte((prev) => ({
+      ...prev,
+      parametro1: '',
+      valor_programado1: '',
+      valor_medido1: '',
+      parametro2: '',
+      valor_programado2: '',
+      valor_medido2: '',
+      parametro3: '',
+      valor_programado3: '',
+      valor_medido3: '',
+      parametro4: '',
+      valor_programado4: '',
+      valor_medido4: '',
+    }));
   };
 
   const CreateReport = async (e) => {
@@ -806,8 +822,57 @@ function ReporteService() {
                 {/* 7. Verificacion de Parametros */}
                 <tr>
                   <th colSpan={4} style={{ backgroundColor: '#0f2b48', color: '#38bdf8', fontSize: '14px' }}>
-                    <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                    7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <span>
+                        <FaSlidersH style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                        7. VERIFICACIÓN DE PARÁMETROS DE FUNCIONAMIENTO {reporte.tipo_servicio !== 'MTTO PREVENTIVO' ? '(NO APLICA)' : ''}
+                      </span>
+                      {reporte.tipo_servicio === 'MTTO PREVENTIVO' && (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={handleCargarParametrosVerificacion}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '6px 14px',
+                              backgroundColor: '#0284c7',
+                              color: '#ffffff',
+                              border: '1px solid #38bdf8',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.35)',
+                            }}
+                          >
+                            <FaBolt color="#fde047" /> Cargar Parámetros de Verificación
+                          </button>
+                          {(reporte.parametro1 || reporte.parametro2 || reporte.parametro3 || reporte.parametro4) && (
+                            <button
+                              type="button"
+                              onClick={handleLimpiarParametrosVerificacion}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                backgroundColor: '#334155',
+                                color: '#f8fafc',
+                                border: '1px solid #475569',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Limpiar Parámetros
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </th>
                 </tr>
                 {reporte.tipo_servicio === 'MTTO PREVENTIVO' ? (

@@ -48,6 +48,7 @@ function Reportes() {
   const [selectedIps, setSelectedIps] = useState('');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [selectedTipo, setSelectedTipo] = useState('');
+  const [selectedFecha, setSelectedFecha] = useState('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncingFull, setIsSyncingFull] = useState(false);
@@ -219,7 +220,13 @@ function Reportes() {
         }
       }
 
-      // 4. Búsqueda por texto libre
+      // 4. Filtro por Fecha
+      if (selectedFecha) {
+        const fechaReporte = String(dato.fecha || '').trim().slice(0, 10);
+        if (fechaReporte !== selectedFecha) return false;
+      }
+
+      // 5. Búsqueda por texto libre
       if (buscar.trim() !== '') {
         const q = buscar.toLowerCase();
         const match =
@@ -237,7 +244,7 @@ function Reportes() {
 
       return true;
     });
-  }, [reportes, selectedIps, selectedServicio, selectedTipo, buscar, isNonAdmin, userInstitucion]);
+  }, [reportes, selectedIps, selectedServicio, selectedTipo, selectedFecha, buscar, isNonAdmin, userInstitucion]);
 
   // Paginated slice
   const paginatedReportes = useMemo(() => {
@@ -513,15 +520,16 @@ function Reportes() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaFilter /> Filtrar Reportes por Institución, Servicio y Tipo de Mantenimiento:
+              <FaFilter /> Filtrar Reportes por Institución, Servicio, Tipo de Mantenimiento y Fecha:
             </div>
-            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
+            {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || selectedFecha || buscar) && (
               <button
                 type="button"
                 onClick={() => {
                   if (!isNonAdmin) setSelectedIps('');
                   setSelectedServicio('');
                   setSelectedTipo('');
+                  setSelectedFecha('');
                   setBuscar('');
                   setCurrentPage(1);
                 }}
@@ -544,7 +552,7 @@ function Reportes() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
               gap: '14px',
             }}
           >
@@ -621,6 +629,23 @@ function Reportes() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* 4. Filtro por Fecha */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>
+                Fecha del Servicio:
+              </label>
+              <input
+                type="date"
+                value={selectedFecha}
+                onChange={(e) => {
+                  setSelectedFecha(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="input-report"
+                style={{ padding: '8px 12px', fontSize: '13px', width: '100%', colorScheme: 'dark', cursor: 'pointer' }}
+              />
             </div>
           </div>
         </div>
@@ -776,7 +801,7 @@ function Reportes() {
                 </div>
               )}
 
-              {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || buscar) && (
+              {((!isNonAdmin && selectedIps) || selectedServicio || selectedTipo || selectedFecha || buscar) && (
                 <span
                   style={{
                     backgroundColor: 'rgba(56, 189, 248, 0.12)',

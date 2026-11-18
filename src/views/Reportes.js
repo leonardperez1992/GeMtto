@@ -125,8 +125,26 @@ function Reportes() {
         method: 'GET',
       });
 
-      if (responseFull && responseFull.success && responseFull.reporte) {
+      if (responseFull && responseFull.success && Array.isArray(responseFull.reporte)) {
         setReportes(responseFull.reporte);
+      } else if (responseInit && responseInit.success && Array.isArray(responseInit.reporte)) {
+        // Fallback por lotes si la consulta sin límite excede memoria en el servidor
+        let accumulated = [...responseInit.reporte];
+        let skip = accumulated.length;
+        const batchSize = 100;
+        while (skip < 5000) {
+          const resBatch = await request({
+            link: `${apiReportes}?limit=${batchSize}&skip=${skip}`,
+            method: 'GET',
+          });
+          if (!resBatch || !resBatch.success || !Array.isArray(resBatch.reporte) || resBatch.reporte.length === 0) {
+            break;
+          }
+          accumulated = [...accumulated, ...resBatch.reporte];
+          setReportes([...accumulated]);
+          if (resBatch.reporte.length < batchSize) break;
+          skip += batchSize;
+        }
       }
     } catch (e) {
       console.error(e);
@@ -278,11 +296,17 @@ function Reportes() {
     });
   }, [reportes, selectedIps, selectedServicio, selectedTipo, fechaDesde, fechaHasta, buscar, isNonAdmin, userInstitucion]);
 
+  // Cuando hay un filtro por rango de fechas activo, mostrar hasta 500 registros por página para ver todo el mes completo
+  const effectiveItemsPerPage = useMemo(
+    () => (fechaDesde || fechaHasta ? Math.max(itemsPerPage, 500) : itemsPerPage),
+    [fechaDesde, fechaHasta, itemsPerPage]
+  );
+
   // Paginated slice
   const paginatedReportes = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredReportes.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredReportes, currentPage, itemsPerPage]);
+    const startIndex = (currentPage - 1) * effectiveItemsPerPage;
+    return filteredReportes.slice(startIndex, startIndex + effectiveItemsPerPage);
+  }, [filteredReportes, currentPage, effectiveItemsPerPage]);
 
   const isPageAllSelected = useMemo(() => {
     if (paginatedReportes.length === 0) return false;
@@ -980,11 +1004,11 @@ function Reportes() {
             <div style={{ marginTop: '16px' }}>
               <Pagination
                 totalItems={filteredReportes.length}
-                itemsPerPage={itemsPerPage}
+                itemsPerPage={effectiveItemsPerPage}
                 currentPage={currentPage}
                 onPageChange={(page) => setCurrentPage(page)}
                 onItemsPerPageChange={(num) => setItemsPerPage(num)}
-                pageSizeOptions={[15, 25, 50, 100]}
+                pageSizeOptions={[15, 25, 50, 100, 250, 500]}
               />
             </div>
           </div>

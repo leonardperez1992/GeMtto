@@ -192,8 +192,25 @@ function FirmarReportes() {
         link: apiReportes,
         method: 'GET',
       });
-      if (responseFull && responseFull.success && responseFull.reporte) {
+      if (responseFull && responseFull.success && Array.isArray(responseFull.reporte)) {
         setReportes(responseFull.reporte);
+      } else if (responseInit && responseInit.success && Array.isArray(responseInit.reporte)) {
+        let accumulated = [...responseInit.reporte];
+        let skip = accumulated.length;
+        const batchSize = 100;
+        while (skip < 5000) {
+          const resBatch = await request({
+            link: `${apiReportes}?limit=${batchSize}&skip=${skip}`,
+            method: 'GET',
+          });
+          if (!resBatch || !resBatch.success || !Array.isArray(resBatch.reporte) || resBatch.reporte.length === 0) {
+            break;
+          }
+          accumulated = [...accumulated, ...resBatch.reporte];
+          setReportes([...accumulated]);
+          if (resBatch.reporte.length < batchSize) break;
+          skip += batchSize;
+        }
       }
     } catch (e) {
       console.error('Error al cargar reportes:', e);
@@ -407,11 +424,16 @@ function FirmarReportes() {
     setCurrentPage(1);
   };
 
+  const effectiveItemsPerPage = useMemo(
+    () => (fechaDesde || fechaHasta ? Math.max(itemsPerPage, 500) : itemsPerPage),
+    [fechaDesde, fechaHasta, itemsPerPage]
+  );
+
   // Paginated reports
   const paginatedReportes = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredReportes.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredReportes, currentPage, itemsPerPage]);
+    const startIndex = (currentPage - 1) * effectiveItemsPerPage;
+    return filteredReportes.slice(startIndex, startIndex + effectiveItemsPerPage);
+  }, [filteredReportes, currentPage, effectiveItemsPerPage]);
 
   const renderBadgeFirma = (rep) => {
     const hasIng = Boolean(rep.nombre_ingeniero && String(rep.nombre_ingeniero).trim());
@@ -1159,11 +1181,11 @@ function FirmarReportes() {
             {/* Pagination Controls */}
             <Pagination
               totalItems={filteredReportes.length}
-              itemsPerPage={itemsPerPage}
+              itemsPerPage={effectiveItemsPerPage}
               currentPage={currentPage}
               onPageChange={(page) => setCurrentPage(page)}
               onItemsPerPageChange={(size) => setItemsPerPage(size)}
-              pageSizeOptions={[15, 25, 50, 100]}
+              pageSizeOptions={[15, 25, 50, 100, 250, 500]}
             />
           </div>
         )}
